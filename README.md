@@ -4,3 +4,4 @@ Este notebook tiene como objetivo generar un algoritmo que permita obetener tabl
 ## For Escuela de Transformación Digital (Actualizado 2025-08-21)
 !["EDT1.png"](https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/ETD1.png)
 !["EDT2.png"](https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/ETD2.png)
+!["EDT3.png"](https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/ETD3.png)
