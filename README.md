@@ -3,12 +3,12 @@ Este notebook tiene como objetivo generar un algoritmo que permita obetener tabl
 
 ## Escuela de Transformación Digital (Actualizado 2025-08-21)
 <p align="center">
-  <img width="460" height="300" src="https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/ETD1.png">
+  <img width="800" src="https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/ETD1.png">
 </p>
 <p align="center">
-  <img width="460" height="300" src="https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/ETD2.png">
+  <img width="460" src="https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/ETD2.png">
 </p>
 <p align="center">
-  <img width="460" height="300" src="https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/ETD3.png">
+  <img width="800" src="https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/ETD3.png">
 </p>
 
