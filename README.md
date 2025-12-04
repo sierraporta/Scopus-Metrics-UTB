@@ -1,7 +1,9 @@
-**Desarrollado por:** D. Sierra-Porta (UTB)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Jupyter](https://img.shields.io/badge/Jupyter-Notebooks-orange.svg)](https://jupyter.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+**Desarrollado por:** D. Sierra-Porta (UTB)
+
 
 # Scopus-Metrics-UTB
 Este notebook tiene como objetivo generar un algoritmo que permita obetener tablas resumen de estadísticas para investigadores de la Universidad, en términos de sus productividades e investigaciones y trabajos publicados, además categorizando en artículos para cuartiles Q1, Q2, Q3, Q4 y/o Sin Cuartil.
