@@ -1,3 +1,9 @@
+---
+layout: default
+title: Scopus Metrics UTB
+nav_order: 1
+---
+
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Jupyter](https://img.shields.io/badge/Jupyter-Notebooks-orange.svg)](https://jupyter.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -13,76 +19,98 @@ Este repositorio contiene un **notebook/algoritmo** que consolida **tablas resum
 
 ## Objetivo
 Generar de forma reproducible un conjunto de **indicadores descriptivos** que permitan:
+
 - resumir la **producción anual** por investigador y por unidad académica;
-- comparar la distribución de publicaciones por cuartiles (Q1–Q4) y **Sin Cuartil (SQ)**;
+- comparar la distribución de publicaciones por cuartiles (**Q1–Q4**) y **Sin Cuartil (SQ)**;
 - producir visualizaciones estandarizadas (gráficas y heatmaps) para reportes internos y análisis exploratorio.
 
-> Nota: este repositorio apunta a **resumen estadístico y visualización**, no a evaluación individual de desempeño ni a ranking normativo.
+{: .note }
+Este repositorio apunta a **resumen estadístico y visualización**, no a evaluación individual de desempeño ni a ranking normativo.
 
 ---
 
 ## Definiciones usadas
 - **Q1–Q4:** cuartil asignado a la revista (según la fuente de cuartiles integrada en el dataset).
-- **SQ (Sin Cuartil):** publicaciones sin cuartil asignado o no clasificadas en el esquema Q1–Q4.
+- **SQ (Sin Cuartil):** publicaciones sin cuartil asignado o no clasificadas en el esquema Q1–Q4 (incluye casos sin match de cuartil).
 - **Total:** suma anual de publicaciones consideradas por el algoritmo, según reglas de filtrado/limpieza.
 
 ---
 
 ## Flujo metodológico
-1. **Ingesta de datos:** lectura del dataset bibliométrico y tablas auxiliares (p. ej. unidades académicas, investigadores, cuartiles).
-2. **Normalización:** estandarización de nombres (autores/investigadores), años, afiliaciones y categorías.
-3. **Clasificación:** asignación de cada registro a **Q1, Q2, Q3, Q4 o SQ**.
-4. **Agregación:** cómputo de tablas resumen por:
-   - investigador (totales y desglose por cuartil),
-   - unidad académica,
-   - periodo (año, trimestre si aplica).
-5. **Visualización:** generación automática de figuras y tablas para consulta rápida.
+1. **Ingesta:** lectura del listado de investigadores (UTB), export Scopus y tabla Scimago/SJR.
+2. **Normalización:** estandarización de identificadores y metadatos (año, afiliación, etc.).
+3. **Clasificación:** asignación de cuartil **Q1–Q4** (match por ISSN y fallback por título); resto → **SQ**.
+4. **Agregación:** tablas por investigador, por escuela/unidad académica y por año.
+5. **Visualización:** generación automática de figuras y exportables (CSV/Excel).
 
 ---
 
-## Resultados destacados (2025)
-A continuación se muestran ejemplos de salidas del pipeline (figuras exportadas por el notebook).  
-Estas visualizaciones están pensadas para responder preguntas como:
-
-- ¿Cómo se distribuye la producción anual por cuartil?
-- ¿Qué unidades académicas concentran mayor volumen total?
-- ¿Cómo se comporta el patrón Q1–Q4 vs SQ por investigador?
-
----
-
-# Figuras
-**Las siguientes son estadísticas actualizadas al 2025-Dec-29.**
-
-## Escuela de Transformación Digital
-### Producción Intelectual SCOPUS - Todos los cuartiles - top 20 de investigadores (Año 2025)
-Gráfico de barras horizontales apiladas que resume la producción anual por investigador, desagregada por cuartil de la revista (**Q1, Q2, Q3, Q4**) y por **Sin Cuartil (SQ)**. Cada barra corresponde a un investigador y su longitud total representa el número total de publicaciones consideradas en 2025; los segmentos coloreados indican la contribución en cada categoría. En el agregado de la Escuela para 2025 se contabilizan **45** publicaciones: **Q1 = 12 (26.7%)**, **Q2 = 8 (17.8%)**, **Q3 = 4 (8.9%)**, **Q4 = 1 (2.2%)** y **SQ = 20 (44.4%)**.  
-*Nota:* **SQ** agrupa registros sin cuartil asignado o sin información disponible en la fuente de clasificación; su valor puede reflejar tanto producción en fuentes no cuartilizadas como vacíos de metadatos que conviene depurar/actualizar.
-![](Figures/ETD1.png)
-
-### Composición totales de producción por cuartil (Año 2025)
-Gráfico circular que muestra la **proporción relativa** de publicaciones de la Escuela en 2025 según el cuartil de la revista (**Q1–Q4**) y la categoría **Sin Cuartil (SQ)**. Para 2025, la distribución porcentual es: **SQ = 62.7%**, **Q1 = 17.3%**, **Q2 = 12.0%**, **Q3 = 6.7%** y **Q4 = 1.3%**.  
-*Nota:* **SQ** agrupa registros sin cuartil asignado o sin información disponible en la fuente de clasificación; su proporción puede disminuir al actualizar metadatos y reglas de emparejamiento con listados de cuartiles.
-![](Figures/ETD2.png)
-
-## Toda la Universidad
+## Resultados 2025
 
 {: .highlight }
 **Producción científica UTB (2025)**  
-**Total:** **195** publicaciones
+**Total (contribuciones de autoría): 195**  
+Q1: **40** · Q2: **29** · Q3: **19** · Q4: **8** · SQ: **99**
 
-Q1: **40** · Q2: **27** · Q3: **19** · Q4: **8** · SQ: **101**
+{: .note }
+**Importante sobre conteos:**  
+El “Total (contribuciones de autoría)” cuenta pares **(autor UTB – publicación)**.  
+Si necesitas “papers únicos UTB” (cada paper cuenta 1 vez), el total será menor.
 
-### Producción Intelectual SCOPUS - Toda la Universidad (Año 2025)
-Mapa de calor que resume, para cada unidad académica, el **conteo de publicaciones** clasificadas por cuartil (**Q1–Q4**) y **Sin Cuartil (SQ)** durante 2025. Cada celda muestra el número de publicaciones en la categoría correspondiente; la columna **Total** presenta la suma anual por unidad y la intensidad del color refleja el volumen relativo (mayor intensidad = mayor producción). Esta visualización facilita la comparación transversal entre unidades, identificando (i) el **tamaño total de la producción** y (ii) el **perfil de cuartiles** (proporción relativa de Q1–Q4 vs SQ) asociado a cada unidad.  
-*Nota:* la categoría **SQ** agrupa registros sin cuartil asignado o sin información disponible en la fuente de clasificación; diferencias en SQ pueden deberse tanto a patrones reales de publicación como a variaciones en cobertura/calidad de metadatos entre unidades.
-![](Figures/ETD3.png)
+---
 
-### Composición totales de producción - Toda la Universidad - top 20 de investigadores (Año 2025)
-Gráfico circular que resume la **proporción relativa** de publicaciones institucionales en 2025 según el cuartil de la revista (**Q1–Q4**) y la categoría **Sin Cuartil (SQ)**. Los porcentajes muestran el peso de cada categoría dentro del total anual y permiten una lectura rápida del balance entre producción en revistas cuartilizadas (Q1–Q4) y registros clasificados como SQ.  
-*Nota:* **SQ** agrupa publicaciones sin cuartil asignado o sin información disponible en la fuente de clasificación; su magnitud puede reflejar tanto patrones reales de publicación como vacíos/actualizaciones pendientes de metadatos.
-![](Figures/ALL1.png)
+# Figuras (2025)
 
-### Composición totales de producción por cuartil - Toda la Universidad (Año 2025)
-Gráfico de barras horizontales apiladas que presenta, para cada investigador, el **conteo de publicaciones** en 2025 desagregado por cuartil (**Q1, Q2, Q3, Q4**) y **Sin Cuartil (SQ)**. La **longitud total** de cada barra representa la producción total anual del investigador, mientras que los segmentos coloreados describen su **perfil de cuartiles**. Esta figura facilita la identificación de (i) investigadores con mayor volumen total y (ii) patrones diferenciales de publicación (mayor proporción en Q1–Q2 vs predominio de SQ, etc.).  
-*Nota:* la interpretación comparativa debe considerar posibles diferencias disciplinarias y la cobertura/actualización de metadatos de cuartil.
-![](Figures/ALL2.png)
+## Escuela de Transformación Digital (ETD)
+
+### ETD — Producción por investigador (authorship basis)
+Barras apiladas por investigador con desglose **Q1–Q4** y **SQ**. La longitud total representa la producción anual del investigador bajo el conteo **autor–publicación**.
+
+![]({{ "/outputs/figures/ETD_2025_researchers_stackedbar_authorship.png" | relative_url }})
+
+### ETD — Composición por cuartil (authorship basis)
+Distribución porcentual de la producción ETD por cuartil (**Q1–Q4**) y **SQ**.
+
+![]({{ "/outputs/figures/ETD_2025_pie_authorship_quartiles.png" | relative_url }})
+
+---
+
+## Toda la Universidad (UTB)
+
+### UTB — Composición por cuartil (authorship basis)
+Distribución institucional por cuartil y **SQ** para 2025 bajo conteo **autor–publicación**.
+
+![]({{ "/outputs/figures/UTB_2025_pie_authorship_quartiles.png" | relative_url }})
+
+### UTB — Comparación por escuelas (participación por escuela)
+Barras apiladas por **escuela**, contando pares **(escuela – publicación)**. Un paper puede aportar a más de una escuela si hay coautoría inter-escuela.
+
+![]({{ "/outputs/figures/UTB_2025_schools_stackedbar_participation.png" | relative_url }})
+
+### UTB — Heatmap escuelas × cuartil (participación por escuela)
+Mapa de calor con conteos por escuela y cuartil, incluyendo la columna **Total**.
+
+![]({{ "/outputs/figures/UTB_2025_heatmap_school_quartile_participation.png" | relative_url }})
+
+### UTB — Top investigadores (authorship basis)
+Top 25 investigadores por producción anual (conteo autor–publicación), desagregado por cuartil.
+
+![]({{ "/outputs/figures/UTB_2025_top25_researchers_stackedbar_authorship.png" | relative_url }})
+
+### UTB — Colaboración entre escuelas
+Matriz de coautoría inter-escuela: número de publicaciones 2025 que conectan pares de escuelas (papeles con ≥2 escuelas).
+
+![]({{ "/outputs/figures/UTB_2025_collaboration_matrix_schools.png" | relative_url }})
+
+---
+
+## Reproducibilidad (rápido)
+- Ejecuta el notebook principal.
+- Las figuras se guardan en `outputs/figures/` y luego pueden copiarse a `assets/figures/2025/` para publicarlas en Pages.
+
+---
+
+## Limitaciones / notas
+- La exactitud depende de la calidad del export Scopus (IDs, afiliaciones, duplicados).
+- **SQ** puede reflejar tanto producción en fuentes sin cuartil como **vacíos de match** (ISSN/título).
+- Interpretaciones comparativas deben considerar diferencias disciplinares y cobertura de indexación.
