@@ -11,7 +11,7 @@ Este notebook tiene como objetivo generar un algoritmo que permita obetener tabl
 **Las siguientes son estadísticas actualizadas al 2025-Dec-29.**
 
 ## Escuela de Transformación Digital
-### Producción Intelectual SCOPUS - Todos los cuartiles (Año 2025)
+### Producción Intelectual SCOPUS - Todos los cuartiles - top 20 de investigadores (Año 2025)
 <p align="center">
   <img width="1000" src="https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/Figures/ETD1.png">
 </p>
@@ -27,7 +27,7 @@ Este notebook tiene como objetivo generar un algoritmo que permita obetener tabl
   <img width="1000" src="https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/Figures/ETD3.png">
 </p>
 
-### Composición totales de producción - Toda la Universidad - top 15 de investigadores (Año 2025)
+### Composición totales de producción - Toda la Universidad - top 20 de investigadores (Año 2025)
 <p align="center">
   <img width="1000" src="https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/Figures/ALL1.png">
 </p>
