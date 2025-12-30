@@ -1,3 +1,15 @@
-remote_theme: just-the-docs/just-the-docs
 title: Scopus Metrics UTB
-description: Métricas Scopus por unidades académicas
+description: Resúmenes y visualizaciones de productividad por cuartil (Q1–Q4, SQ)
+remote_theme: just-the-docs/just-the-docs
+
+# Para project pages como /Scopus-Metrics-UTB/
+baseurl: "/Scopus-Metrics-UTB"
+url: "https://sierraporta.github.io"
+
+# Recomendado
+search_enabled: true
+color_scheme: light
+
+plugins:
+  - jekyll-remote-theme
+  
