@@ -28,7 +28,7 @@ Generar de forma reproducible un conjunto de **indicadores descriptivos** que pe
 
 ---
 
-## Flujo metodológico (alto nivel)
+## Flujo metodológico
 1. **Ingesta de datos:** lectura del dataset bibliométrico y tablas auxiliares (p. ej. unidades académicas, investigadores, cuartiles).
 2. **Normalización:** estandarización de nombres (autores/investigadores), años, afiliaciones y categorías.
 3. **Clasificación:** asignación de cada registro a **Q1, Q2, Q3, Q4 o SQ**.
