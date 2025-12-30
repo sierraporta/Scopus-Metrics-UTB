@@ -100,7 +100,7 @@ Matriz de coautoría inter-escuela: número de publicaciones 2025 que conectan p
 
 ## Reproducibilidad (rápido)
 - Ejecuta el notebook principal.
-- Las figuras se guardan en `outputs/figures/` y luego pueden copiarse a `assets/figures/2025/` para publicarlas en Pages.
+- Las figuras se guardan en `outputs/figures/` y las tablas resumen principales en `outputs/`.
 
 ---
 
