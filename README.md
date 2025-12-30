@@ -15,22 +15,14 @@ Este notebook tiene como objetivo generar un algoritmo que permita obetener tabl
 ![](Figures/ETD1.png)
 
 ### Composición totales de producción por cuartil (Año 2025)
-<p align="center">
-  <img width="460" src="https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/Figures/ETD2.png">
-</p>
+![](Figures/ETD2.png)
 
 ## Toda la Universidad
 ### Producción Intelectual SCOPUS - Toda la Universidad (Año 2025)
-<p align="center">
-  <img width="1000" src="https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/Figures/ETD3.png">
-</p>
+![](Figures/ETD3.png)
 
 ### Composición totales de producción - Toda la Universidad - top 20 de investigadores (Año 2025)
-<p align="center">
-  <img width="1000" src="https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/Figures/ALL1.png">
-</p>
+![](Figures/ALL1.png)
 
 ### Composición totales de producción por cuartil - Toda la Universidad (Año 2025)
-<p align="center">
-  <img width="460" src="https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/Figures/ALL2.png">
-</p>
+![](Figures/ALL2.png)
