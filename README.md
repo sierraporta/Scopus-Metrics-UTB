@@ -4,11 +4,6 @@
 
 **Desarrollado por:** D. Sierra-Porta (UTB)
 
----
-layout: default
-title: Scopus Metrics UTB
----
-
 # Scopus Metrics UTB
 Este repositorio contiene un **notebook/algoritmo** que consolida **tablas resumen de productividad científica** de investigadores de la Universidad, a partir de registros bibliométricos y su **clasificación por cuartil** (**Q1, Q2, Q3, Q4**) y/o **Sin Cuartil (SQ)**.
 
