@@ -65,6 +65,13 @@ Gráfico circular que muestra la **proporción relativa** de publicaciones de la
 ![](Figures/ETD2.png)
 
 ## Toda la Universidad
+
+{: .highlight }
+**Producción científica UTB (2025)**  
+**Total:** **195** publicaciones
+
+Q1: **40** · Q2: **27** · Q3: **19** · Q4: **8** · SQ: **101**
+
 ### Producción Intelectual SCOPUS - Toda la Universidad (Año 2025)
 Mapa de calor que resume, para cada unidad académica, el **conteo de publicaciones** clasificadas por cuartil (**Q1–Q4**) y **Sin Cuartil (SQ)** durante 2025. Cada celda muestra el número de publicaciones en la categoría correspondiente; la columna **Total** presenta la suma anual por unidad y la intensidad del color refleja el volumen relativo (mayor intensidad = mayor producción). Esta visualización facilita la comparación transversal entre unidades, identificando (i) el **tamaño total de la producción** y (ii) el **perfil de cuartiles** (proporción relativa de Q1–Q4 vs SQ) asociado a cada unidad.  
 *Nota:* la categoría **SQ** agrupa registros sin cuartil asignado o sin información disponible en la fuente de clasificación; diferencias en SQ pueden deberse tanto a patrones reales de publicación como a variaciones en cobertura/calidad de metadatos entre unidades.
