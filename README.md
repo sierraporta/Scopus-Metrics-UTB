@@ -53,6 +53,12 @@ Si necesitas “papers únicos UTB” (cada paper cuenta 1 vez), el total será 
 
 ---
 
+# Produccion general UTB
+![]({{ "/outputs/figures/Publicaciones_all_years.png" | relative_url }})
+
+
+
+
 # Figuras (2025)
 
 ## Escuela de Transformación Digital (ETD)
