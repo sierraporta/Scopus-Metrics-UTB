@@ -13,11 +13,8 @@ Universidad Tecnológica de Bolívar (UTB) a partir de un export de Scopus.
 - **Crédito por Escuela:** una Escuela recibe crédito si al menos un docente de esa Escuela aparece como autor en el documento (un documento puede contar en más de una Escuela si hay coautoría inter-escuelas).
 - **Tipos de documento:** agrupación operativa en *Article*, *Conference*, *Review* y *Other* según “Document Type”.
 
-## Abrir el tablero
-
-Abre el archivo principal:
-
-- **Página principal (índice):** `utb_scopus_dashboard_single_pretty/_ALL/index.html`
+## ✅ Abrir el Dashboard
+👉 **[Abrir dashboard interactivo](utb_scopus_dashboard_single_pretty/_ALL/index.html)**
 
 ## Gráficos y estadísticas
 
