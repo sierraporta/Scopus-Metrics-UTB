@@ -1,13 +1,9 @@
-from pathlib import Path
-
-FOLDER = "utb_scopus_dashboard_single_pretty"
-
-readme_md = f"""# UTB Scopus Dashboard (>= __START_YEAR__)
+# UTB Scopus Dashboard (>= 2022)
 
 Este repositorio contiene un tablero interactivo (HTML) y tablas (Excel) para explorar la producción científica asociada a docentes de planta de la
 Universidad Tecnológica de Bolívar (UTB) a partir de un export de Scopus.
 
-> **Actualización:** estas estadísticas y gráficos están actualizados a fecha de **__ACTU__**.
+> **Actualización:** estas estadísticas y gráficos están actualizados a fecha de **Mar 1-2026**.
 
 ## Metodología (resumen)
 
@@ -21,19 +17,19 @@ Universidad Tecnológica de Bolívar (UTB) a partir de un export de Scopus.
 
 Abre el archivo principal:
 
-- **Página principal (índice):** `{FOLDER}/_ALL/index.html`
+- **Página principal (índice):** `utb_scopus_dashboard_single_pretty/_ALL/index.html`
 
 ## Gráficos y estadísticas
 
-- **Documentos por año (apilado por tipo):** `{FOLDER}/_ALL/overall_papers_per_year_STACKED_by_type_horizontal.html`
-- **Documentos por Escuela (apilado + dropdown por año):** `{FOLDER}/_ALL/papers_by_escuela_STACKED_by_type_YEAR_dropdown.html`
-- **Top autores (apilado + dropdown por año):** `{FOLDER}/_ALL/top_authors_STACKED_by_type_YEAR_dropdown.html`
-- **Heatmap Escuela × Tipo (con totales + dropdown por año):** `{FOLDER}/_ALL/heatmap_escuela_doctype_YEAR_dropdown.html`
-- **Top pares planta–planta (dropdown por año):** `{FOLDER}/_ALL/top_pairs_faculty_faculty_YEAR_dropdown.html`
+- **Documentos por año (apilado por tipo):** `utb_scopus_dashboard_single_pretty/_ALL/overall_papers_per_year_STACKED_by_type_horizontal.html`
+- **Documentos por Escuela (apilado + dropdown por año):** `utb_scopus_dashboard_single_pretty/_ALL/papers_by_escuela_STACKED_by_type_YEAR_dropdown.html`
+- **Top autores (apilado + dropdown por año):** `utb_scopus_dashboard_single_pretty/_ALL/top_authors_STACKED_by_type_YEAR_dropdown.html`
+- **Heatmap Escuela × Tipo (con totales + dropdown por año):** `utb_scopus_dashboard_single_pretty/_ALL/heatmap_escuela_doctype_YEAR_dropdown.html`
+- **Top pares planta–planta (dropdown por año):** `utb_scopus_dashboard_single_pretty/_ALL/top_pairs_faculty_faculty_YEAR_dropdown.html`
 
 ## Tablas (Excel)
 
-- **Descargar tablas:** `{FOLDER}/_ALL/tables.xlsx`
+- **Descargar tablas:** `utb_scopus_dashboard_single_pretty/_ALL/tables.xlsx`
 
 ## Aclaratoria
 
@@ -43,11 +39,3 @@ Este material no constituye un reporte oficial ni representa una posición insti
 
 ## Créditos
 Desarrollado por **D. Sierra-Porta** © 2026 — Universidad Tecnológica de Bolívar
-"""
-
-# Reemplazos
-readme_md = readme_md.replace("__START_YEAR__", str(START_YEAR)).replace("__ACTU__", str(Actu))
-
-# Guardar en la raíz del repo
-Path("README.md").write_text(readme_md, encoding="utf-8")
-print("Wrote README.md")
