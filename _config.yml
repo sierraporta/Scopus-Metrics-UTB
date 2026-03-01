@@ -13,5 +13,3 @@ color_scheme: light
 plugins:
   - jekyll-remote-theme
   
-include:
-  - utb_scopus_dashboard_single_pretty/_ALL
