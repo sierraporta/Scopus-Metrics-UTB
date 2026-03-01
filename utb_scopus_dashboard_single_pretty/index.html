@@ -1,0 +1,211 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>UTB Scopus Dashboard (>= 2022)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 68px; line-height: 1.35; background-color: #f0f7ff;}
+    .meta { max-width: 1100px; }
+    .note { background: #FEFCE8; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.08); }
+    ul { margin-top: 10px; }
+    li { margin: 8px 0; }
+    h2 { margin-bottom: 6px; }
+    h3 { margin-top: 18px; }
+    code { background: #f1f1f1; padding: 1px 4px; border-radius: 6px; font-family: Arial, sans-serif; }
+
+    /* Cards grid */
+    .cards-grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(240px, 1fr));
+      gap: 14px;
+      margin-top: 10px;
+      max-width: 1100px;
+    }
+    @media (max-width: 980px){
+      .cards-grid{ grid-template-columns: repeat(2, minmax(240px, 1fr)); }
+    }
+    @media (max-width: 640px){
+      .cards-grid{ grid-template-columns: 1fr; }
+    }
+
+    .card-link{
+      display: block;        /* <-- hace que el <a> sea un bloque en la grid */
+      height: 100%;          /* <-- evita “colapsos” raros */
+      text-decoration:none;
+      color: inherit;
+    }
+
+
+
+    .card{
+      background: #E0E7FF;
+      box-sizing: border-box; /* <-- evita que padding/border rompan el layout */
+      border: 1px solid rgba(0,0,0,0.10);
+      border-radius: 12px;
+      padding: 14px 14px 12px 14px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, border-color 0.08s ease;
+      height: 100%;
+    }
+    .card:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+      border-color: rgba(0,0,0,0.18);
+    }
+    .card-title{
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0 0 6px 0;
+    }
+    .card-desc{
+      font-size: 13px;
+      margin: 0;
+      color: rgba(0,0,0,0.72);
+    }
+    .card-meta{
+      margin-top: 10px;
+      font-size: 12px;
+      color: rgba(0,0,0,0.55);
+    }
+    .tag{
+      display:inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(0,0,0,0.02);
+      margin-right: 6px;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+
+<body>
+<div class="meta">
+  <h1>UTB Scopus Dashboard (&gt;= 2022)</h2>
+  <p>
+    Este panel presenta una caracterización bibliométrica de la producción científica asociada a docentes de planta
+    de la Universidad Tecnológica de Bolívar (UTB) a partir de un export de Scopus. La metodología integra:
+    (i) una base maestra de docentes de planta con su <em>Scopus Author ID</em> (cuando está disponible),
+    (ii) un archivo CSV exportado desde Scopus con metadatos por documento (p. ej., EID, año, tipo de documento y autores),
+    y (iii) un procedimiento de normalización y cruce para identificar, dentro de cada documento, qué autores pertenecen a la planta UTB.
+    Para cada documento se reconstruye la lista de autores y su posición de autoría; luego se filtran únicamente aquellos autores
+    cuyo <em>Author ID</em> coincide con la lista de planta. Los conteos se realizan sobre <strong>documentos únicos</strong>
+    (identificados por EID), evitando dobles conteos por múltiples apariciones del mismo autor. La desagregación por
+    <strong>Escuela</strong> asigna crédito a una Escuela cuando al menos un docente de esa Escuela participa como autor en el documento
+    (por lo que un mismo documento puede contribuir a más de una Escuela si existe coautoría inter-escuelas). Adicionalmente, el
+    “Document Type” de Scopus se agrupa en categorías operativas (Article, Conference, Review, Other) para analizar la composición
+    de la producción. Finalmente, los patrones de colaboración se resumen mediante pares de coautoría entre docentes de planta,
+    contabilizando el número de documentos compartidos por par. En conjunto, los gráficos permiten explorar tendencias anuales,
+    distribución por Escuela, perfiles de autoría y estructura de colaboración con criterios reproducibles y auditables.
+  </p>
+
+  <div class="note">
+    <strong>Notas metodológicas</strong>
+    <ul>
+      <li><strong>Unidad de conteo:</strong> “Número de documentos” corresponde a <strong>papers únicos</strong> (conteo por <code>EID</code>), no a apariciones de autor.</li>
+      <li><strong>Crédito por Escuela:</strong> una Escuela recibe crédito si al menos un docente de esa Escuela aparece como autor en el paper (por eso un paper puede contar en más de una Escuela si hay colaboración).</li>
+      <li><strong>Tipos de documento:</strong> se agrupan en <em>Article</em>, <em>Conference</em>, <em>Review</em> y <em>Other</em> según “Document Type” del export.</li>
+      <li><strong>Filtro temporal:</strong> se consideran años desde <strong>2022</strong> en adelante.</li>
+    </ul>
+    <p><strong>Cómo usar:</strong> en cada gráfico con dropdown, selecciona el año (o <em>ALL</em>) para actualizar la vista.</p>
+  </div>
+
+  <h2>Gráficos y Estadísticas</h2>
+<strong>Nota Importante:</strong>
+<p>Para la construcción de estas estadísticas y cuadros se hace la aclaratoria que todo esto está actualizado a fecha de <strong>Mar 1-2026</strong>.</p>
+
+
+  <div class="cards-grid">
+    <a class="card-link" href="overall_papers_per_year_STACKED_by_type_horizontal.html">
+      <div class="card">
+        <div class="card-title">Documentos por año</div>
+        <p class="card-desc">Serie temporal global (documentos únicos), apilada por tipo de documento.</p>
+        <div class="card-meta">
+          <span class="tag">Global</span>
+          <span class="tag">Tipo</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card-link" href="papers_by_escuela_STACKED_by_type_YEAR_dropdown.html">
+      <div class="card">
+        <div class="card-title">Documentos por Escuela</div>
+        <p class="card-desc">Barras apiladas por tipo, con totales al final de cada barra. Incluye dropdown por año.</p>
+        <div class="card-meta">
+          <span class="tag">Escuela</span>
+          <span class="tag">Tipo</span>
+          <span class="tag">Dropdown</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card-link" href="top_authors_STACKED_by_type_YEAR_dropdown.html">
+      <div class="card">
+        <div class="card-title">Top autores</div>
+        <p class="card-desc">Ranking de docentes por número de documentos únicos. Apilado por tipo, con dropdown por año.</p>
+        <div class="card-meta">
+          <span class="tag">Autoría</span>
+          <span class="tag">Tipo</span>
+          <span class="tag">Dropdown</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card-link" href="heatmap_escuela_doctype_YEAR_dropdown.html">
+      <div class="card">
+        <div class="card-title">Heatmap Escuela × Tipo</div>
+        <p class="card-desc">Matriz Escuela × tipo, con totales por fila y columna. Incluye dropdown por año.</p>
+        <div class="card-meta">
+          <span class="tag">Heatmap</span>
+          <span class="tag">Totales</span>
+          <span class="tag">Dropdown</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card-link" href="top_pairs_faculty_faculty_YEAR_dropdown.html">
+      <div class="card">
+        <div class="card-title">Top pares planta–planta</div>
+        <p class="card-desc">Pares de coautoría con más documentos compartidos. Incluye dropdown por año.</p>
+        <div class="card-meta">
+          <span class="tag">Colaboración</span>
+          <span class="tag">Pares</span>
+          <span class="tag">Dropdown</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card-link" href="tables.xlsx">
+      <div class="card">
+        <div class="card-title">Tablas (Excel)</div>
+        <p class="card-desc">Archivo <code>tables.xlsx</code> con tablas intermedias para auditoría, pivots y reportes.</p>
+        <div class="card-meta">
+          <span class="tag">Export</span>
+          <span class="tag">Auditoría</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+<h3>Acaratoria:</h3>
+<p class="note">
+  <strong>Alcance e interpretación:</strong>
+  Este tablero es un ejercicio técnico y personal de análisis bibliométrico basado en un export puntual de Scopus y una lista interna de docentes de planta.
+  Por lo tanto, los resultados son <em>referenciales</em> y pueden diferir de cifras institucionales oficiales (por cobertura del export, actualización de perfiles en Scopus,
+  homónimos/duplicados de Author ID, y reglas de conteo adoptadas). Este material no constituye un reporte oficial ni representa una posición institucional de la UTB;
+  su propósito es exploratorio y de apoyo para ver tendencias y posibles inconsistencias de registro.
+</p>
+
+<div class="note">
+    <strong>Créditos</strong>
+    <ul>
+      <li>Desarrollado por <strong>D. Sierra-Porta</strong> &copy; 2026 - Universidad Tecnológica de Bolívar</li>
+    </ul>
+  </div>
+
+
+  <div class="spacer"></div> <!-- Espacio extra al final -->
+
+</div>
+</body>
+</html>

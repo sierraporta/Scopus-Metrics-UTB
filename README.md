@@ -13,20 +13,23 @@ Universidad Tecnológica de Bolívar (UTB) a partir de un export de Scopus.
 - **Crédito por Escuela:** una Escuela recibe crédito si al menos un docente de esa Escuela aparece como autor en el documento (un documento puede contar en más de una Escuela si hay coautoría inter-escuelas).
 - **Tipos de documento:** agrupación operativa en *Article*, *Conference*, *Review* y *Other* según “Document Type”.
 
-## ✅ Abrir el Dashboard
-👉 **[Abrir dashboard interactivo](utb_scopus_dashboard_single_pretty/_ALL/index.html)**
+## Abrir el tablero
+
+Abre el archivo principal:
+
+- **Página principal (índice):** `utb_scopus_dashboard_single_pretty/index.html`
 
 ## Gráficos y estadísticas
 
-- **Documentos por año (apilado por tipo):** `utb_scopus_dashboard_single_pretty/_ALL/overall_papers_per_year_STACKED_by_type_horizontal.html`
-- **Documentos por Escuela (apilado + dropdown por año):** `utb_scopus_dashboard_single_pretty/_ALL/papers_by_escuela_STACKED_by_type_YEAR_dropdown.html`
-- **Top autores (apilado + dropdown por año):** `utb_scopus_dashboard_single_pretty/_ALL/top_authors_STACKED_by_type_YEAR_dropdown.html`
-- **Heatmap Escuela × Tipo (con totales + dropdown por año):** `utb_scopus_dashboard_single_pretty/_ALL/heatmap_escuela_doctype_YEAR_dropdown.html`
-- **Top pares planta–planta (dropdown por año):** `utb_scopus_dashboard_single_pretty/_ALL/top_pairs_faculty_faculty_YEAR_dropdown.html`
+- **Documentos por año (apilado por tipo):** `utb_scopus_dashboard_single_pretty/overall_papers_per_year_STACKED_by_type_horizontal.html`
+- **Documentos por Escuela (apilado + dropdown por año):** `utb_scopus_dashboard_single_pretty/papers_by_escuela_STACKED_by_type_YEAR_dropdown.html`
+- **Top autores (apilado + dropdown por año):** `utb_scopus_dashboard_single_pretty/top_authors_STACKED_by_type_YEAR_dropdown.html`
+- **Heatmap Escuela × Tipo (con totales + dropdown por año):** `utb_scopus_dashboard_single_pretty/heatmap_escuela_doctype_YEAR_dropdown.html`
+- **Top pares planta–planta (dropdown por año):** `utb_scopus_dashboard_single_pretty/top_pairs_faculty_faculty_YEAR_dropdown.html`
 
 ## Tablas (Excel)
 
-- **Descargar tablas:** `utb_scopus_dashboard_single_pretty/_ALL/tables.xlsx`
+- **Descargar tablas:** `utb_scopus_dashboard_single_pretty/tables.xlsx`
 
 ## Aclaratoria
 
