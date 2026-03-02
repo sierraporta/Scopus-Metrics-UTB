@@ -17,7 +17,7 @@ Universidad Tecnológica de Bolívar (UTB) a partir de un export de Scopus.
 
 Abre el archivo principal:
 
-- **Página principal (índice):** [`Scopus Metrics UTB: index.html`](https://github.com/sierraporta/Scopus-Metrics-UTB/blob/main/index.html)
+- **Página principal (índice):** [`Scopus Metrics UTB: index.html`](https://sierraporta.github.io/Scopus-Metrics-UTB/)
 
 ## Gráficos y estadísticas
 
