@@ -43,10 +43,10 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
   cursor:pointer;min-width:110px;transition:border-color .15s}
 #yearFilter:hover{border-color:rgba(147,197,253,.75)}
 /* ── KPI STRIP ────────────────────────────────────────────────── */
-.kpi-strip{max-width:1180px;margin:-32px auto 0;padding:0 72px;position:relative;z-index:10}
+.kpi-strip{margin-bottom:24px;max-width:1180px;margin:-32px auto 0;padding:0 72px;position:relative;z-index:10}
 .kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:13px}
 .kpi-card{background:#fff;border-radius:13px;padding:17px 18px 14px;
-  box-shadow:0 6px 28px rgba(15,23,42,.10);border-top:3px solid var(--ac);
+  box-shadow:0 6px 28px rgba(15,23,42,.10);border-top:10px solid var(--ac);
   transition:transform .16s,box-shadow .16s;animation:riseIn .5s ease both}
 .kpi-card:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(15,23,42,.15)}
 .kpi-card:nth-child(1){--ac:#2563EB;animation-delay:.04s}
@@ -61,7 +61,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
 .kpi-val.sm{font-size:21px}
 .kpi-sub{font-size:10.5px;color:#94A3B8;margin-top:4px}
 /* ── NAV BAR ──────────────────────────────────────────────────── */
-.nav-bar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);
+.nav-bar{margin-top:24px;position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);
   backdrop-filter:blur(10px);border-bottom:1px solid #E2E8F0;
   box-shadow:0 2px 12px rgba(15,23,42,.06)}
 .nav-inner{max-width:1180px;margin:0 auto;padding:0 72px;
@@ -89,14 +89,34 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
 .card-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:7px}
 .card-note{font-size:11.5px;color:#94A3B8;background:#F8FAFC;
   padding:4px 10px;border-radius:6px}
+.card-hd-right{display:flex;align-items:center;gap:8px}
 .chart-wrap{position:relative}
+/* ── RESIZE CONTROLS ──────────────────────────────────────────── */
+.resize-btn{
+  background:none;border:1.5px solid #E2E8F0;border-radius:6px;
+  cursor:pointer;color:#94A3B8;font-size:13px;padding:2px 8px;line-height:1.6;
+  transition:border-color .15s,color .15s,background .15s;flex-shrink:0;
+  font-family:inherit}
+.resize-btn:hover{border-color:#94A3B8;color:#475569;background:#F8FAFC}
+.resize-row{
+  display:none;align-items:center;gap:12px;
+  padding:12px 4px 2px;border-top:1px solid #F1F5F9;margin-top:16px}
+.height-slider{
+  flex:1;accent-color:#1D4ED8;cursor:pointer;
+  -webkit-appearance:none;height:4px;background:#E2E8F0;border-radius:2px;outline:none}
+.height-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:#1D4ED8;cursor:pointer;box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+.height-lbl{
+  font-size:11.5px;color:#475569;min-width:44px;text-align:right;
+  font-weight:600;font-variant-numeric:tabular-nums}
 /* ── 2-COL GRID for small charts ─────────────────────────────── */
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
 /* ── NOTE BOXES ───────────────────────────────────────────────── */
 .note{border-radius:9px;padding:13px 17px;font-size:13px;line-height:1.7;margin-bottom:18px}
-.note-y{background:#FEFCE8;border-left:4px solid #F59E0B;color:#78350F}
-.note-b{background:#EFF6FF;border-left:4px solid #3B82F6;color:#1E3A8A}
-.note-s{background:#F8FAFC;border-left:4px solid #64748B;color:#334155}
+.note-y{background:#FEFCE8;border-left:10px solid #F59E0B;color:#78350F}
+.note-b{background:#EFF6FF;border-left:10px solid #3B82F6;color:#1E3A8A}
+.note-s{background:#F8FAFC;border-left:10px solid #64748B;color:#334155}
 .note ul{margin-left:16px;margin-top:6px}.note li{margin:4px 0}
 /* ── CREDITS ──────────────────────────────────────────────────── */
 .credits{background:#0F172A;border-radius:14px;padding:22px 26px;
@@ -108,6 +128,43 @@ footer{background:#0F172A;color:rgba(255,255,255,.45);padding:28px 72px;
 footer strong{color:rgba(255,255,255,.75)}
 /* ── DIVIDER ──────────────────────────────────────────────────── */
 hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
+/* ── DARK MODE ─────────────────────────────────────────────────── */
+[data-theme="dark"]{color-scheme:dark}
+[data-theme="dark"] body{background:#0F172A;color:#E2E8F0}
+[data-theme="dark"] .card{background:#1E293B;border-color:rgba(255,255,255,.06);
+  box-shadow:0 3px 20px rgba(0,0,0,.4)}
+[data-theme="dark"] .card:hover{box-shadow:0 10px 40px rgba(0,0,0,.55)}
+[data-theme="dark"] .nav-bar{background:rgba(15,23,42,.96);border-color:rgba(255,255,255,.08)}
+[data-theme="dark"] .nav-link{color:#94A3B8}
+[data-theme="dark"] .nav-link:hover{color:#93C5FD}
+[data-theme="dark"] .nav-link.active{color:#93C5FD;border-color:#93C5FD}
+[data-theme="dark"] .kpi-card{background:#1E293B;box-shadow:0 6px 28px rgba(0,0,0,.35)}
+[data-theme="dark"] .kpi-val{color:#F1F5F9}
+[data-theme="dark"] .kpi-sub,[data-theme="dark"] .kpi-lbl{color:#64748B}
+[data-theme="dark"] .section-title{color:#F1F5F9}
+[data-theme="dark"] .section-sub{color:#94A3B8}
+[data-theme="dark"] .section-eye{color:#64748B}
+[data-theme="dark"] .card-title{color:#E2E8F0}
+[data-theme="dark"] .card-note{background:#0F172A;color:#64748B}
+[data-theme="dark"] .note-y{background:#2D1D02;border-color:#D97706;color:#FDE68A}
+[data-theme="dark"] .note-b{background:#0C1E3E;border-color:#3B82F6;color:#BAE6FD}
+[data-theme="dark"] .note-s{background:#1E293B;border-color:#475569;color:#94A3B8}
+[data-theme="dark"] hr.div{border-color:rgba(255,255,255,.08)}
+[data-theme="dark"] .resize-btn{border-color:#334155;color:#64748B}
+[data-theme="dark"] .resize-btn:hover{border-color:#475569;color:#94A3B8;background:#1E293B}
+[data-theme="dark"] .resize-row{border-color:rgba(255,255,255,.06)}
+[data-theme="dark"] .height-slider{background:#334155}
+[data-theme="dark"] .height-lbl{color:#94A3B8}
+/* ── THEME TOGGLE BUTTON ───────────────────────────────────────── */
+.theme-btn{
+  margin-left:auto;padding:8px 16px;font-size:12.5px;font-weight:600;
+  background:none;border:1.5px solid #E2E8F0;border-radius:8px;
+  cursor:pointer;color:#64748B;display:flex;align-items:center;gap:7px;
+  transition:border-color .15s,color .15s,background .15s;flex-shrink:0;
+  font-family:inherit;align-self:center}
+.theme-btn:hover{border-color:#94A3B8;color:#1E293B;background:#F8FAFC}
+[data-theme="dark"] .theme-btn{border-color:#334155;color:#94A3B8}
+[data-theme="dark"] .theme-btn:hover{border-color:#475569;color:#E2E8F0;background:#1E293B}
 /* ── ANIMATIONS ───────────────────────────────────────────────── */
 @keyframes riseIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 /* ── RESPONSIVE ───────────────────────────────────────────────── */
@@ -134,7 +191,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         Caracterización bibliométrica de la producción científica de docentes de planta de la
         <strong>Universidad Tecnológica de Bolívar</strong>. Enriquecido con cuartiles
         <strong>Scimago JR 2025</strong> para medir calidad de revista.
-        Actualizado: <strong>May 21-2026</strong>.
+        Actualizado: <strong>Jun 14-2026</strong>.
       </p>
     </div>
     <div class="year-filter-wrap">
@@ -170,7 +227,9 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     <a class="nav-link" href="#sec-escuelas">🏫 Escuelas</a>
     <a class="nav-link" href="#sec-autores">👤 Autores</a>
     <a class="nav-link" href="#sec-colab">🤝 Colaboración</a>
+    <a class="nav-link" href="#sec-areas">🔬 Áreas</a>
     <a class="nav-link" href="#sec-metodo">📋 Metodología</a>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙 Oscuro</button>
   </div>
 </nav>
 
@@ -184,19 +243,23 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     <p class="section-sub">Evolución anual de documentos únicos clasificados por tipo.</p>
   </div>
 
-  <!-- Chart 1: Timeline stacked horizontal bar (always all years) -->
   <div class="card">
     <div class="card-hd">
       <span><span class="card-dot" style="background:#2563EB"></span>
         <span class="card-title">Documentos por año — apilado por tipo</span></span>
-      <span class="card-note">Serie completa</span>
+      <span class="card-hd-right">
+        <span class="card-note">Serie completa</span>
+        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
+      </span>
     </div>
-    <div class="chart-wrap" style="height:300px">
-      <canvas id="c-timeline"></canvas>
+    <div class="chart-wrap" style="height:200px"><canvas id="c-timeline"></canvas></div>
+    <div class="resize-row">
+      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
+      <input type="range" class="height-slider" min="150" max="1400" step="10" value="300" oninput="resizeChart(this)">
+      <span class="height-lbl">200px</span>
     </div>
   </div>
 
-  <!-- Grid: type donut + quartile summary -->
   <div class="grid-2">
     <div class="card">
       <div class="card-hd">
@@ -204,9 +267,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
           <span class="card-title">Composición por tipo</span></span>
         <span class="card-note" id="lbl-donut-type">ALL</span>
       </div>
-      <div class="chart-wrap" style="height:240px">
-        <canvas id="c-type-donut"></canvas>
-      </div>
+      <div class="chart-wrap" style="height:240px"><canvas id="c-type-donut"></canvas></div>
     </div>
     <div class="card">
       <div class="card-hd">
@@ -214,9 +275,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
           <span class="card-title">Artículos en Q1 y Q2</span></span>
         <span class="card-note" id="lbl-q1q2-mini">ALL</span>
       </div>
-      <div class="chart-wrap" style="height:240px">
-        <canvas id="c-q1q2-mini"></canvas>
-      </div>
+      <div class="chart-wrap" style="height:240px"><canvas id="c-q1q2-mini"></canvas></div>
     </div>
   </div>
 </section>
@@ -234,19 +293,23 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     </p>
   </div>
 
-  <!-- Chart 2: Quartile trend stacked bar (all years, fixed) -->
   <div class="card">
     <div class="card-hd">
       <span><span class="card-dot" style="background:#10B981"></span>
         <span class="card-title">Evolución de cuartiles por año — artículos</span></span>
-      <span class="card-note">Serie completa</span>
+      <span class="card-hd-right">
+        <span class="card-note">Serie completa</span>
+        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
+      </span>
     </div>
-    <div class="chart-wrap" style="height:300px">
-      <canvas id="c-q-trend"></canvas>
+    <div class="chart-wrap" style="height:200px"><canvas id="c-q-trend"></canvas></div>
+    <div class="resize-row">
+      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
+      <input type="range" class="height-slider" min="150" max="1400" step="10" value="300" oninput="resizeChart(this)">
+      <span class="height-lbl">200px</span>
     </div>
   </div>
 
-  <!-- Donut quartile + Q1% by school -->
   <div class="grid-2">
     <div class="card">
       <div class="card-hd">
@@ -254,31 +317,40 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
           <span class="card-title">Distribución de cuartiles</span></span>
         <span class="card-note" id="lbl-q-donut">ALL</span>
       </div>
-      <div class="chart-wrap" style="height:240px">
-        <canvas id="c-q-donut"></canvas>
-      </div>
+      <div class="chart-wrap" style="height:240px"><canvas id="c-q-donut"></canvas></div>
     </div>
     <div class="card">
       <div class="card-hd">
         <span><span class="card-dot" style="background:#6366F1"></span>
           <span class="card-title">% Artículos Q1 por escuela</span></span>
-        <span class="card-note" id="lbl-pct-q1">ALL</span>
+        <span class="card-hd-right">
+          <span class="card-note" id="lbl-pct-q1">ALL</span>
+          <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
+        </span>
       </div>
-      <div class="chart-wrap" style="height:240px">
-        <canvas id="c-pct-q1"></canvas>
+      <div class="chart-wrap" style="height:240px"><canvas id="c-pct-q1"></canvas></div>
+      <div class="resize-row">
+        <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
+        <input type="range" class="height-slider" min="150" max="1400" step="10" value="240" oninput="resizeChart(this)">
+        <span class="height-lbl">240px</span>
       </div>
     </div>
   </div>
 
-  <!-- Quartile by school stacked bar -->
   <div class="card">
     <div class="card-hd">
       <span><span class="card-dot" style="background:#10B981"></span>
         <span class="card-title">Artículos por escuela — apilado por cuartil</span></span>
-      <span class="card-note" id="lbl-sch-q">ALL</span>
+      <span class="card-hd-right">
+        <span class="card-note" id="lbl-sch-q">ALL</span>
+        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
+      </span>
     </div>
-    <div class="chart-wrap" style="height:320px">
-      <canvas id="c-sch-q"></canvas>
+    <div class="chart-wrap" style="height:250px"><canvas id="c-sch-q"></canvas></div>
+    <div class="resize-row">
+      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
+      <input type="range" class="height-slider" min="150" max="1400" step="10" value="250" oninput="resizeChart(this)">
+      <span class="height-lbl">250px</span>
     </div>
   </div>
 </section>
@@ -296,10 +368,16 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     <div class="card-hd">
       <span><span class="card-dot" style="background:#059669"></span>
         <span class="card-title">Documentos por escuela — apilado por tipo</span></span>
-      <span class="card-note" id="lbl-sch-type">ALL</span>
+      <span class="card-hd-right">
+        <span class="card-note" id="lbl-sch-type">ALL</span>
+        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
+      </span>
     </div>
-    <div class="chart-wrap" style="height:320px">
-      <canvas id="c-sch-type"></canvas>
+    <div class="chart-wrap" style="height:250px"><canvas id="c-sch-type"></canvas></div>
+    <div class="resize-row">
+      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
+      <input type="range" class="height-slider" min="150" max="1400" step="10" value="250" oninput="resizeChart(this)">
+      <span class="height-lbl">250px</span>
     </div>
   </div>
 </section>
@@ -318,10 +396,16 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     <div class="card-hd">
       <span><span class="card-dot" style="background:#EA580C"></span>
         <span class="card-title">Top 20 autores — documentos por tipo</span></span>
-      <span class="card-note" id="lbl-auth-type">ALL</span>
+      <span class="card-hd-right">
+        <span class="card-note" id="lbl-auth-type">ALL</span>
+        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
+      </span>
     </div>
-    <div class="chart-wrap" style="height:760px">
-      <canvas id="c-auth-type"></canvas>
+    <div class="chart-wrap" style="height:650px"><canvas id="c-auth-type"></canvas></div>
+    <div class="resize-row">
+      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
+      <input type="range" class="height-slider" min="150" max="1400" step="10" value="650" oninput="resizeChart(this)">
+      <span class="height-lbl">650px</span>
     </div>
   </div>
 
@@ -329,10 +413,16 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     <div class="card-hd">
       <span><span class="card-dot" style="background:#10B981"></span>
         <span class="card-title">Top 20 autores — artículos Q1</span></span>
-      <span class="card-note" id="lbl-auth-q1">ALL</span>
+      <span class="card-hd-right">
+        <span class="card-note" id="lbl-auth-q1">ALL</span>
+        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
+      </span>
     </div>
-    <div class="chart-wrap" style="height:760px">
-      <canvas id="c-auth-q1"></canvas>
+    <div class="chart-wrap" style="height:650px"><canvas id="c-auth-q1"></canvas></div>
+    <div class="resize-row">
+      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
+      <input type="range" class="height-slider" min="150" max="1400" step="10" value="650" oninput="resizeChart(this)">
+      <span class="height-lbl">650px</span>
     </div>
   </div>
 </section>
@@ -350,20 +440,77 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     <div class="card-hd">
       <span><span class="card-dot" style="background:#0891B2"></span>
         <span class="card-title">Pares más frecuentes — documentos compartidos</span></span>
-      <span class="card-note" id="lbl-pairs">ALL</span>
+      <span class="card-hd-right">
+        <span class="card-note" id="lbl-pairs">ALL</span>
+        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
+      </span>
     </div>
-    <div class="chart-wrap" style="height:880px">
-      <canvas id="c-pairs"></canvas>
+    <div class="chart-wrap" style="height:800px"><canvas id="c-pairs"></canvas></div>
+    <div class="resize-row">
+      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
+      <input type="range" class="height-slider" min="150" max="1400" step="10" value="800" oninput="resizeChart(this)">
+      <span class="height-lbl">800px</span>
     </div>
   </div>
 </section>
 
 <!-- ══════════════════════════════════════════════════════════════ -->
-<!-- SECCIÓN 6: METODOLOGÍA                                        -->
+<!-- SECCIÓN 6: ÁREAS SCIMAGO                                      -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="sec-areas">
+  <div class="section-hd">
+    <div class="section-eye">Sección 6</div>
+    <h2 class="section-title">Áreas Temáticas — Scimago JR</h2>
+    <p class="section-sub">
+      Distribución de artículos por área temática Scimago (top 15 áreas).
+      Un artículo puede aparecer en múltiples áreas si la revista está clasificada en varias.
+      Solo aplica a documentos tipo <em>Article</em>.
+    </p>
+  </div>
+
+  <!-- Stacked bar: articles per area × quartile -->
+  <div class="card">
+    <div class="card-hd">
+      <span><span class="card-dot" style="background:#10B981"></span>
+        <span class="card-title">Artículos por área — apilado por cuartil</span></span>
+      <span class="card-hd-right">
+        <span class="card-note" id="lbl-area-q">ALL</span>
+        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
+      </span>
+    </div>
+    <div class="chart-wrap" style="height:530px"><canvas id="c-area-q"></canvas></div>
+    <div class="resize-row">
+      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
+      <input type="range" class="height-slider" min="150" max="1400" step="10" value="530" oninput="resizeChart(this)">
+      <span class="height-lbl">530px</span>
+    </div>
+  </div>
+
+  <!-- % Q1 per area (traffic-light) -->
+  <div class="card">
+    <div class="card-hd">
+      <span><span class="card-dot" style="background:#6366F1"></span>
+        <span class="card-title">% Artículos Q1 por área temática</span></span>
+      <span class="card-hd-right">
+        <span class="card-note" id="lbl-area-pct">ALL</span>
+        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
+      </span>
+    </div>
+    <div class="chart-wrap" style="height:530px"><canvas id="c-area-pct"></canvas></div>
+    <div class="resize-row">
+      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
+      <input type="range" class="height-slider" min="150" max="1400" step="10" value="530" oninput="resizeChart(this)">
+      <span class="height-lbl">530px</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SECCIÓN 7: METODOLOGÍA                                        -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 <section class="section" id="sec-metodo">
   <div class="section-hd">
-    <div class="section-eye">Sección 6</div>
+    <div class="section-eye">Sección 7</div>
     <h2 class="section-title">Metodología y Notas</h2>
   </div>
 
@@ -372,7 +519,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     <ul>
       <li>Export CSV de Scopus (EID, año, tipo, autores, ISSN) filtrado desde 2022.</li>
       <li>Base maestra de docentes de planta UTB con <em>Scopus Author ID</em>.</li>
-      <li><strong>Scimago JR 2025</strong>: cruce por ISSN normalizado para asignar cuartil (Q1–Q4) a cada artículo.</li>
+      <li><strong>Scimago JR 2025</strong>: cruce por ISSN normalizado para asignar cuartil (Q1–Q4) y área temática a cada artículo.</li>
     </ul>
   </div>
 
@@ -381,7 +528,8 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     <ul>
       <li><strong>Unidad de conteo:</strong> documentos únicos por <code>EID</code>, no apariciones de autor.</li>
       <li><strong>Crédito por Escuela:</strong> una Escuela recibe crédito si al menos un docente de esa Escuela es autor (un documento puede contar en varias Escuelas).</li>
-      <li><strong>Cuartiles:</strong> solo aplican a artículos (<em>Article</em>). Conference papers, libros, etc. aparecen como "No Q".</li>
+      <li><strong>Cuartiles y áreas:</strong> solo aplican a artículos (<em>Article</em>). Conference papers, libros, etc. aparecen como "No Q" / "Sin clasificar".</li>
+      <li><strong>Áreas múltiples:</strong> si una revista pertenece a varias áreas Scimago, el artículo se contabiliza en cada área (doble conteo intencional).</li>
       <li><strong>% Q1 / Q1+Q2:</strong> calculado sobre artículos con cuartil asignado (excluye "No Q").</li>
     </ul>
   </div>
@@ -394,7 +542,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   </div>
 
   <a class="card" href="tables.xlsx" style="display:flex;align-items:center;gap:18px;
-    text-decoration:none;color:inherit;border-left:4px solid #059669">
+    text-decoration:none;color:inherit;border-left:10px solid #059669">
     <span style="font-size:32px">📊</span>
     <div>
       <div style="font-weight:700;color:#0F172A;margin-bottom:3px">Tablas de datos (Excel)</div>
@@ -408,7 +556,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     <strong>Créditos</strong> &mdash;
     Desarrollado por <strong>D. Sierra-Porta</strong> &copy; 2026 &middot;
     Universidad Tecnológica de Bolívar &middot;
-    <em>Datos: Scopus + Scimago JR 2025 &middot; Actualizado: May 21-2026</em>
+    <em>Datos: Scopus + Scimago JR 2025 &middot; Actualizado: Jun 14-2026</em>
   </div>
 </section>
 
@@ -421,15 +569,15 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 
 <script>
 // ── DATA ────────────────────────────────────────────────────────
-const D = {"meta":{"updated":"May 21-2026","start_year":2022,"years":["ALL","2022","2023","2024","2025","2026"]},"timeline":[{"year":"2022","total":80,"Article":51,"Conference":21,"Review":4,"Other":4},{"year":"2023","total":109,"Article":45,"Conference":60,"Review":0,"Other":4},{"year":"2024","total":129,"Article":46,"Conference":71,"Review":4,"Other":8},{"year":"2025","total":178,"Article":68,"Conference":96,"Review":4,"Other":10},{"year":"2026","total":45,"Article":32,"Conference":7,"Review":5,"Other":1}],"quartile_trend":[{"year":"2022","total":51,"Q1":16,"Q2":18,"Q3":9,"Q4":7,"No Q":1},{"year":"2023","total":45,"Q1":21,"Q2":10,"Q3":6,"Q4":7,"No Q":1},{"year":"2024","total":46,"Q1":21,"Q2":12,"Q3":7,"Q4":5,"No Q":1},{"year":"2025","total":68,"Q1":33,"Q2":21,"Q3":11,"Q4":3,"No Q":0},{"year":"2026","total":32,"Q1":18,"Q2":8,"Q3":4,"Q4":0,"No Q":2}],"by_year":{"ALL":{"kpis":{"n_docs":541,"n_articles":242,"n_authors":71,"n_schools":5,"q1":109,"q1q2":178,"has_q":237,"pct_q1":46.0,"pct_q1q2":75.1,"avg_sjr":0.65},"doc_types":{"Article":242,"Conference":255,"Review":17,"Other":27},"quartiles":{"Q1":109,"Q2":69,"Q3":37,"Q4":22,"No Q":5},"schools":[{"name":"Escuela de Ingeniería, Arquitectura y Diseño","total":237,"Article":91,"Conference":121,"Review":8,"Other":17,"Q1":44,"Q2":25,"Q3":13,"Q4":6,"No Q":3,"pct_q1":50.0},{"name":"Escuela de Transformación Digital","total":200,"Article":77,"Conference":117,"Review":2,"Other":4,"Q1":41,"Q2":23,"Q3":8,"Q4":4,"No Q":1,"pct_q1":53.9},{"name":"Ciencias Básicas","total":105,"Article":33,"Conference":58,"Review":9,"Other":5,"Q1":13,"Q2":11,"Q3":4,"Q4":4,"No Q":1,"pct_q1":40.6},{"name":"Escuela de Negocios, Leyes y Sociedad","total":87,"Article":63,"Conference":17,"Review":1,"Other":6,"Q1":18,"Q2":17,"Q3":17,"Q4":11,"No Q":0,"pct_q1":28.6},{"name":"Centro de Idiomas","total":1,"Article":1,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0}],"authors":[{"name":"Juan Carlos Martinez Santos","school":"Escuela de Transformación Digital","total":67,"Article":5,"Conference":61,"Review":0,"Other":1,"Q1":3,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":60.0},{"name":"Edwin Alexander Puertas del Castillo","school":"Escuela de Transformación Digital","total":59,"Article":6,"Conference":53,"Review":0,"Other":0,"Q1":4,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Andres Guillermo Marrugo Hernandez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":46,"Article":10,"Conference":27,"Review":2,"Other":7,"Q1":5,"Q2":3,"Q3":1,"Q4":1,"No Q":0,"pct_q1":50.0},{"name":"Sonia Helena Contreras Ortiz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":32,"Article":4,"Conference":25,"Review":0,"Other":3,"Q1":2,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"David Sierra Porta","school":"Escuela de Transformación Digital","total":31,"Article":29,"Conference":2,"Review":0,"Other":0,"Q1":18,"Q2":8,"Q3":2,"Q4":1,"No Q":0,"pct_q1":62.1},{"name":"Yady Tatiana Solano Correa","school":"Escuela de Transformación Digital","total":30,"Article":7,"Conference":21,"Review":0,"Other":2,"Q1":6,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":85.7},{"name":"Jairo Enrique Serrano Castañeda","school":"Escuela de Transformación Digital","total":29,"Article":0,"Conference":29,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Rosa Leonor Acevedo Barrios","school":"Ciencias Básicas","total":29,"Article":9,"Conference":13,"Review":6,"Other":1,"Q1":4,"Q2":4,"Q3":0,"Q4":1,"No Q":0,"pct_q1":44.4},{"name":"Jose Luis Villa Ramirez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":28,"Article":1,"Conference":25,"Review":1,"Other":1,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Lenny Alexandra Romero Perez","school":"Ciencias Básicas","total":24,"Article":5,"Conference":15,"Review":2,"Other":2,"Q1":3,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":60.0},{"name":"Cesar Augusto Viloria Nuñez","school":"Escuela de Transformación Digital","total":20,"Article":4,"Conference":15,"Review":0,"Other":1,"Q1":3,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":75.0},{"name":"Miguel Efren Garces Prettel","school":"Escuela de Transformación Digital","total":20,"Article":19,"Conference":0,"Review":1,"Other":0,"Q1":9,"Q2":5,"Q3":3,"Q4":2,"No Q":0,"pct_q1":47.4},{"name":"Diana Carolina Rubiano Labrador","school":"Ciencias Básicas","total":19,"Article":4,"Conference":13,"Review":2,"Other":0,"Q1":1,"Q2":3,"Q3":0,"Q4":0,"No Q":0,"pct_q1":25.0},{"name":"Holman Ospina Mateus","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":18,"Article":8,"Conference":10,"Review":0,"Other":0,"Q1":6,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":75.0},{"name":"Pedro Vazquez Miraz","school":"Escuela de Negocios, Leyes y Sociedad","total":17,"Article":15,"Conference":1,"Review":0,"Other":1,"Q1":2,"Q2":6,"Q3":4,"Q4":3,"No Q":0,"pct_q1":13.3},{"name":"Juan Gabriel Fajardo Cuadro","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":17,"Article":8,"Conference":8,"Review":1,"Other":0,"Q1":1,"Q2":4,"Q3":2,"Q4":0,"No Q":1,"pct_q1":14.3},{"name":"Vilma Viviana Ojeda Caicedo","school":"Ciencias Básicas","total":16,"Article":0,"Conference":14,"Review":0,"Other":2,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Karol Patricia Gutierrez Ruiz","school":"Escuela de Negocios, Leyes y Sociedad","total":16,"Article":15,"Conference":1,"Review":0,"Other":0,"Q1":3,"Q2":2,"Q3":5,"Q4":5,"No Q":0,"pct_q1":20.0},{"name":"Alberto Patiño Vanegas","school":"Ciencias Básicas","total":15,"Article":2,"Conference":13,"Review":0,"Other":0,"Q1":0,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Argemiro Palencia Diaz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":14,"Article":13,"Conference":1,"Review":0,"Other":0,"Q1":5,"Q2":4,"Q3":2,"Q4":1,"No Q":1,"pct_q1":41.7}],"pairs":[{"pair":"Juan Carlos Martinez Santos — Edwin Alexander Puertas del Castillo","a":"Juan Carlos Martinez Santos","b":"Edwin Alexander Puertas del Castillo","n":53},{"pair":"Andres Guillermo Marrugo Hernandez — Lenny Alexandra Romero Perez","a":"Andres Guillermo Marrugo Hernandez","b":"Lenny Alexandra Romero Perez","n":22},{"pair":"Juan Carlos Martinez Santos — Jairo Enrique Serrano Castañeda","a":"Juan Carlos Martinez Santos","b":"Jairo Enrique Serrano Castañeda","n":18},{"pair":"Edwin Alexander Puertas del Castillo — Jairo Enrique Serrano Castañeda","a":"Edwin Alexander Puertas del Castillo","b":"Jairo Enrique Serrano Castañeda","n":17},{"pair":"Diana Carolina Rubiano Labrador — Rosa Leonor Acevedo Barrios","a":"Diana Carolina Rubiano Labrador","b":"Rosa Leonor Acevedo Barrios","n":13},{"pair":"Sonia Helena Contreras Ortiz — Vilma Viviana Ojeda Caicedo","a":"Sonia Helena Contreras Ortiz","b":"Vilma Viviana Ojeda Caicedo","n":10},{"pair":"Jorgelina Cecilia Pasqualino — Rosa Leonor Acevedo Barrios","a":"Jorgelina Cecilia Pasqualino","b":"Rosa Leonor Acevedo Barrios","n":7},{"pair":"Rosa Leonor Acevedo Barrios — Edisson Chavarro Mesa","a":"Rosa Leonor Acevedo Barrios","b":"Edisson Chavarro Mesa","n":6},{"pair":"Edwin Alexander Puertas del Castillo — Jenifer Yoris Vasquez Aguilar","a":"Edwin Alexander Puertas del Castillo","b":"Jenifer Yoris Vasquez Aguilar","n":6},{"pair":"Edisson Chavarro Mesa — Danilo Lusbin Ariza Rua","a":"Edisson Chavarro Mesa","b":"Danilo Lusbin Ariza Rua","n":6},{"pair":"Jorgelina Cecilia Pasqualino — Claudia Patricia Diaz Mendoza","a":"Jorgelina Cecilia Pasqualino","b":"Claudia Patricia Diaz Mendoza","n":5},{"pair":"Claudia Patricia Diaz Mendoza — Rosa Leonor Acevedo Barrios","a":"Claudia Patricia Diaz Mendoza","b":"Rosa Leonor Acevedo Barrios","n":5},{"pair":"Andres Guillermo Marrugo Hernandez — Yady Tatiana Solano Correa","a":"Andres Guillermo Marrugo Hernandez","b":"Yady Tatiana Solano Correa","n":5},{"pair":"Diana Carolina Rubiano Labrador — Edisson Chavarro Mesa","a":"Diana Carolina Rubiano Labrador","b":"Edisson Chavarro Mesa","n":5},{"pair":"Alberto Patiño Vanegas — Carlos Rafael Payares Guevara","a":"Alberto Patiño Vanegas","b":"Carlos Rafael Payares Guevara","n":4},{"pair":"Alberto Patiño Vanegas — Hernando Rafael Altamar Mercado","a":"Alberto Patiño Vanegas","b":"Hernando Rafael Altamar Mercado","n":4},{"pair":"Diana Carolina Rubiano Labrador — Danilo Lusbin Ariza Rua","a":"Diana Carolina Rubiano Labrador","b":"Danilo Lusbin Ariza Rua","n":4},{"pair":"Jorgelina Cecilia Pasqualino — Diana Carolina Rubiano Labrador","a":"Jorgelina Cecilia Pasqualino","b":"Diana Carolina Rubiano Labrador","n":4},{"pair":"Juan Carlos Martinez Santos — Sonia Helena Contreras Ortiz","a":"Juan Carlos Martinez Santos","b":"Sonia Helena Contreras Ortiz","n":4},{"pair":"Rosa Leonor Acevedo Barrios — Jorge Luis Villalba Acevedo","a":"Rosa Leonor Acevedo Barrios","b":"Jorge Luis Villalba Acevedo","n":4},{"pair":"Jorgelina Cecilia Pasqualino — Edisson Chavarro Mesa","a":"Jorgelina Cecilia Pasqualino","b":"Edisson Chavarro Mesa","n":4},{"pair":"Holman Ospina Mateus — Jenifer Yoris Vasquez Aguilar","a":"Holman Ospina Mateus","b":"Jenifer Yoris Vasquez Aguilar","n":3},{"pair":"Diana Carolina Rubiano Labrador — Jorge Luis Villalba Acevedo","a":"Diana Carolina Rubiano Labrador","b":"Jorge Luis Villalba Acevedo","n":3},{"pair":"Enrique Pereira Batista — Alberto Patiño Vanegas","a":"Enrique Pereira Batista","b":"Alberto Patiño Vanegas","n":3},{"pair":"Claudia Patricia Diaz Mendoza — Diana Carolina Rubiano Labrador","a":"Claudia Patricia Diaz Mendoza","b":"Diana Carolina Rubiano Labrador","n":3}]},"2022":{"kpis":{"n_docs":80,"n_articles":51,"n_authors":46,"n_schools":4,"q1":16,"q1q2":34,"has_q":50,"pct_q1":32.0,"pct_q1q2":68.0,"avg_sjr":0.547},"doc_types":{"Article":51,"Conference":21,"Review":4,"Other":4},"quartiles":{"Q1":16,"Q2":18,"Q3":9,"Q4":7,"No Q":1},"schools":[{"name":"Escuela de Ingeniería, Arquitectura y Diseño","total":40,"Article":19,"Conference":16,"Review":2,"Other":3,"Q1":8,"Q2":3,"Q3":3,"Q4":5,"No Q":0,"pct_q1":42.1},{"name":"Escuela de Negocios, Leyes y Sociedad","total":18,"Article":16,"Conference":1,"Review":0,"Other":1,"Q1":4,"Q2":6,"Q3":4,"Q4":2,"No Q":0,"pct_q1":25.0},{"name":"Ciencias Básicas","total":17,"Article":11,"Conference":5,"Review":1,"Other":0,"Q1":1,"Q2":7,"Q3":1,"Q4":1,"No Q":1,"pct_q1":10.0},{"name":"Escuela de Transformación Digital","total":15,"Article":9,"Conference":5,"Review":1,"Other":0,"Q1":3,"Q2":5,"Q3":1,"Q4":0,"No Q":0,"pct_q1":33.3}],"authors":[{"name":"Andres Guillermo Marrugo Hernandez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":8,"Article":2,"Conference":3,"Review":0,"Other":3,"Q1":0,"Q2":1,"Q3":0,"Q4":1,"No Q":0,"pct_q1":0.0},{"name":"Karol Patricia Gutierrez Ruiz","school":"Escuela de Negocios, Leyes y Sociedad","total":5,"Article":4,"Conference":1,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":2,"Q4":1,"No Q":0,"pct_q1":0.0},{"name":"Sonia Helena Contreras Ortiz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":5,"Article":2,"Conference":3,"Review":0,"Other":0,"Q1":2,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Rosa Leonor Acevedo Barrios","school":"Ciencias Básicas","total":5,"Article":4,"Conference":1,"Review":0,"Other":0,"Q1":0,"Q2":3,"Q3":0,"Q4":1,"No Q":0,"pct_q1":0.0},{"name":"Juan Gabriel Fajardo Cuadro","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":4,"Article":2,"Conference":2,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Pedro Vazquez Miraz","school":"Escuela de Negocios, Leyes y Sociedad","total":4,"Article":4,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":3,"Q3":0,"Q4":0,"No Q":0,"pct_q1":25.0},{"name":"Jose Luis Villa Ramirez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":4,"Article":0,"Conference":4,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Diana Carolina Rubiano Labrador","school":"Ciencias Básicas","total":4,"Article":3,"Conference":1,"Review":0,"Other":0,"Q1":0,"Q2":3,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Juan Carlos Martinez Santos","school":"Escuela de Transformación Digital","total":3,"Article":0,"Conference":3,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Jairo Francisco Useche Vivero","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":3,"Article":2,"Conference":0,"Review":1,"Other":0,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Holman Ospina Mateus","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":3,"Article":2,"Conference":1,"Review":0,"Other":0,"Q1":2,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Edwin Alexander Puertas del Castillo","school":"Escuela de Transformación Digital","total":3,"Article":1,"Conference":2,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Elsy Mercedes Dominguez de la Ossa","school":"Escuela de Negocios, Leyes y Sociedad","total":3,"Article":3,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":2,"Q4":0,"No Q":0,"pct_q1":33.3},{"name":"Mary Judith Arias Tapia","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":3,"Article":2,"Conference":0,"Review":1,"Other":0,"Q1":1,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Lenny Alexandra Romero Perez","school":"Ciencias Básicas","total":3,"Article":1,"Conference":2,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"David Sierra Porta","school":"Escuela de Transformación Digital","total":3,"Article":3,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":33.3},{"name":"Jorge Luis Villalba Acevedo","school":"Ciencias Básicas","total":2,"Article":1,"Conference":0,"Review":1,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Jorge Eliecer Duque Pardo","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":2,"Article":0,"Conference":2,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Adolfo Baltar Moreno","school":"Escuela de Transformación Digital","total":2,"Article":1,"Conference":0,"Review":1,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Jorge Luis Muñiz Olite","school":"Ciencias Básicas","total":2,"Article":2,"Conference":0,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":0.0}],"pairs":[{"pair":"Diana Carolina Rubiano Labrador — Rosa Leonor Acevedo Barrios","a":"Diana Carolina Rubiano Labrador","b":"Rosa Leonor Acevedo Barrios","n":4},{"pair":"Andres Guillermo Marrugo Hernandez — Lenny Alexandra Romero Perez","a":"Andres Guillermo Marrugo Hernandez","b":"Lenny Alexandra Romero Perez","n":3},{"pair":"Juan Carlos Martinez Santos — Edwin Alexander Puertas del Castillo","a":"Juan Carlos Martinez Santos","b":"Edwin Alexander Puertas del Castillo","n":2},{"pair":"Jorgelina Cecilia Pasqualino — Claudia Patricia Diaz Mendoza","a":"Jorgelina Cecilia Pasqualino","b":"Claudia Patricia Diaz Mendoza","n":1},{"pair":"Pedro Vazquez Miraz — Maria Fernanda Medina Reyes","a":"Pedro Vazquez Miraz","b":"Maria Fernanda Medina Reyes","n":1},{"pair":"Sonia Helena Contreras Ortiz — Jose Luis Villa Ramirez","a":"Sonia Helena Contreras Ortiz","b":"Jose Luis Villa Ramirez","n":1},{"pair":"Sonia Helena Contreras Ortiz — Vilma Viviana Ojeda Caicedo","a":"Sonia Helena Contreras Ortiz","b":"Vilma Viviana Ojeda Caicedo","n":1},{"pair":"Jorge Eliecer Duque Pardo — Jose Luis Villa Ramirez","a":"Jorge Eliecer Duque Pardo","b":"Jose Luis Villa Ramirez","n":1},{"pair":"Jorge Eliecer Duque Pardo — Eduardo Gomez Vasquez","a":"Jorge Eliecer Duque Pardo","b":"Eduardo Gomez Vasquez","n":1},{"pair":"Edwin Alexander Puertas del Castillo — Jose Luis Villa Ramirez","a":"Edwin Alexander Puertas del Castillo","b":"Jose Luis Villa Ramirez","n":1},{"pair":"Oscar Acevedo Patiño — Eduardo Gomez Vasquez","a":"Oscar Acevedo Patiño","b":"Eduardo Gomez Vasquez","n":1},{"pair":"Oscar Acevedo Patiño — Jorge Eliecer Duque Pardo","a":"Oscar Acevedo Patiño","b":"Jorge Eliecer Duque Pardo","n":1},{"pair":"Karol Patricia Gutierrez Ruiz — Sonia Helena Contreras Ortiz","a":"Karol Patricia Gutierrez Ruiz","b":"Sonia Helena Contreras Ortiz","n":1},{"pair":"Miguel Efren Garces Prettel — Pedro Vazquez Miraz","a":"Miguel Efren Garces Prettel","b":"Pedro Vazquez Miraz","n":1},{"pair":"Rosa Leonor Acevedo Barrios — Milton Cesar Guerrero Pajaro","a":"Rosa Leonor Acevedo Barrios","b":"Milton Cesar Guerrero Pajaro","n":1},{"pair":"Mauro Antonio Maza Chamorro — Milton Cesar Guerrero Pajaro","a":"Mauro Antonio Maza Chamorro","b":"Milton Cesar Guerrero Pajaro","n":1},{"pair":"Juan Carlos Martinez Santos — Jose Luis Villa Ramirez","a":"Juan Carlos Martinez Santos","b":"Jose Luis Villa Ramirez","n":1},{"pair":"Juan Carlos Martinez Santos — Edisson Chavarro Mesa","a":"Juan Carlos Martinez Santos","b":"Edisson Chavarro Mesa","n":1},{"pair":"Jairo Francisco Useche Vivero — Mary Judith Arias Tapia","a":"Jairo Francisco Useche Vivero","b":"Mary Judith Arias Tapia","n":1},{"pair":"Andres Guillermo Marrugo Hernandez — Sonia Helena Contreras Ortiz","a":"Andres Guillermo Marrugo Hernandez","b":"Sonia Helena Contreras Ortiz","n":1},{"pair":"Vilma Viviana Ojeda Caicedo — Jose Luis Villa Ramirez","a":"Vilma Viviana Ojeda Caicedo","b":"Jose Luis Villa Ramirez","n":1}]},"2023":{"kpis":{"n_docs":109,"n_articles":45,"n_authors":48,"n_schools":4,"q1":21,"q1q2":31,"has_q":44,"pct_q1":47.7,"pct_q1q2":70.5,"avg_sjr":0.703},"doc_types":{"Article":45,"Conference":60,"Review":0,"Other":4},"quartiles":{"Q1":21,"Q2":10,"Q3":6,"Q4":7,"No Q":1},"schools":[{"name":"Escuela de Ingeniería, Arquitectura y Diseño","total":53,"Article":17,"Conference":33,"Review":0,"Other":3,"Q1":8,"Q2":6,"Q3":2,"Q4":1,"No Q":0,"pct_q1":47.1},{"name":"Escuela de Transformación Digital","total":43,"Article":20,"Conference":22,"Review":0,"Other":1,"Q1":11,"Q2":3,"Q3":3,"Q4":2,"No Q":1,"pct_q1":57.9},{"name":"Ciencias Básicas","total":27,"Article":8,"Conference":19,"Review":0,"Other":0,"Q1":4,"Q2":1,"Q3":1,"Q4":2,"No Q":0,"pct_q1":50.0},{"name":"Escuela de Negocios, Leyes y Sociedad","total":10,"Article":8,"Conference":2,"Review":0,"Other":0,"Q1":2,"Q2":1,"Q3":2,"Q4":3,"No Q":0,"pct_q1":25.0}],"authors":[{"name":"Juan Carlos Martinez Santos","school":"Escuela de Transformación Digital","total":14,"Article":2,"Conference":11,"Review":0,"Other":1,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Andres Guillermo Marrugo Hernandez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":14,"Article":3,"Conference":9,"Review":0,"Other":2,"Q1":2,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Edwin Alexander Puertas del Castillo","school":"Escuela de Transformación Digital","total":12,"Article":2,"Conference":10,"Review":0,"Other":0,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Yady Tatiana Solano Correa","school":"Escuela de Transformación Digital","total":10,"Article":4,"Conference":6,"Review":0,"Other":0,"Q1":3,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":75.0},{"name":"Jose Luis Villa Ramirez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":9,"Article":0,"Conference":8,"Review":0,"Other":1,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Lenny Alexandra Romero Perez","school":"Ciencias Básicas","total":9,"Article":2,"Conference":7,"Review":0,"Other":0,"Q1":2,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Sonia Helena Contreras Ortiz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":7,"Article":1,"Conference":6,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Holman Ospina Mateus","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":6,"Article":4,"Conference":2,"Review":0,"Other":0,"Q1":4,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"David Sierra Porta","school":"Escuela de Transformación Digital","total":6,"Article":6,"Conference":0,"Review":0,"Other":0,"Q1":4,"Q2":0,"Q3":1,"Q4":1,"No Q":0,"pct_q1":66.7},{"name":"Edisson Chavarro Mesa","school":"Ciencias Básicas","total":5,"Article":0,"Conference":5,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Miguel Efren Garces Prettel","school":"Escuela de Transformación Digital","total":5,"Article":5,"Conference":0,"Review":0,"Other":0,"Q1":2,"Q2":2,"Q3":0,"Q4":1,"No Q":0,"pct_q1":40.0},{"name":"Alberto Patiño Vanegas","school":"Ciencias Básicas","total":5,"Article":0,"Conference":5,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Jenifer Yoris Vasquez Aguilar","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":4,"Article":0,"Conference":4,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Rosa Leonor Acevedo Barrios","school":"Ciencias Básicas","total":4,"Article":1,"Conference":3,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Juan Gabriel Fajardo Cuadro","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":4,"Article":2,"Conference":2,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Jorgelina Cecilia Pasqualino","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":3,"Article":1,"Conference":2,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Danilo Lusbin Ariza Rua","school":"Ciencias Básicas","total":3,"Article":0,"Conference":3,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Diana Carolina Rubiano Labrador","school":"Ciencias Básicas","total":3,"Article":0,"Conference":3,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Vilma Viviana Ojeda Caicedo","school":"Ciencias Básicas","total":3,"Article":0,"Conference":3,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Jairo Francisco Useche Vivero","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":3,"Article":2,"Conference":1,"Review":0,"Other":0,"Q1":0,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0}],"pairs":[{"pair":"Juan Carlos Martinez Santos — Edwin Alexander Puertas del Castillo","a":"Juan Carlos Martinez Santos","b":"Edwin Alexander Puertas del Castillo","n":11},{"pair":"Andres Guillermo Marrugo Hernandez — Lenny Alexandra Romero Perez","a":"Andres Guillermo Marrugo Hernandez","b":"Lenny Alexandra Romero Perez","n":8},{"pair":"Edwin Alexander Puertas del Castillo — Jenifer Yoris Vasquez Aguilar","a":"Edwin Alexander Puertas del Castillo","b":"Jenifer Yoris Vasquez Aguilar","n":3},{"pair":"Edisson Chavarro Mesa — Danilo Lusbin Ariza Rua","a":"Edisson Chavarro Mesa","b":"Danilo Lusbin Ariza Rua","n":3},{"pair":"Jorgelina Cecilia Pasqualino — Diana Carolina Rubiano Labrador","a":"Jorgelina Cecilia Pasqualino","b":"Diana Carolina Rubiano Labrador","n":2},{"pair":"Jorgelina Cecilia Pasqualino — Rosa Leonor Acevedo Barrios","a":"Jorgelina Cecilia Pasqualino","b":"Rosa Leonor Acevedo Barrios","n":2},{"pair":"Rosa Leonor Acevedo Barrios — Edisson Chavarro Mesa","a":"Rosa Leonor Acevedo Barrios","b":"Edisson Chavarro Mesa","n":2},{"pair":"Diana Carolina Rubiano Labrador — Rosa Leonor Acevedo Barrios","a":"Diana Carolina Rubiano Labrador","b":"Rosa Leonor Acevedo Barrios","n":2},{"pair":"Lenny Alexandra Romero Perez — Alberto Patiño Vanegas","a":"Lenny Alexandra Romero Perez","b":"Alberto Patiño Vanegas","n":2},{"pair":"Juan Carlos Martinez Santos — Jenifer Yoris Vasquez Aguilar","a":"Juan Carlos Martinez Santos","b":"Jenifer Yoris Vasquez Aguilar","n":2},{"pair":"Sonia Helena Contreras Ortiz — Vilma Viviana Ojeda Caicedo","a":"Sonia Helena Contreras Ortiz","b":"Vilma Viviana Ojeda Caicedo","n":2},{"pair":"Holman Ospina Mateus — Lina Margarita Marrugo Salas","a":"Holman Ospina Mateus","b":"Lina Margarita Marrugo Salas","n":1},{"pair":"Holman Ospina Mateus — Jenifer Yoris Vasquez Aguilar","a":"Holman Ospina Mateus","b":"Jenifer Yoris Vasquez Aguilar","n":1},{"pair":"Yady Tatiana Solano Correa — David Sierra Porta","a":"Yady Tatiana Solano Correa","b":"David Sierra Porta","n":1},{"pair":"Jairo Humberto Cabrera Tovar — Jose Luis Villa Ramirez","a":"Jairo Humberto Cabrera Tovar","b":"Jose Luis Villa Ramirez","n":1},{"pair":"Sonia Helena Contreras Ortiz — Jose Luis Villa Ramirez","a":"Sonia Helena Contreras Ortiz","b":"Jose Luis Villa Ramirez","n":1},{"pair":"Miguel Efren Garces Prettel — Elias Rafael Geney Castro","a":"Miguel Efren Garces Prettel","b":"Elias Rafael Geney Castro","n":1},{"pair":"Vilma Viviana Ojeda Caicedo — Jose Luis Villa Ramirez","a":"Vilma Viviana Ojeda Caicedo","b":"Jose Luis Villa Ramirez","n":1},{"pair":"Karol Patricia Gutierrez Ruiz — Elias Rafael Geney Castro","a":"Karol Patricia Gutierrez Ruiz","b":"Elias Rafael Geney Castro","n":1},{"pair":"Karol Patricia Gutierrez Ruiz — Miguel Efren Garces Prettel","a":"Karol Patricia Gutierrez Ruiz","b":"Miguel Efren Garces Prettel","n":1},{"pair":"David Sierra Porta — Jorge Luis Villalba Acevedo","a":"David Sierra Porta","b":"Jorge Luis Villalba Acevedo","n":1},{"pair":"Alberto Patiño Vanegas — Hernando Rafael Altamar Mercado","a":"Alberto Patiño Vanegas","b":"Hernando Rafael Altamar Mercado","n":1},{"pair":"Jorge Luis Muñiz Olite — William Arellano Cartagena","a":"Jorge Luis Muñiz Olite","b":"William Arellano Cartagena","n":1},{"pair":"Jorge Luis Muñiz Olite — Jorge Luis Alvis Arrieta","a":"Jorge Luis Muñiz Olite","b":"Jorge Luis Alvis Arrieta","n":1},{"pair":"William Arellano Cartagena — Jorge Luis Alvis Arrieta","a":"William Arellano Cartagena","b":"Jorge Luis Alvis Arrieta","n":1}]},"2024":{"kpis":{"n_docs":129,"n_articles":46,"n_authors":45,"n_schools":4,"q1":21,"q1q2":33,"has_q":45,"pct_q1":46.7,"pct_q1q2":73.3,"avg_sjr":0.697},"doc_types":{"Article":46,"Conference":71,"Review":4,"Other":8},"quartiles":{"Q1":21,"Q2":12,"Q3":7,"Q4":5,"No Q":1},"schools":[{"name":"Escuela de Ingeniería, Arquitectura y Diseño","total":59,"Article":19,"Conference":31,"Review":2,"Other":7,"Q1":10,"Q2":6,"Q3":2,"Q4":0,"No Q":1,"pct_q1":55.6},{"name":"Escuela de Transformación Digital","total":48,"Article":13,"Conference":34,"Review":0,"Other":1,"Q1":7,"Q2":3,"Q3":1,"Q4":2,"No Q":0,"pct_q1":53.8},{"name":"Ciencias Básicas","total":28,"Article":6,"Conference":16,"Review":3,"Other":3,"Q1":3,"Q2":1,"Q3":2,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Escuela de Negocios, Leyes y Sociedad","total":22,"Article":12,"Conference":8,"Review":1,"Other":1,"Q1":2,"Q2":2,"Q3":4,"Q4":4,"No Q":0,"pct_q1":16.7}],"authors":[{"name":"Andres Guillermo Marrugo Hernandez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":17,"Article":3,"Conference":11,"Review":1,"Other":2,"Q1":2,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Edwin Alexander Puertas del Castillo","school":"Escuela de Transformación Digital","total":15,"Article":0,"Conference":15,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Juan Carlos Martinez Santos","school":"Escuela de Transformación Digital","total":15,"Article":0,"Conference":15,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Yady Tatiana Solano Correa","school":"Escuela de Transformación Digital","total":15,"Article":1,"Conference":13,"Review":0,"Other":1,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Lenny Alexandra Romero Perez","school":"Ciencias Básicas","total":9,"Article":2,"Conference":4,"Review":1,"Other":2,"Q1":1,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Sonia Helena Contreras Ortiz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":8,"Article":0,"Conference":6,"Review":0,"Other":2,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"David Sierra Porta","school":"Escuela de Transformación Digital","total":7,"Article":5,"Conference":2,"Review":0,"Other":0,"Q1":3,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":60.0},{"name":"Rosa Leonor Acevedo Barrios","school":"Ciencias Básicas","total":7,"Article":1,"Conference":4,"Review":2,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Pedro Vazquez Miraz","school":"Escuela de Negocios, Leyes y Sociedad","total":6,"Article":5,"Conference":0,"Review":0,"Other":1,"Q1":1,"Q2":0,"Q3":2,"Q4":2,"No Q":0,"pct_q1":20.0},{"name":"Argemiro Palencia Diaz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":6,"Article":6,"Conference":0,"Review":0,"Other":0,"Q1":3,"Q2":2,"Q3":0,"Q4":0,"No Q":1,"pct_q1":60.0},{"name":"Vilma Viviana Ojeda Caicedo","school":"Ciencias Básicas","total":5,"Article":0,"Conference":4,"Review":0,"Other":1,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Holman Ospina Mateus","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":5,"Article":2,"Conference":3,"Review":0,"Other":0,"Q1":0,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Miguel Efren Garces Prettel","school":"Escuela de Transformación Digital","total":5,"Article":5,"Conference":0,"Review":0,"Other":0,"Q1":3,"Q2":1,"Q3":0,"Q4":1,"No Q":0,"pct_q1":60.0},{"name":"Jose Luis Villa Ramirez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":5,"Article":0,"Conference":5,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Edisson Chavarro Mesa","school":"Ciencias Básicas","total":4,"Article":0,"Conference":4,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Jorge Luis del Rio Cortina","school":"Escuela de Negocios, Leyes y Sociedad","total":4,"Article":0,"Conference":4,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Lina Margarita Marrugo Salas","school":"Escuela de Negocios, Leyes y Sociedad","total":4,"Article":0,"Conference":4,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Diana Carolina Rubiano Labrador","school":"Ciencias Básicas","total":4,"Article":0,"Conference":4,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Jairo Francisco Useche Vivero","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":3,"Article":3,"Conference":0,"Review":0,"Other":0,"Q1":2,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Juan Gabriel Fajardo Cuadro","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":3,"Article":1,"Conference":2,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0}],"pairs":[{"pair":"Juan Carlos Martinez Santos — Edwin Alexander Puertas del Castillo","a":"Juan Carlos Martinez Santos","b":"Edwin Alexander Puertas del Castillo","n":13},{"pair":"Andres Guillermo Marrugo Hernandez — Lenny Alexandra Romero Perez","a":"Andres Guillermo Marrugo Hernandez","b":"Lenny Alexandra Romero Perez","n":9},{"pair":"Andres Guillermo Marrugo Hernandez — Yady Tatiana Solano Correa","a":"Andres Guillermo Marrugo Hernandez","b":"Yady Tatiana Solano Correa","n":3},{"pair":"Diana Carolina Rubiano Labrador — Rosa Leonor Acevedo Barrios","a":"Diana Carolina Rubiano Labrador","b":"Rosa Leonor Acevedo Barrios","n":3},{"pair":"Rosa Leonor Acevedo Barrios — Edisson Chavarro Mesa","a":"Rosa Leonor Acevedo Barrios","b":"Edisson Chavarro Mesa","n":3},{"pair":"Rosa Leonor Acevedo Barrios — Jorge Luis Villalba Acevedo","a":"Rosa Leonor Acevedo Barrios","b":"Jorge Luis Villalba Acevedo","n":2},{"pair":"Pedro Vazquez Miraz — Elsy Mercedes Dominguez de la Ossa","a":"Pedro Vazquez Miraz","b":"Elsy Mercedes Dominguez de la Ossa","n":2},{"pair":"Diana Carolina Rubiano Labrador — Edisson Chavarro Mesa","a":"Diana Carolina Rubiano Labrador","b":"Edisson Chavarro Mesa","n":2},{"pair":"Diana Carolina Rubiano Labrador — Danilo Lusbin Ariza Rua","a":"Diana Carolina Rubiano Labrador","b":"Danilo Lusbin Ariza Rua","n":2},{"pair":"Juan Carlos Martinez Santos — Sonia Helena Contreras Ortiz","a":"Juan Carlos Martinez Santos","b":"Sonia Helena Contreras Ortiz","n":2},{"pair":"Edisson Chavarro Mesa — Danilo Lusbin Ariza Rua","a":"Edisson Chavarro Mesa","b":"Danilo Lusbin Ariza Rua","n":2},{"pair":"Sonia Helena Contreras Ortiz — Vilma Viviana Ojeda Caicedo","a":"Sonia Helena Contreras Ortiz","b":"Vilma Viviana Ojeda Caicedo","n":2},{"pair":"Yady Tatiana Solano Correa — Vilma Viviana Ojeda Caicedo","a":"Yady Tatiana Solano Correa","b":"Vilma Viviana Ojeda Caicedo","n":2},{"pair":"Miguel Efren Garces Prettel — Jorge Luis Alvis Arrieta","a":"Miguel Efren Garces Prettel","b":"Jorge Luis Alvis Arrieta","n":1},{"pair":"Alberto Patiño Vanegas — Hernando Rafael Altamar Mercado","a":"Alberto Patiño Vanegas","b":"Hernando Rafael Altamar Mercado","n":1},{"pair":"Alberto Patiño Vanegas — Danilo Lusbin Ariza Rua","a":"Alberto Patiño Vanegas","b":"Danilo Lusbin Ariza Rua","n":1},{"pair":"Miguel Efren Garces Prettel — William Arellano Cartagena","a":"Miguel Efren Garces Prettel","b":"William Arellano Cartagena","n":1},{"pair":"Jorgelina Cecilia Pasqualino — Rosa Leonor Acevedo Barrios","a":"Jorgelina Cecilia Pasqualino","b":"Rosa Leonor Acevedo Barrios","n":1},{"pair":"Pedro Vazquez Miraz — Maria Fernanda Medina Reyes","a":"Pedro Vazquez Miraz","b":"Maria Fernanda Medina Reyes","n":1},{"pair":"Pedro Vazquez Miraz — David Javier Fortich Perez","a":"Pedro Vazquez Miraz","b":"David Javier Fortich Perez","n":1},{"pair":"Pedro Vazquez Miraz — Sonia Helena Contreras Ortiz","a":"Pedro Vazquez Miraz","b":"Sonia Helena Contreras Ortiz","n":1},{"pair":"Edisson Chavarro Mesa — Alberto Patiño Vanegas","a":"Edisson Chavarro Mesa","b":"Alberto Patiño Vanegas","n":1},{"pair":"Oscar Acevedo Patiño — Jose Luis Villa Ramirez","a":"Oscar Acevedo Patiño","b":"Jose Luis Villa Ramirez","n":1},{"pair":"David Javier Fortich Perez — Elsy Mercedes Dominguez de la Ossa","a":"David Javier Fortich Perez","b":"Elsy Mercedes Dominguez de la Ossa","n":1},{"pair":"Edwin Alexander Puertas del Castillo — Jenifer Yoris Vasquez Aguilar","a":"Edwin Alexander Puertas del Castillo","b":"Jenifer Yoris Vasquez Aguilar","n":1}]},"2025":{"kpis":{"n_docs":178,"n_articles":68,"n_authors":54,"n_schools":5,"q1":33,"q1q2":54,"has_q":68,"pct_q1":48.5,"pct_q1q2":79.4,"avg_sjr":0.63},"doc_types":{"Article":68,"Conference":96,"Review":4,"Other":10},"quartiles":{"Q1":33,"Q2":21,"Q3":11,"Q4":3,"No Q":0},"schools":[{"name":"Escuela de Transformación Digital","total":75,"Article":21,"Conference":51,"Review":1,"Other":2,"Q1":11,"Q2":10,"Q3":0,"Q4":0,"No Q":0,"pct_q1":52.4},{"name":"Escuela de Ingeniería, Arquitectura y Diseño","total":71,"Article":27,"Conference":39,"Review":1,"Other":4,"Q1":15,"Q2":7,"Q3":5,"Q4":0,"No Q":0,"pct_q1":55.6},{"name":"Ciencias Básicas","total":27,"Article":6,"Conference":17,"Review":2,"Other":2,"Q1":3,"Q2":2,"Q3":0,"Q4":1,"No Q":0,"pct_q1":50.0},{"name":"Escuela de Negocios, Leyes y Sociedad","total":27,"Article":18,"Conference":6,"Review":0,"Other":3,"Q1":5,"Q2":4,"Q3":7,"Q4":2,"No Q":0,"pct_q1":27.8},{"name":"Centro de Idiomas","total":1,"Article":1,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0}],"authors":[{"name":"Juan Carlos Martinez Santos","school":"Escuela de Transformación Digital","total":31,"Article":2,"Conference":29,"Review":0,"Other":0,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Edwin Alexander Puertas del Castillo","school":"Escuela de Transformación Digital","total":27,"Article":2,"Conference":25,"Review":0,"Other":0,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Jairo Enrique Serrano Castañeda","school":"Escuela de Transformación Digital","total":22,"Article":0,"Conference":22,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Cesar Augusto Viloria Nuñez","school":"Escuela de Transformación Digital","total":19,"Article":3,"Conference":15,"Review":0,"Other":1,"Q1":2,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Sonia Helena Contreras Ortiz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":11,"Article":1,"Conference":9,"Review":0,"Other":1,"Q1":0,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Jose Luis Villa Ramirez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":9,"Article":1,"Conference":7,"Review":1,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Rosa Leonor Acevedo Barrios","school":"Ciencias Básicas","total":9,"Article":1,"Conference":5,"Review":2,"Other":1,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"David Sierra Porta","school":"Escuela de Transformación Digital","total":9,"Article":9,"Conference":0,"Review":0,"Other":0,"Q1":6,"Q2":3,"Q3":0,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Alberto Patiño Vanegas","school":"Ciencias Básicas","total":7,"Article":2,"Conference":5,"Review":0,"Other":0,"Q1":0,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Vilma Viviana Ojeda Caicedo","school":"Ciencias Básicas","total":7,"Article":0,"Conference":6,"Review":0,"Other":1,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Claudia Patricia Diaz Mendoza","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":7,"Article":4,"Conference":3,"Review":0,"Other":0,"Q1":3,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":75.0},{"name":"Diana Carolina Rubiano Labrador","school":"Ciencias Básicas","total":7,"Article":1,"Conference":5,"Review":1,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Karol Patricia Gutierrez Ruiz","school":"Escuela de Negocios, Leyes y Sociedad","total":7,"Article":7,"Conference":0,"Review":0,"Other":0,"Q1":2,"Q2":0,"Q3":3,"Q4":2,"No Q":0,"pct_q1":28.6},{"name":"Andres Guillermo Marrugo Hernandez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":6,"Article":2,"Conference":4,"Review":0,"Other":0,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Jorgelina Cecilia Pasqualino","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":6,"Article":1,"Conference":5,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Jorge Luis del Rio Cortina","school":"Escuela de Negocios, Leyes y Sociedad","total":5,"Article":2,"Conference":3,"Review":0,"Other":0,"Q1":0,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Argemiro Palencia Diaz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":5,"Article":4,"Conference":1,"Review":0,"Other":0,"Q1":2,"Q2":0,"Q3":2,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Jairo Francisco Useche Vivero","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":5,"Article":4,"Conference":0,"Review":0,"Other":1,"Q1":3,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":75.0},{"name":"Carlos Rafael Payares Guevara","school":"Ciencias Básicas","total":4,"Article":2,"Conference":2,"Review":0,"Other":0,"Q1":0,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Yady Tatiana Solano Correa","school":"Escuela de Transformación Digital","total":4,"Article":1,"Conference":2,"Review":0,"Other":1,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0}],"pairs":[{"pair":"Juan Carlos Martinez Santos — Edwin Alexander Puertas del Castillo","a":"Juan Carlos Martinez Santos","b":"Edwin Alexander Puertas del Castillo","n":25},{"pair":"Juan Carlos Martinez Santos — Jairo Enrique Serrano Castañeda","a":"Juan Carlos Martinez Santos","b":"Jairo Enrique Serrano Castañeda","n":18},{"pair":"Edwin Alexander Puertas del Castillo — Jairo Enrique Serrano Castañeda","a":"Edwin Alexander Puertas del Castillo","b":"Jairo Enrique Serrano Castañeda","n":17},{"pair":"Sonia Helena Contreras Ortiz — Vilma Viviana Ojeda Caicedo","a":"Sonia Helena Contreras Ortiz","b":"Vilma Viviana Ojeda Caicedo","n":5},{"pair":"Jorgelina Cecilia Pasqualino — Rosa Leonor Acevedo Barrios","a":"Jorgelina Cecilia Pasqualino","b":"Rosa Leonor Acevedo Barrios","n":4},{"pair":"Claudia Patricia Diaz Mendoza — Rosa Leonor Acevedo Barrios","a":"Claudia Patricia Diaz Mendoza","b":"Rosa Leonor Acevedo Barrios","n":4},{"pair":"Alberto Patiño Vanegas — Carlos Rafael Payares Guevara","a":"Alberto Patiño Vanegas","b":"Carlos Rafael Payares Guevara","n":4},{"pair":"Jorgelina Cecilia Pasqualino — Claudia Patricia Diaz Mendoza","a":"Jorgelina Cecilia Pasqualino","b":"Claudia Patricia Diaz Mendoza","n":3},{"pair":"Diana Carolina Rubiano Labrador — Rosa Leonor Acevedo Barrios","a":"Diana Carolina Rubiano Labrador","b":"Rosa Leonor Acevedo Barrios","n":3},{"pair":"Enrique Pereira Batista — Alberto Patiño Vanegas","a":"Enrique Pereira Batista","b":"Alberto Patiño Vanegas","n":3},{"pair":"Enrique Pereira Batista — Carlos Rafael Payares Guevara","a":"Enrique Pereira Batista","b":"Carlos Rafael Payares Guevara","n":3},{"pair":"Alberto Patiño Vanegas — Jorge Luis Villalba Acevedo","a":"Alberto Patiño Vanegas","b":"Jorge Luis Villalba Acevedo","n":2},{"pair":"Alberto Patiño Vanegas — Hernando Rafael Altamar Mercado","a":"Alberto Patiño Vanegas","b":"Hernando Rafael Altamar Mercado","n":2},{"pair":"Alberto Patiño Vanegas — Vilma Viviana Ojeda Caicedo","a":"Alberto Patiño Vanegas","b":"Vilma Viviana Ojeda Caicedo","n":2},{"pair":"Holman Ospina Mateus — Jenifer Yoris Vasquez Aguilar","a":"Holman Ospina Mateus","b":"Jenifer Yoris Vasquez Aguilar","n":2},{"pair":"Alberto Patiño Vanegas — Danilo Lusbin Ariza Rua","a":"Alberto Patiño Vanegas","b":"Danilo Lusbin Ariza Rua","n":2},{"pair":"Diana Carolina Rubiano Labrador — Danilo Lusbin Ariza Rua","a":"Diana Carolina Rubiano Labrador","b":"Danilo Lusbin Ariza Rua","n":2},{"pair":"Edwin Alexander Puertas del Castillo — Jenifer Yoris Vasquez Aguilar","a":"Edwin Alexander Puertas del Castillo","b":"Jenifer Yoris Vasquez Aguilar","n":2},{"pair":"Edwin Alexander Puertas del Castillo — Yuranis Henriquez Nuñez","a":"Edwin Alexander Puertas del Castillo","b":"Yuranis Henriquez Nuñez","n":2},{"pair":"Hernando Rafael Altamar Mercado — Carlos Rafael Payares Guevara","a":"Hernando Rafael Altamar Mercado","b":"Carlos Rafael Payares Guevara","n":2},{"pair":"Hernando Rafael Altamar Mercado — Vilma Viviana Ojeda Caicedo","a":"Hernando Rafael Altamar Mercado","b":"Vilma Viviana Ojeda Caicedo","n":2},{"pair":"Vilma Viviana Ojeda Caicedo — Danilo Lusbin Ariza Rua","a":"Vilma Viviana Ojeda Caicedo","b":"Danilo Lusbin Ariza Rua","n":2},{"pair":"James Manuel Perez Moron — Lina Margarita Marrugo Salas","a":"James Manuel Perez Moron","b":"Lina Margarita Marrugo Salas","n":2},{"pair":"Jorgelina Cecilia Pasqualino — Diana Carolina Rubiano Labrador","a":"Jorgelina Cecilia Pasqualino","b":"Diana Carolina Rubiano Labrador","n":2},{"pair":"Edisson Chavarro Mesa — Alberto Patiño Vanegas","a":"Edisson Chavarro Mesa","b":"Alberto Patiño Vanegas","n":2}]},"2026":{"kpis":{"n_docs":45,"n_articles":32,"n_authors":28,"n_schools":4,"q1":18,"q1q2":26,"has_q":30,"pct_q1":60.0,"pct_q1q2":86.7,"avg_sjr":0.703},"doc_types":{"Article":32,"Conference":7,"Review":5,"Other":1},"quartiles":{"Q1":18,"Q2":8,"Q3":4,"Q4":0,"No Q":2},"schools":[{"name":"Escuela de Transformación Digital","total":19,"Article":14,"Conference":5,"Review":0,"Other":0,"Q1":9,"Q2":2,"Q3":3,"Q4":0,"No Q":0,"pct_q1":64.3},{"name":"Escuela de Ingeniería, Arquitectura y Diseño","total":14,"Article":9,"Conference":2,"Review":3,"Other":0,"Q1":3,"Q2":3,"Q3":1,"Q4":0,"No Q":2,"pct_q1":42.9},{"name":"Escuela de Negocios, Leyes y Sociedad","total":10,"Article":9,"Conference":0,"Review":0,"Other":1,"Q1":5,"Q2":4,"Q3":0,"Q4":0,"No Q":0,"pct_q1":55.6},{"name":"Ciencias Básicas","total":6,"Article":2,"Conference":1,"Review":3,"Other":0,"Q1":2,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0}],"authors":[{"name":"David Sierra Porta","school":"Escuela de Transformación Digital","total":6,"Article":6,"Conference":0,"Review":0,"Other":0,"Q1":4,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Miguel Efren Garces Prettel","school":"Escuela de Transformación Digital","total":6,"Article":6,"Conference":0,"Review":0,"Other":0,"Q1":3,"Q2":1,"Q3":2,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Juan Carlos Martinez Santos","school":"Escuela de Transformación Digital","total":4,"Article":1,"Conference":3,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Rosa Leonor Acevedo Barrios","school":"Ciencias Básicas","total":4,"Article":2,"Conference":0,"Review":2,"Other":0,"Q1":2,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Juan Gabriel Fajardo Cuadro","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":3,"Article":2,"Conference":0,"Review":1,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":1,"pct_q1":0.0},{"name":"David Javier Fortich Perez","school":"Escuela de Negocios, Leyes y Sociedad","total":2,"Article":1,"Conference":0,"Review":0,"Other":1,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Luis Ángel Porto Hernández","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":2,"Article":2,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":1,"pct_q1":100.0},{"name":"Lenny Alexandra Romero Perez","school":"Ciencias Básicas","total":2,"Article":0,"Conference":1,"Review":1,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Claudia Patricia Diaz Mendoza","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":2,"Article":2,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Pablo Gustavo Salomo Abitbol Pineiro","school":"Escuela de Negocios, Leyes y Sociedad","total":2,"Article":2,"Conference":0,"Review":0,"Other":0,"Q1":2,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Jairo Enrique Serrano Castañeda","school":"Escuela de Transformación Digital","total":2,"Article":0,"Conference":2,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Karol Patricia Gutierrez Ruiz","school":"Escuela de Negocios, Leyes y Sociedad","total":2,"Article":2,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Pedro Vazquez Miraz","school":"Escuela de Negocios, Leyes y Sociedad","total":2,"Article":2,"Conference":0,"Review":0,"Other":0,"Q1":0,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Rafael David Mendez Anillo","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":2,"Article":2,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Edwin Alexander Puertas del Castillo","school":"Escuela de Transformación Digital","total":2,"Article":1,"Conference":1,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Elias Rafael Geney Castro","school":"Escuela de Negocios, Leyes y Sociedad","total":1,"Article":1,"Conference":0,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Jorge Luis Alvis Arrieta","school":"Escuela de Negocios, Leyes y Sociedad","total":1,"Article":1,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Alfredo Miguel Abuchar Curi","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":1,"Article":1,"Conference":0,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Lina Margarita Marrugo Salas","school":"Escuela de Negocios, Leyes y Sociedad","total":1,"Article":1,"Conference":0,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Jorgelina Cecilia Pasqualino","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":1,"Article":1,"Conference":0,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":0.0}],"pairs":[{"pair":"Juan Carlos Martinez Santos — Edwin Alexander Puertas del Castillo","a":"Juan Carlos Martinez Santos","b":"Edwin Alexander Puertas del Castillo","n":2},{"pair":"Jorgelina Cecilia Pasqualino — Claudia Patricia Diaz Mendoza","a":"Jorgelina Cecilia Pasqualino","b":"Claudia Patricia Diaz Mendoza","n":1},{"pair":"Andres Guillermo Marrugo Hernandez — Lenny Alexandra Romero Perez","a":"Andres Guillermo Marrugo Hernandez","b":"Lenny Alexandra Romero Perez","n":1},{"pair":"Lenny Alexandra Romero Perez — Sonia Helena Contreras Ortiz","a":"Lenny Alexandra Romero Perez","b":"Sonia Helena Contreras Ortiz","n":1},{"pair":"Diana Carolina Rubiano Labrador — Rosa Leonor Acevedo Barrios","a":"Diana Carolina Rubiano Labrador","b":"Rosa Leonor Acevedo Barrios","n":1},{"pair":"Argemiro Palencia Diaz — Alfredo Miguel Abuchar Curi","a":"Argemiro Palencia Diaz","b":"Alfredo Miguel Abuchar Curi","n":1},{"pair":"Miguel Efren Garces Prettel — Pedro Vazquez Miraz","a":"Miguel Efren Garces Prettel","b":"Pedro Vazquez Miraz","n":1},{"pair":"Miguel Efren Garces Prettel — Jorge Luis Alvis Arrieta","a":"Miguel Efren Garces Prettel","b":"Jorge Luis Alvis Arrieta","n":1},{"pair":"Pedro Vazquez Miraz — Elias Rafael Geney Castro","a":"Pedro Vazquez Miraz","b":"Elias Rafael Geney Castro","n":1},{"pair":"Jorge Eliecer Duque Pardo — Jose Luis Villa Ramirez","a":"Jorge Eliecer Duque Pardo","b":"Jose Luis Villa Ramirez","n":1}]}}};
+const D = {"meta":{"updated":"Jun 14-2026","start_year":2022,"years":["ALL","2022","2023","2024","2025","2026"]},"timeline":[{"year":"2022","total":78,"Article":51,"Conference":19,"Review":4,"Other":4},{"year":"2023","total":110,"Article":45,"Conference":60,"Review":1,"Other":4},{"year":"2024","total":128,"Article":45,"Conference":71,"Review":4,"Other":8},{"year":"2025","total":182,"Article":68,"Conference":100,"Review":4,"Other":10},{"year":"2026","total":51,"Article":38,"Conference":7,"Review":5,"Other":1}],"quartile_trend":[{"year":"2022","total":51,"Q1":16,"Q2":18,"Q3":9,"Q4":7,"No Q":1},{"year":"2023","total":45,"Q1":21,"Q2":10,"Q3":6,"Q4":7,"No Q":1},{"year":"2024","total":45,"Q1":20,"Q2":12,"Q3":7,"Q4":5,"No Q":1},{"year":"2025","total":68,"Q1":33,"Q2":21,"Q3":11,"Q4":3,"No Q":0},{"year":"2026","total":38,"Q1":21,"Q2":8,"Q3":6,"Q4":1,"No Q":2}],"by_year":{"ALL":{"kpis":{"n_docs":549,"n_articles":247,"n_authors":69,"n_schools":5,"q1":111,"q1q2":180,"has_q":242,"pct_q1":45.9,"pct_q1q2":74.4,"avg_sjr":0.658},"doc_types":{"Article":247,"Conference":257,"Review":18,"Other":27},"quartiles":{"Q1":111,"Q2":69,"Q3":39,"Q4":23,"No Q":5},"schools":[{"name":"Escuela de Ingeniería, Arquitectura y Diseño","total":235,"Article":91,"Conference":119,"Review":8,"Other":17,"Q1":44,"Q2":25,"Q3":13,"Q4":6,"No Q":3,"pct_q1":50.0},{"name":"Escuela de Transformación Digital","total":206,"Article":79,"Conference":121,"Review":2,"Other":4,"Q1":42,"Q2":23,"Q3":9,"Q4":4,"No Q":1,"pct_q1":53.8},{"name":"Ciencias Básicas","total":108,"Article":35,"Conference":58,"Review":10,"Other":5,"Q1":15,"Q2":11,"Q3":4,"Q4":4,"No Q":1,"pct_q1":44.1},{"name":"Escuela de Negocios, Leyes y Sociedad","total":88,"Article":64,"Conference":17,"Review":1,"Other":6,"Q1":17,"Q2":17,"Q3":18,"Q4":12,"No Q":0,"pct_q1":26.6},{"name":"Centro de Idiomas","total":1,"Article":1,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0}],"authors":[{"name":"Juan Carlos Martinez Santos","school":"Escuela de Transformación Digital","total":71,"Article":5,"Conference":65,"Review":0,"Other":1,"Q1":3,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":60.0},{"name":"Edwin Alexander Puertas del Castillo","school":"Escuela de Transformación Digital","total":63,"Article":6,"Conference":57,"Review":0,"Other":0,"Q1":4,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Andres Guillermo Marrugo Hernandez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":46,"Article":10,"Conference":27,"Review":2,"Other":7,"Q1":5,"Q2":3,"Q3":1,"Q4":1,"No Q":0,"pct_q1":50.0},{"name":"David Sierra Porta","school":"Escuela de Transformación Digital","total":32,"Article":30,"Conference":2,"Review":0,"Other":0,"Q1":18,"Q2":8,"Q3":3,"Q4":1,"No Q":0,"pct_q1":60.0},{"name":"Sonia Helena Contreras Ortiz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":32,"Article":4,"Conference":25,"Review":0,"Other":3,"Q1":2,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Rosa Leonor Acevedo Barrios","school":"Ciencias Básicas","total":31,"Article":10,"Conference":13,"Review":7,"Other":1,"Q1":5,"Q2":4,"Q3":0,"Q4":1,"No Q":0,"pct_q1":50.0},{"name":"Yady Tatiana Solano Correa","school":"Escuela de Transformación Digital","total":31,"Article":8,"Conference":21,"Review":0,"Other":2,"Q1":7,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":87.5},{"name":"Jairo Enrique Serrano Castañeda","school":"Escuela de Transformación Digital","total":29,"Article":0,"Conference":29,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Jose Luis Villa Ramirez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":28,"Article":1,"Conference":25,"Review":1,"Other":1,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Lenny Alexandra Romero Perez","school":"Ciencias Básicas","total":24,"Article":5,"Conference":15,"Review":2,"Other":2,"Q1":3,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":60.0},{"name":"Cesar Augusto Viloria Nuñez","school":"Escuela de Transformación Digital","total":20,"Article":4,"Conference":15,"Review":0,"Other":1,"Q1":3,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":75.0},{"name":"Diana Carolina Rubiano Labrador","school":"Ciencias Básicas","total":20,"Article":5,"Conference":13,"Review":2,"Other":0,"Q1":2,"Q2":3,"Q3":0,"Q4":0,"No Q":0,"pct_q1":40.0},{"name":"Miguel Efren Garces Prettel","school":"Escuela de Transformación Digital","total":20,"Article":19,"Conference":0,"Review":1,"Other":0,"Q1":9,"Q2":5,"Q3":3,"Q4":2,"No Q":0,"pct_q1":47.4},{"name":"Pedro Vazquez Miraz","school":"Escuela de Negocios, Leyes y Sociedad","total":18,"Article":16,"Conference":1,"Review":0,"Other":1,"Q1":2,"Q2":6,"Q3":4,"Q4":4,"No Q":0,"pct_q1":12.5},{"name":"Holman Ospina Mateus","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":18,"Article":8,"Conference":10,"Review":0,"Other":0,"Q1":6,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":75.0},{"name":"Juan Gabriel Fajardo Cuadro","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":17,"Article":8,"Conference":8,"Review":1,"Other":0,"Q1":1,"Q2":4,"Q3":2,"Q4":0,"No Q":1,"pct_q1":14.3},{"name":"Vilma Viviana Ojeda Caicedo","school":"Ciencias Básicas","total":16,"Article":0,"Conference":14,"Review":0,"Other":2,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Karol Patricia Gutierrez Ruiz","school":"Escuela de Negocios, Leyes y Sociedad","total":16,"Article":15,"Conference":1,"Review":0,"Other":0,"Q1":3,"Q2":2,"Q3":5,"Q4":5,"No Q":0,"pct_q1":20.0},{"name":"Alberto Patiño Vanegas","school":"Ciencias Básicas","total":15,"Article":2,"Conference":13,"Review":0,"Other":0,"Q1":0,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Argemiro Palencia Diaz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":14,"Article":13,"Conference":1,"Review":0,"Other":0,"Q1":5,"Q2":4,"Q3":2,"Q4":1,"No Q":1,"pct_q1":41.7}],"pairs":[{"pair":"Juan Carlos Martinez Santos — Edwin Alexander Puertas del Castillo","a":"Juan Carlos Martinez Santos","b":"Edwin Alexander Puertas del Castillo","n":57},{"pair":"Andres Guillermo Marrugo Hernandez — Lenny Alexandra Romero Perez","a":"Andres Guillermo Marrugo Hernandez","b":"Lenny Alexandra Romero Perez","n":22},{"pair":"Juan Carlos Martinez Santos — Jairo Enrique Serrano Castañeda","a":"Juan Carlos Martinez Santos","b":"Jairo Enrique Serrano Castañeda","n":18},{"pair":"Edwin Alexander Puertas del Castillo — Jairo Enrique Serrano Castañeda","a":"Edwin Alexander Puertas del Castillo","b":"Jairo Enrique Serrano Castañeda","n":17},{"pair":"Diana Carolina Rubiano Labrador — Rosa Leonor Acevedo Barrios","a":"Diana Carolina Rubiano Labrador","b":"Rosa Leonor Acevedo Barrios","n":13},{"pair":"Sonia Helena Contreras Ortiz — Vilma Viviana Ojeda Caicedo","a":"Sonia Helena Contreras Ortiz","b":"Vilma Viviana Ojeda Caicedo","n":10},{"pair":"Jorgelina Cecilia Pasqualino — Rosa Leonor Acevedo Barrios","a":"Jorgelina Cecilia Pasqualino","b":"Rosa Leonor Acevedo Barrios","n":7},{"pair":"Rosa Leonor Acevedo Barrios — Edisson Chavarro Mesa","a":"Rosa Leonor Acevedo Barrios","b":"Edisson Chavarro Mesa","n":6},{"pair":"Edwin Alexander Puertas del Castillo — Jenifer Yoris Vasquez Aguilar","a":"Edwin Alexander Puertas del Castillo","b":"Jenifer Yoris Vasquez Aguilar","n":6},{"pair":"Edisson Chavarro Mesa — Danilo Lusbin Ariza Rua","a":"Edisson Chavarro Mesa","b":"Danilo Lusbin Ariza Rua","n":6},{"pair":"Jorgelina Cecilia Pasqualino — Claudia Patricia Diaz Mendoza","a":"Jorgelina Cecilia Pasqualino","b":"Claudia Patricia Diaz Mendoza","n":5},{"pair":"Claudia Patricia Diaz Mendoza — Rosa Leonor Acevedo Barrios","a":"Claudia Patricia Diaz Mendoza","b":"Rosa Leonor Acevedo Barrios","n":5},{"pair":"Andres Guillermo Marrugo Hernandez — Yady Tatiana Solano Correa","a":"Andres Guillermo Marrugo Hernandez","b":"Yady Tatiana Solano Correa","n":5},{"pair":"Diana Carolina Rubiano Labrador — Edisson Chavarro Mesa","a":"Diana Carolina Rubiano Labrador","b":"Edisson Chavarro Mesa","n":5},{"pair":"Alberto Patiño Vanegas — Carlos Rafael Payares Guevara","a":"Alberto Patiño Vanegas","b":"Carlos Rafael Payares Guevara","n":4},{"pair":"Alberto Patiño Vanegas — Hernando Rafael Altamar Mercado","a":"Alberto Patiño Vanegas","b":"Hernando Rafael Altamar Mercado","n":4},{"pair":"Diana Carolina Rubiano Labrador — Danilo Lusbin Ariza Rua","a":"Diana Carolina Rubiano Labrador","b":"Danilo Lusbin Ariza Rua","n":4},{"pair":"Jorgelina Cecilia Pasqualino — Diana Carolina Rubiano Labrador","a":"Jorgelina Cecilia Pasqualino","b":"Diana Carolina Rubiano Labrador","n":4},{"pair":"Juan Carlos Martinez Santos — Sonia Helena Contreras Ortiz","a":"Juan Carlos Martinez Santos","b":"Sonia Helena Contreras Ortiz","n":4},{"pair":"Rosa Leonor Acevedo Barrios — Jorge Luis Villalba Acevedo","a":"Rosa Leonor Acevedo Barrios","b":"Jorge Luis Villalba Acevedo","n":4},{"pair":"Jorgelina Cecilia Pasqualino — Edisson Chavarro Mesa","a":"Jorgelina Cecilia Pasqualino","b":"Edisson Chavarro Mesa","n":4},{"pair":"Pedro Vazquez Miraz — Elias Rafael Geney Castro","a":"Pedro Vazquez Miraz","b":"Elias Rafael Geney Castro","n":3},{"pair":"Alberto Patiño Vanegas — Danilo Lusbin Ariza Rua","a":"Alberto Patiño Vanegas","b":"Danilo Lusbin Ariza Rua","n":3},{"pair":"Rosa Leonor Acevedo Barrios — Milton Cesar Guerrero Pajaro","a":"Rosa Leonor Acevedo Barrios","b":"Milton Cesar Guerrero Pajaro","n":3},{"pair":"Edisson Chavarro Mesa — Alberto Patiño Vanegas","a":"Edisson Chavarro Mesa","b":"Alberto Patiño Vanegas","n":3}],"areas":[{"name":"Social Sciences","total":84,"Q1":39,"Q2":25,"Q3":15,"Q4":5,"No Q":0,"pct_q1":46.4},{"name":"Engineering","total":56,"Q1":29,"Q2":16,"Q3":9,"Q4":2,"No Q":0,"pct_q1":51.8},{"name":"Physics and Astronomy","total":38,"Q1":20,"Q2":13,"Q3":3,"Q4":2,"No Q":0,"pct_q1":52.6},{"name":"Computer Science","total":29,"Q1":15,"Q2":11,"Q3":3,"Q4":0,"No Q":0,"pct_q1":51.7},{"name":"Environmental Science","total":29,"Q1":17,"Q2":8,"Q3":2,"Q4":2,"No Q":0,"pct_q1":58.6},{"name":"Medicine","total":24,"Q1":11,"Q2":6,"Q3":3,"Q4":4,"No Q":0,"pct_q1":45.8},{"name":"Earth and Planetary Sciences","total":24,"Q1":17,"Q2":7,"Q3":0,"Q4":0,"No Q":0,"pct_q1":70.8},{"name":"Psychology","total":23,"Q1":6,"Q2":5,"Q3":7,"Q4":5,"No Q":0,"pct_q1":26.1},{"name":"Mathematics","total":23,"Q1":14,"Q2":5,"Q3":1,"Q4":3,"No Q":0,"pct_q1":60.9},{"name":"Materials Science","total":21,"Q1":8,"Q2":10,"Q3":2,"Q4":1,"No Q":0,"pct_q1":38.1},{"name":"Energy","total":17,"Q1":8,"Q2":4,"Q3":4,"Q4":1,"No Q":0,"pct_q1":47.1},{"name":"Chemical Engineering","total":17,"Q1":4,"Q2":9,"Q3":3,"Q4":0,"No Q":1,"pct_q1":25.0},{"name":"Arts and Humanities","total":16,"Q1":8,"Q2":7,"Q3":1,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Multidisciplinary","total":16,"Q1":14,"Q2":0,"Q3":0,"Q4":2,"No Q":0,"pct_q1":87.5},{"name":"Agricultural and Biological Sciences","total":12,"Q1":9,"Q2":2,"Q3":1,"Q4":0,"No Q":0,"pct_q1":75.0}]},"2022":{"kpis":{"n_docs":78,"n_articles":51,"n_authors":45,"n_schools":4,"q1":16,"q1q2":34,"has_q":50,"pct_q1":32.0,"pct_q1q2":68.0,"avg_sjr":0.547},"doc_types":{"Article":51,"Conference":19,"Review":4,"Other":4},"quartiles":{"Q1":16,"Q2":18,"Q3":9,"Q4":7,"No Q":1},"schools":[{"name":"Escuela de Ingeniería, Arquitectura y Diseño","total":38,"Article":19,"Conference":14,"Review":2,"Other":3,"Q1":8,"Q2":3,"Q3":3,"Q4":5,"No Q":0,"pct_q1":42.1},{"name":"Escuela de Negocios, Leyes y Sociedad","total":18,"Article":16,"Conference":1,"Review":0,"Other":1,"Q1":4,"Q2":6,"Q3":4,"Q4":2,"No Q":0,"pct_q1":25.0},{"name":"Ciencias Básicas","total":17,"Article":11,"Conference":5,"Review":1,"Other":0,"Q1":1,"Q2":7,"Q3":1,"Q4":1,"No Q":1,"pct_q1":10.0},{"name":"Escuela de Transformación Digital","total":15,"Article":9,"Conference":5,"Review":1,"Other":0,"Q1":3,"Q2":5,"Q3":1,"Q4":0,"No Q":0,"pct_q1":33.3}],"authors":[{"name":"Andres Guillermo Marrugo Hernandez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":8,"Article":2,"Conference":3,"Review":0,"Other":3,"Q1":0,"Q2":1,"Q3":0,"Q4":1,"No Q":0,"pct_q1":0.0},{"name":"Sonia Helena Contreras Ortiz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":5,"Article":2,"Conference":3,"Review":0,"Other":0,"Q1":2,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Karol Patricia Gutierrez Ruiz","school":"Escuela de Negocios, Leyes y Sociedad","total":5,"Article":4,"Conference":1,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":2,"Q4":1,"No Q":0,"pct_q1":0.0},{"name":"Rosa Leonor Acevedo Barrios","school":"Ciencias Básicas","total":5,"Article":4,"Conference":1,"Review":0,"Other":0,"Q1":0,"Q2":3,"Q3":0,"Q4":1,"No Q":0,"pct_q1":0.0},{"name":"Pedro Vazquez Miraz","school":"Escuela de Negocios, Leyes y Sociedad","total":4,"Article":4,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":3,"Q3":0,"Q4":0,"No Q":0,"pct_q1":25.0},{"name":"Juan Gabriel Fajardo Cuadro","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":4,"Article":2,"Conference":2,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Jose Luis Villa Ramirez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":4,"Article":0,"Conference":4,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Diana Carolina Rubiano Labrador","school":"Ciencias Básicas","total":4,"Article":3,"Conference":1,"Review":0,"Other":0,"Q1":0,"Q2":3,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Mary Judith Arias Tapia","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":3,"Article":2,"Conference":0,"Review":1,"Other":0,"Q1":1,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Holman Ospina Mateus","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":3,"Article":2,"Conference":1,"Review":0,"Other":0,"Q1":2,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Jairo Francisco Useche Vivero","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":3,"Article":2,"Conference":0,"Review":1,"Other":0,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Elsy Mercedes Dominguez de la Ossa","school":"Escuela de Negocios, Leyes y Sociedad","total":3,"Article":3,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":2,"Q4":0,"No Q":0,"pct_q1":33.3},{"name":"Edwin Alexander Puertas del Castillo","school":"Escuela de Transformación Digital","total":3,"Article":1,"Conference":2,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"David Sierra Porta","school":"Escuela de Transformación Digital","total":3,"Article":3,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":33.3},{"name":"Lenny Alexandra Romero Perez","school":"Ciencias Básicas","total":3,"Article":1,"Conference":2,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Juan Carlos Martinez Santos","school":"Escuela de Transformación Digital","total":3,"Article":0,"Conference":3,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Adolfo Baltar Moreno","school":"Escuela de Transformación Digital","total":2,"Article":1,"Conference":0,"Review":1,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Jorge Eliecer Duque Pardo","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":2,"Article":0,"Conference":2,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Milton Cesar Guerrero Pajaro","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":2,"Article":2,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":1,"No Q":0,"pct_q1":50.0},{"name":"Oscar Acevedo Patiño","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":2,"Article":0,"Conference":2,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0}],"pairs":[{"pair":"Diana Carolina Rubiano Labrador — Rosa Leonor Acevedo Barrios","a":"Diana Carolina Rubiano Labrador","b":"Rosa Leonor Acevedo Barrios","n":4},{"pair":"Andres Guillermo Marrugo Hernandez — Lenny Alexandra Romero Perez","a":"Andres Guillermo Marrugo Hernandez","b":"Lenny Alexandra Romero Perez","n":3},{"pair":"Juan Carlos Martinez Santos — Edwin Alexander Puertas del Castillo","a":"Juan Carlos Martinez Santos","b":"Edwin Alexander Puertas del Castillo","n":2},{"pair":"Jorgelina Cecilia Pasqualino — Claudia Patricia Diaz Mendoza","a":"Jorgelina Cecilia Pasqualino","b":"Claudia Patricia Diaz Mendoza","n":1},{"pair":"Pedro Vazquez Miraz — Maria Fernanda Medina Reyes","a":"Pedro Vazquez Miraz","b":"Maria Fernanda Medina Reyes","n":1},{"pair":"Sonia Helena Contreras Ortiz — Jose Luis Villa Ramirez","a":"Sonia Helena Contreras Ortiz","b":"Jose Luis Villa Ramirez","n":1},{"pair":"Sonia Helena Contreras Ortiz — Vilma Viviana Ojeda Caicedo","a":"Sonia Helena Contreras Ortiz","b":"Vilma Viviana Ojeda Caicedo","n":1},{"pair":"Jorge Eliecer Duque Pardo — Jose Luis Villa Ramirez","a":"Jorge Eliecer Duque Pardo","b":"Jose Luis Villa Ramirez","n":1},{"pair":"Jorge Eliecer Duque Pardo — Eduardo Gomez Vasquez","a":"Jorge Eliecer Duque Pardo","b":"Eduardo Gomez Vasquez","n":1},{"pair":"Edwin Alexander Puertas del Castillo — Jose Luis Villa Ramirez","a":"Edwin Alexander Puertas del Castillo","b":"Jose Luis Villa Ramirez","n":1},{"pair":"Oscar Acevedo Patiño — Eduardo Gomez Vasquez","a":"Oscar Acevedo Patiño","b":"Eduardo Gomez Vasquez","n":1},{"pair":"Oscar Acevedo Patiño — Jorge Eliecer Duque Pardo","a":"Oscar Acevedo Patiño","b":"Jorge Eliecer Duque Pardo","n":1},{"pair":"Karol Patricia Gutierrez Ruiz — Sonia Helena Contreras Ortiz","a":"Karol Patricia Gutierrez Ruiz","b":"Sonia Helena Contreras Ortiz","n":1},{"pair":"Miguel Efren Garces Prettel — Pedro Vazquez Miraz","a":"Miguel Efren Garces Prettel","b":"Pedro Vazquez Miraz","n":1},{"pair":"Rosa Leonor Acevedo Barrios — Milton Cesar Guerrero Pajaro","a":"Rosa Leonor Acevedo Barrios","b":"Milton Cesar Guerrero Pajaro","n":1},{"pair":"Mauro Antonio Maza Chamorro — Milton Cesar Guerrero Pajaro","a":"Mauro Antonio Maza Chamorro","b":"Milton Cesar Guerrero Pajaro","n":1},{"pair":"Juan Carlos Martinez Santos — Jose Luis Villa Ramirez","a":"Juan Carlos Martinez Santos","b":"Jose Luis Villa Ramirez","n":1},{"pair":"Juan Carlos Martinez Santos — Edisson Chavarro Mesa","a":"Juan Carlos Martinez Santos","b":"Edisson Chavarro Mesa","n":1},{"pair":"Jairo Francisco Useche Vivero — Mary Judith Arias Tapia","a":"Jairo Francisco Useche Vivero","b":"Mary Judith Arias Tapia","n":1},{"pair":"Andres Guillermo Marrugo Hernandez — Sonia Helena Contreras Ortiz","a":"Andres Guillermo Marrugo Hernandez","b":"Sonia Helena Contreras Ortiz","n":1},{"pair":"Vilma Viviana Ojeda Caicedo — Jose Luis Villa Ramirez","a":"Vilma Viviana Ojeda Caicedo","b":"Jose Luis Villa Ramirez","n":1}],"areas":[{"name":"Social Sciences","total":20,"Q1":8,"Q2":8,"Q3":4,"Q4":0,"No Q":0,"pct_q1":40.0},{"name":"Environmental Science","total":9,"Q1":4,"Q2":3,"Q3":0,"Q4":2,"No Q":0,"pct_q1":44.4},{"name":"Engineering","total":8,"Q1":2,"Q2":3,"Q3":1,"Q4":2,"No Q":0,"pct_q1":25.0},{"name":"Medicine","total":7,"Q1":1,"Q2":4,"Q3":1,"Q4":1,"No Q":0,"pct_q1":14.3},{"name":"Physics and Astronomy","total":7,"Q1":1,"Q2":4,"Q3":1,"Q4":1,"No Q":0,"pct_q1":14.3},{"name":"Psychology","total":6,"Q1":1,"Q2":1,"Q3":2,"Q4":2,"No Q":0,"pct_q1":16.7},{"name":"Materials Science","total":6,"Q1":1,"Q2":3,"Q3":1,"Q4":1,"No Q":0,"pct_q1":16.7},{"name":"Computer Science","total":5,"Q1":4,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":80.0},{"name":"Mathematics","total":5,"Q1":3,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":60.0},{"name":"Arts and Humanities","total":4,"Q1":1,"Q2":3,"Q3":0,"Q4":0,"No Q":0,"pct_q1":25.0},{"name":"Earth and Planetary Sciences","total":3,"Q1":2,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Economics, Econometrics and Finance","total":3,"Q1":2,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Chemical Engineering","total":3,"Q1":0,"Q2":1,"Q3":2,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Biochemistry, Genetics and Molecular Biology","total":2,"Q1":2,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Pharmacology, Toxicology and Pharmaceutics","total":2,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0}]},"2023":{"kpis":{"n_docs":110,"n_articles":45,"n_authors":48,"n_schools":4,"q1":21,"q1q2":31,"has_q":44,"pct_q1":47.7,"pct_q1q2":70.5,"avg_sjr":0.703},"doc_types":{"Article":45,"Conference":60,"Review":1,"Other":4},"quartiles":{"Q1":21,"Q2":10,"Q3":6,"Q4":7,"No Q":1},"schools":[{"name":"Escuela de Ingeniería, Arquitectura y Diseño","total":53,"Article":17,"Conference":33,"Review":0,"Other":3,"Q1":8,"Q2":6,"Q3":2,"Q4":1,"No Q":0,"pct_q1":47.1},{"name":"Escuela de Transformación Digital","total":43,"Article":20,"Conference":22,"Review":0,"Other":1,"Q1":11,"Q2":3,"Q3":3,"Q4":2,"No Q":1,"pct_q1":57.9},{"name":"Ciencias Básicas","total":28,"Article":8,"Conference":19,"Review":1,"Other":0,"Q1":4,"Q2":1,"Q3":1,"Q4":2,"No Q":0,"pct_q1":50.0},{"name":"Escuela de Negocios, Leyes y Sociedad","total":10,"Article":8,"Conference":2,"Review":0,"Other":0,"Q1":2,"Q2":1,"Q3":2,"Q4":3,"No Q":0,"pct_q1":25.0}],"authors":[{"name":"Juan Carlos Martinez Santos","school":"Escuela de Transformación Digital","total":14,"Article":2,"Conference":11,"Review":0,"Other":1,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Andres Guillermo Marrugo Hernandez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":14,"Article":3,"Conference":9,"Review":0,"Other":2,"Q1":2,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Edwin Alexander Puertas del Castillo","school":"Escuela de Transformación Digital","total":12,"Article":2,"Conference":10,"Review":0,"Other":0,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Yady Tatiana Solano Correa","school":"Escuela de Transformación Digital","total":10,"Article":4,"Conference":6,"Review":0,"Other":0,"Q1":3,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":75.0},{"name":"Jose Luis Villa Ramirez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":9,"Article":0,"Conference":8,"Review":0,"Other":1,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Lenny Alexandra Romero Perez","school":"Ciencias Básicas","total":9,"Article":2,"Conference":7,"Review":0,"Other":0,"Q1":2,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Sonia Helena Contreras Ortiz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":7,"Article":1,"Conference":6,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Holman Ospina Mateus","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":6,"Article":4,"Conference":2,"Review":0,"Other":0,"Q1":4,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"David Sierra Porta","school":"Escuela de Transformación Digital","total":6,"Article":6,"Conference":0,"Review":0,"Other":0,"Q1":4,"Q2":0,"Q3":1,"Q4":1,"No Q":0,"pct_q1":66.7},{"name":"Alberto Patiño Vanegas","school":"Ciencias Básicas","total":5,"Article":0,"Conference":5,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Rosa Leonor Acevedo Barrios","school":"Ciencias Básicas","total":5,"Article":1,"Conference":3,"Review":1,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Miguel Efren Garces Prettel","school":"Escuela de Transformación Digital","total":5,"Article":5,"Conference":0,"Review":0,"Other":0,"Q1":2,"Q2":2,"Q3":0,"Q4":1,"No Q":0,"pct_q1":40.0},{"name":"Edisson Chavarro Mesa","school":"Ciencias Básicas","total":5,"Article":0,"Conference":5,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Jenifer Yoris Vasquez Aguilar","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":4,"Article":0,"Conference":4,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Juan Gabriel Fajardo Cuadro","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":4,"Article":2,"Conference":2,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Jorgelina Cecilia Pasqualino","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":3,"Article":1,"Conference":2,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Danilo Lusbin Ariza Rua","school":"Ciencias Básicas","total":3,"Article":0,"Conference":3,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Diana Carolina Rubiano Labrador","school":"Ciencias Básicas","total":3,"Article":0,"Conference":3,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Vilma Viviana Ojeda Caicedo","school":"Ciencias Básicas","total":3,"Article":0,"Conference":3,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Jairo Francisco Useche Vivero","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":3,"Article":2,"Conference":1,"Review":0,"Other":0,"Q1":0,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0}],"pairs":[{"pair":"Juan Carlos Martinez Santos — Edwin Alexander Puertas del Castillo","a":"Juan Carlos Martinez Santos","b":"Edwin Alexander Puertas del Castillo","n":11},{"pair":"Andres Guillermo Marrugo Hernandez — Lenny Alexandra Romero Perez","a":"Andres Guillermo Marrugo Hernandez","b":"Lenny Alexandra Romero Perez","n":8},{"pair":"Edwin Alexander Puertas del Castillo — Jenifer Yoris Vasquez Aguilar","a":"Edwin Alexander Puertas del Castillo","b":"Jenifer Yoris Vasquez Aguilar","n":3},{"pair":"Edisson Chavarro Mesa — Danilo Lusbin Ariza Rua","a":"Edisson Chavarro Mesa","b":"Danilo Lusbin Ariza Rua","n":3},{"pair":"Jorgelina Cecilia Pasqualino — Diana Carolina Rubiano Labrador","a":"Jorgelina Cecilia Pasqualino","b":"Diana Carolina Rubiano Labrador","n":2},{"pair":"Jorgelina Cecilia Pasqualino — Rosa Leonor Acevedo Barrios","a":"Jorgelina Cecilia Pasqualino","b":"Rosa Leonor Acevedo Barrios","n":2},{"pair":"Rosa Leonor Acevedo Barrios — Edisson Chavarro Mesa","a":"Rosa Leonor Acevedo Barrios","b":"Edisson Chavarro Mesa","n":2},{"pair":"Diana Carolina Rubiano Labrador — Rosa Leonor Acevedo Barrios","a":"Diana Carolina Rubiano Labrador","b":"Rosa Leonor Acevedo Barrios","n":2},{"pair":"Lenny Alexandra Romero Perez — Alberto Patiño Vanegas","a":"Lenny Alexandra Romero Perez","b":"Alberto Patiño Vanegas","n":2},{"pair":"Juan Carlos Martinez Santos — Jenifer Yoris Vasquez Aguilar","a":"Juan Carlos Martinez Santos","b":"Jenifer Yoris Vasquez Aguilar","n":2},{"pair":"Sonia Helena Contreras Ortiz — Vilma Viviana Ojeda Caicedo","a":"Sonia Helena Contreras Ortiz","b":"Vilma Viviana Ojeda Caicedo","n":2},{"pair":"Holman Ospina Mateus — Lina Margarita Marrugo Salas","a":"Holman Ospina Mateus","b":"Lina Margarita Marrugo Salas","n":1},{"pair":"Holman Ospina Mateus — Jenifer Yoris Vasquez Aguilar","a":"Holman Ospina Mateus","b":"Jenifer Yoris Vasquez Aguilar","n":1},{"pair":"Yady Tatiana Solano Correa — David Sierra Porta","a":"Yady Tatiana Solano Correa","b":"David Sierra Porta","n":1},{"pair":"Jairo Humberto Cabrera Tovar — Jose Luis Villa Ramirez","a":"Jairo Humberto Cabrera Tovar","b":"Jose Luis Villa Ramirez","n":1},{"pair":"Sonia Helena Contreras Ortiz — Jose Luis Villa Ramirez","a":"Sonia Helena Contreras Ortiz","b":"Jose Luis Villa Ramirez","n":1},{"pair":"Miguel Efren Garces Prettel — Elias Rafael Geney Castro","a":"Miguel Efren Garces Prettel","b":"Elias Rafael Geney Castro","n":1},{"pair":"Vilma Viviana Ojeda Caicedo — Jose Luis Villa Ramirez","a":"Vilma Viviana Ojeda Caicedo","b":"Jose Luis Villa Ramirez","n":1},{"pair":"Karol Patricia Gutierrez Ruiz — Elias Rafael Geney Castro","a":"Karol Patricia Gutierrez Ruiz","b":"Elias Rafael Geney Castro","n":1},{"pair":"Karol Patricia Gutierrez Ruiz — Miguel Efren Garces Prettel","a":"Karol Patricia Gutierrez Ruiz","b":"Miguel Efren Garces Prettel","n":1},{"pair":"David Sierra Porta — Jorge Luis Villalba Acevedo","a":"David Sierra Porta","b":"Jorge Luis Villalba Acevedo","n":1},{"pair":"Alberto Patiño Vanegas — Hernando Rafael Altamar Mercado","a":"Alberto Patiño Vanegas","b":"Hernando Rafael Altamar Mercado","n":1},{"pair":"Jorge Luis Muñiz Olite — William Arellano Cartagena","a":"Jorge Luis Muñiz Olite","b":"William Arellano Cartagena","n":1},{"pair":"Jorge Luis Muñiz Olite — Jorge Luis Alvis Arrieta","a":"Jorge Luis Muñiz Olite","b":"Jorge Luis Alvis Arrieta","n":1},{"pair":"William Arellano Cartagena — Jorge Luis Alvis Arrieta","a":"William Arellano Cartagena","b":"Jorge Luis Alvis Arrieta","n":1}],"areas":[{"name":"Social Sciences","total":17,"Q1":9,"Q2":4,"Q3":3,"Q4":1,"No Q":0,"pct_q1":52.9},{"name":"Engineering","total":9,"Q1":4,"Q2":4,"Q3":1,"Q4":0,"No Q":0,"pct_q1":44.4},{"name":"Earth and Planetary Sciences","total":7,"Q1":6,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":85.7},{"name":"Physics and Astronomy","total":7,"Q1":5,"Q2":1,"Q3":0,"Q4":1,"No Q":0,"pct_q1":71.4},{"name":"Environmental Science","total":6,"Q1":3,"Q2":2,"Q3":1,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Computer Science","total":5,"Q1":3,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":60.0},{"name":"Multidisciplinary","total":4,"Q1":3,"Q2":0,"Q3":0,"Q4":1,"No Q":0,"pct_q1":75.0},{"name":"Agricultural and Biological Sciences","total":4,"Q1":2,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Energy","total":3,"Q1":1,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":33.3},{"name":"Chemistry","total":2,"Q1":0,"Q2":0,"Q3":1,"Q4":1,"No Q":0,"pct_q1":0.0},{"name":"Chemical Engineering","total":2,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Mathematics","total":2,"Q1":0,"Q2":0,"Q3":0,"Q4":2,"No Q":0,"pct_q1":0.0},{"name":"Medicine","total":2,"Q1":1,"Q2":0,"Q3":0,"Q4":1,"No Q":0,"pct_q1":50.0},{"name":"Business, Management and Accounting","total":2,"Q1":1,"Q2":0,"Q3":0,"Q4":1,"No Q":0,"pct_q1":50.0},{"name":"Decision Sciences","total":1,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0}]},"2024":{"kpis":{"n_docs":128,"n_articles":45,"n_authors":44,"n_schools":4,"q1":20,"q1q2":32,"has_q":44,"pct_q1":45.5,"pct_q1q2":72.7,"avg_sjr":0.684},"doc_types":{"Article":45,"Conference":71,"Review":4,"Other":8},"quartiles":{"Q1":20,"Q2":12,"Q3":7,"Q4":5,"No Q":1},"schools":[{"name":"Escuela de Ingeniería, Arquitectura y Diseño","total":59,"Article":19,"Conference":31,"Review":2,"Other":7,"Q1":10,"Q2":6,"Q3":2,"Q4":0,"No Q":1,"pct_q1":55.6},{"name":"Escuela de Transformación Digital","total":48,"Article":13,"Conference":34,"Review":0,"Other":1,"Q1":7,"Q2":3,"Q3":1,"Q4":2,"No Q":0,"pct_q1":53.8},{"name":"Ciencias Básicas","total":28,"Article":6,"Conference":16,"Review":3,"Other":3,"Q1":3,"Q2":1,"Q3":2,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Escuela de Negocios, Leyes y Sociedad","total":21,"Article":11,"Conference":8,"Review":1,"Other":1,"Q1":1,"Q2":2,"Q3":4,"Q4":4,"No Q":0,"pct_q1":9.1}],"authors":[{"name":"Andres Guillermo Marrugo Hernandez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":17,"Article":3,"Conference":11,"Review":1,"Other":2,"Q1":2,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Edwin Alexander Puertas del Castillo","school":"Escuela de Transformación Digital","total":15,"Article":0,"Conference":15,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Juan Carlos Martinez Santos","school":"Escuela de Transformación Digital","total":15,"Article":0,"Conference":15,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Yady Tatiana Solano Correa","school":"Escuela de Transformación Digital","total":15,"Article":1,"Conference":13,"Review":0,"Other":1,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Lenny Alexandra Romero Perez","school":"Ciencias Básicas","total":9,"Article":2,"Conference":4,"Review":1,"Other":2,"Q1":1,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Sonia Helena Contreras Ortiz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":8,"Article":0,"Conference":6,"Review":0,"Other":2,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"David Sierra Porta","school":"Escuela de Transformación Digital","total":7,"Article":5,"Conference":2,"Review":0,"Other":0,"Q1":3,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":60.0},{"name":"Rosa Leonor Acevedo Barrios","school":"Ciencias Básicas","total":7,"Article":1,"Conference":4,"Review":2,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Pedro Vazquez Miraz","school":"Escuela de Negocios, Leyes y Sociedad","total":6,"Article":5,"Conference":0,"Review":0,"Other":1,"Q1":1,"Q2":0,"Q3":2,"Q4":2,"No Q":0,"pct_q1":20.0},{"name":"Argemiro Palencia Diaz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":6,"Article":6,"Conference":0,"Review":0,"Other":0,"Q1":3,"Q2":2,"Q3":0,"Q4":0,"No Q":1,"pct_q1":60.0},{"name":"Vilma Viviana Ojeda Caicedo","school":"Ciencias Básicas","total":5,"Article":0,"Conference":4,"Review":0,"Other":1,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Holman Ospina Mateus","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":5,"Article":2,"Conference":3,"Review":0,"Other":0,"Q1":0,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Miguel Efren Garces Prettel","school":"Escuela de Transformación Digital","total":5,"Article":5,"Conference":0,"Review":0,"Other":0,"Q1":3,"Q2":1,"Q3":0,"Q4":1,"No Q":0,"pct_q1":60.0},{"name":"Jose Luis Villa Ramirez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":5,"Article":0,"Conference":5,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Lina Margarita Marrugo Salas","school":"Escuela de Negocios, Leyes y Sociedad","total":4,"Article":0,"Conference":4,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Diana Carolina Rubiano Labrador","school":"Ciencias Básicas","total":4,"Article":0,"Conference":4,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Edisson Chavarro Mesa","school":"Ciencias Básicas","total":4,"Article":0,"Conference":4,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Jorge Luis del Rio Cortina","school":"Escuela de Negocios, Leyes y Sociedad","total":4,"Article":0,"Conference":4,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Elsy Mercedes Dominguez de la Ossa","school":"Escuela de Negocios, Leyes y Sociedad","total":3,"Article":3,"Conference":0,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":1,"Q4":1,"No Q":0,"pct_q1":0.0},{"name":"Alberto Patiño Vanegas","school":"Ciencias Básicas","total":3,"Article":0,"Conference":3,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0}],"pairs":[{"pair":"Juan Carlos Martinez Santos — Edwin Alexander Puertas del Castillo","a":"Juan Carlos Martinez Santos","b":"Edwin Alexander Puertas del Castillo","n":13},{"pair":"Andres Guillermo Marrugo Hernandez — Lenny Alexandra Romero Perez","a":"Andres Guillermo Marrugo Hernandez","b":"Lenny Alexandra Romero Perez","n":9},{"pair":"Andres Guillermo Marrugo Hernandez — Yady Tatiana Solano Correa","a":"Andres Guillermo Marrugo Hernandez","b":"Yady Tatiana Solano Correa","n":3},{"pair":"Diana Carolina Rubiano Labrador — Rosa Leonor Acevedo Barrios","a":"Diana Carolina Rubiano Labrador","b":"Rosa Leonor Acevedo Barrios","n":3},{"pair":"Rosa Leonor Acevedo Barrios — Edisson Chavarro Mesa","a":"Rosa Leonor Acevedo Barrios","b":"Edisson Chavarro Mesa","n":3},{"pair":"Rosa Leonor Acevedo Barrios — Jorge Luis Villalba Acevedo","a":"Rosa Leonor Acevedo Barrios","b":"Jorge Luis Villalba Acevedo","n":2},{"pair":"Pedro Vazquez Miraz — Elsy Mercedes Dominguez de la Ossa","a":"Pedro Vazquez Miraz","b":"Elsy Mercedes Dominguez de la Ossa","n":2},{"pair":"Diana Carolina Rubiano Labrador — Edisson Chavarro Mesa","a":"Diana Carolina Rubiano Labrador","b":"Edisson Chavarro Mesa","n":2},{"pair":"Diana Carolina Rubiano Labrador — Danilo Lusbin Ariza Rua","a":"Diana Carolina Rubiano Labrador","b":"Danilo Lusbin Ariza Rua","n":2},{"pair":"Juan Carlos Martinez Santos — Sonia Helena Contreras Ortiz","a":"Juan Carlos Martinez Santos","b":"Sonia Helena Contreras Ortiz","n":2},{"pair":"Edisson Chavarro Mesa — Danilo Lusbin Ariza Rua","a":"Edisson Chavarro Mesa","b":"Danilo Lusbin Ariza Rua","n":2},{"pair":"Sonia Helena Contreras Ortiz — Vilma Viviana Ojeda Caicedo","a":"Sonia Helena Contreras Ortiz","b":"Vilma Viviana Ojeda Caicedo","n":2},{"pair":"Yady Tatiana Solano Correa — Vilma Viviana Ojeda Caicedo","a":"Yady Tatiana Solano Correa","b":"Vilma Viviana Ojeda Caicedo","n":2},{"pair":"Miguel Efren Garces Prettel — Jorge Luis Alvis Arrieta","a":"Miguel Efren Garces Prettel","b":"Jorge Luis Alvis Arrieta","n":1},{"pair":"Alberto Patiño Vanegas — Hernando Rafael Altamar Mercado","a":"Alberto Patiño Vanegas","b":"Hernando Rafael Altamar Mercado","n":1},{"pair":"Alberto Patiño Vanegas — Danilo Lusbin Ariza Rua","a":"Alberto Patiño Vanegas","b":"Danilo Lusbin Ariza Rua","n":1},{"pair":"Miguel Efren Garces Prettel — William Arellano Cartagena","a":"Miguel Efren Garces Prettel","b":"William Arellano Cartagena","n":1},{"pair":"Jorgelina Cecilia Pasqualino — Rosa Leonor Acevedo Barrios","a":"Jorgelina Cecilia Pasqualino","b":"Rosa Leonor Acevedo Barrios","n":1},{"pair":"Pedro Vazquez Miraz — Maria Fernanda Medina Reyes","a":"Pedro Vazquez Miraz","b":"Maria Fernanda Medina Reyes","n":1},{"pair":"Pedro Vazquez Miraz — David Javier Fortich Perez","a":"Pedro Vazquez Miraz","b":"David Javier Fortich Perez","n":1},{"pair":"Pedro Vazquez Miraz — Sonia Helena Contreras Ortiz","a":"Pedro Vazquez Miraz","b":"Sonia Helena Contreras Ortiz","n":1},{"pair":"Edisson Chavarro Mesa — Alberto Patiño Vanegas","a":"Edisson Chavarro Mesa","b":"Alberto Patiño Vanegas","n":1},{"pair":"Oscar Acevedo Patiño — Jose Luis Villa Ramirez","a":"Oscar Acevedo Patiño","b":"Jose Luis Villa Ramirez","n":1},{"pair":"David Javier Fortich Perez — Elsy Mercedes Dominguez de la Ossa","a":"David Javier Fortich Perez","b":"Elsy Mercedes Dominguez de la Ossa","n":1},{"pair":"Edwin Alexander Puertas del Castillo — Jenifer Yoris Vasquez Aguilar","a":"Edwin Alexander Puertas del Castillo","b":"Jenifer Yoris Vasquez Aguilar","n":1}],"areas":[{"name":"Social Sciences","total":16,"Q1":6,"Q2":3,"Q3":4,"Q4":3,"No Q":0,"pct_q1":37.5},{"name":"Engineering","total":12,"Q1":8,"Q2":2,"Q3":2,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Mathematics","total":9,"Q1":7,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":77.8},{"name":"Physics and Astronomy","total":8,"Q1":3,"Q2":4,"Q3":1,"Q4":0,"No Q":0,"pct_q1":37.5},{"name":"Materials Science","total":4,"Q1":1,"Q2":3,"Q3":0,"Q4":0,"No Q":0,"pct_q1":25.0},{"name":"Computer Science","total":4,"Q1":1,"Q2":3,"Q3":0,"Q4":0,"No Q":0,"pct_q1":25.0},{"name":"Earth and Planetary Sciences","total":4,"Q1":2,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Energy","total":4,"Q1":3,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":75.0},{"name":"Medicine","total":4,"Q1":2,"Q2":0,"Q3":0,"Q4":2,"No Q":0,"pct_q1":50.0},{"name":"Environmental Science","total":3,"Q1":3,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Arts and Humanities","total":3,"Q1":1,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":33.3},{"name":"Psychology","total":2,"Q1":0,"Q2":1,"Q3":0,"Q4":1,"No Q":0,"pct_q1":0.0},{"name":"Multidisciplinary","total":2,"Q1":2,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Business, Management and Accounting","total":2,"Q1":0,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Chemical Engineering","total":2,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":1,"pct_q1":100.0}]},"2025":{"kpis":{"n_docs":182,"n_articles":68,"n_authors":54,"n_schools":5,"q1":33,"q1q2":54,"has_q":68,"pct_q1":48.5,"pct_q1q2":79.4,"avg_sjr":0.63},"doc_types":{"Article":68,"Conference":100,"Review":4,"Other":10},"quartiles":{"Q1":33,"Q2":21,"Q3":11,"Q4":3,"No Q":0},"schools":[{"name":"Escuela de Transformación Digital","total":79,"Article":21,"Conference":55,"Review":1,"Other":2,"Q1":11,"Q2":10,"Q3":0,"Q4":0,"No Q":0,"pct_q1":52.4},{"name":"Escuela de Ingeniería, Arquitectura y Diseño","total":71,"Article":27,"Conference":39,"Review":1,"Other":4,"Q1":15,"Q2":7,"Q3":5,"Q4":0,"No Q":0,"pct_q1":55.6},{"name":"Ciencias Básicas","total":27,"Article":6,"Conference":17,"Review":2,"Other":2,"Q1":3,"Q2":2,"Q3":0,"Q4":1,"No Q":0,"pct_q1":50.0},{"name":"Escuela de Negocios, Leyes y Sociedad","total":27,"Article":18,"Conference":6,"Review":0,"Other":3,"Q1":5,"Q2":4,"Q3":7,"Q4":2,"No Q":0,"pct_q1":27.8},{"name":"Centro de Idiomas","total":1,"Article":1,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0}],"authors":[{"name":"Juan Carlos Martinez Santos","school":"Escuela de Transformación Digital","total":35,"Article":2,"Conference":33,"Review":0,"Other":0,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Edwin Alexander Puertas del Castillo","school":"Escuela de Transformación Digital","total":31,"Article":2,"Conference":29,"Review":0,"Other":0,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Jairo Enrique Serrano Castañeda","school":"Escuela de Transformación Digital","total":22,"Article":0,"Conference":22,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Cesar Augusto Viloria Nuñez","school":"Escuela de Transformación Digital","total":19,"Article":3,"Conference":15,"Review":0,"Other":1,"Q1":2,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Sonia Helena Contreras Ortiz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":11,"Article":1,"Conference":9,"Review":0,"Other":1,"Q1":0,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Jose Luis Villa Ramirez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":9,"Article":1,"Conference":7,"Review":1,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Rosa Leonor Acevedo Barrios","school":"Ciencias Básicas","total":9,"Article":1,"Conference":5,"Review":2,"Other":1,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"David Sierra Porta","school":"Escuela de Transformación Digital","total":9,"Article":9,"Conference":0,"Review":0,"Other":0,"Q1":6,"Q2":3,"Q3":0,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Alberto Patiño Vanegas","school":"Ciencias Básicas","total":7,"Article":2,"Conference":5,"Review":0,"Other":0,"Q1":0,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Vilma Viviana Ojeda Caicedo","school":"Ciencias Básicas","total":7,"Article":0,"Conference":6,"Review":0,"Other":1,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Claudia Patricia Diaz Mendoza","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":7,"Article":4,"Conference":3,"Review":0,"Other":0,"Q1":3,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":75.0},{"name":"Diana Carolina Rubiano Labrador","school":"Ciencias Básicas","total":7,"Article":1,"Conference":5,"Review":1,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Karol Patricia Gutierrez Ruiz","school":"Escuela de Negocios, Leyes y Sociedad","total":7,"Article":7,"Conference":0,"Review":0,"Other":0,"Q1":2,"Q2":0,"Q3":3,"Q4":2,"No Q":0,"pct_q1":28.6},{"name":"Andres Guillermo Marrugo Hernandez","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":6,"Article":2,"Conference":4,"Review":0,"Other":0,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Jorgelina Cecilia Pasqualino","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":6,"Article":1,"Conference":5,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Jorge Luis del Rio Cortina","school":"Escuela de Negocios, Leyes y Sociedad","total":5,"Article":2,"Conference":3,"Review":0,"Other":0,"Q1":0,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Argemiro Palencia Diaz","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":5,"Article":4,"Conference":1,"Review":0,"Other":0,"Q1":2,"Q2":0,"Q3":2,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Jairo Francisco Useche Vivero","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":5,"Article":4,"Conference":0,"Review":0,"Other":1,"Q1":3,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":75.0},{"name":"Carlos Rafael Payares Guevara","school":"Ciencias Básicas","total":4,"Article":2,"Conference":2,"Review":0,"Other":0,"Q1":0,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Yady Tatiana Solano Correa","school":"Escuela de Transformación Digital","total":4,"Article":1,"Conference":2,"Review":0,"Other":1,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0}],"pairs":[{"pair":"Juan Carlos Martinez Santos — Edwin Alexander Puertas del Castillo","a":"Juan Carlos Martinez Santos","b":"Edwin Alexander Puertas del Castillo","n":29},{"pair":"Juan Carlos Martinez Santos — Jairo Enrique Serrano Castañeda","a":"Juan Carlos Martinez Santos","b":"Jairo Enrique Serrano Castañeda","n":18},{"pair":"Edwin Alexander Puertas del Castillo — Jairo Enrique Serrano Castañeda","a":"Edwin Alexander Puertas del Castillo","b":"Jairo Enrique Serrano Castañeda","n":17},{"pair":"Sonia Helena Contreras Ortiz — Vilma Viviana Ojeda Caicedo","a":"Sonia Helena Contreras Ortiz","b":"Vilma Viviana Ojeda Caicedo","n":5},{"pair":"Jorgelina Cecilia Pasqualino — Rosa Leonor Acevedo Barrios","a":"Jorgelina Cecilia Pasqualino","b":"Rosa Leonor Acevedo Barrios","n":4},{"pair":"Claudia Patricia Diaz Mendoza — Rosa Leonor Acevedo Barrios","a":"Claudia Patricia Diaz Mendoza","b":"Rosa Leonor Acevedo Barrios","n":4},{"pair":"Alberto Patiño Vanegas — Carlos Rafael Payares Guevara","a":"Alberto Patiño Vanegas","b":"Carlos Rafael Payares Guevara","n":4},{"pair":"Jorgelina Cecilia Pasqualino — Claudia Patricia Diaz Mendoza","a":"Jorgelina Cecilia Pasqualino","b":"Claudia Patricia Diaz Mendoza","n":3},{"pair":"Diana Carolina Rubiano Labrador — Rosa Leonor Acevedo Barrios","a":"Diana Carolina Rubiano Labrador","b":"Rosa Leonor Acevedo Barrios","n":3},{"pair":"Enrique Pereira Batista — Alberto Patiño Vanegas","a":"Enrique Pereira Batista","b":"Alberto Patiño Vanegas","n":3},{"pair":"Enrique Pereira Batista — Carlos Rafael Payares Guevara","a":"Enrique Pereira Batista","b":"Carlos Rafael Payares Guevara","n":3},{"pair":"Alberto Patiño Vanegas — Jorge Luis Villalba Acevedo","a":"Alberto Patiño Vanegas","b":"Jorge Luis Villalba Acevedo","n":2},{"pair":"Alberto Patiño Vanegas — Hernando Rafael Altamar Mercado","a":"Alberto Patiño Vanegas","b":"Hernando Rafael Altamar Mercado","n":2},{"pair":"Alberto Patiño Vanegas — Vilma Viviana Ojeda Caicedo","a":"Alberto Patiño Vanegas","b":"Vilma Viviana Ojeda Caicedo","n":2},{"pair":"Holman Ospina Mateus — Jenifer Yoris Vasquez Aguilar","a":"Holman Ospina Mateus","b":"Jenifer Yoris Vasquez Aguilar","n":2},{"pair":"Alberto Patiño Vanegas — Danilo Lusbin Ariza Rua","a":"Alberto Patiño Vanegas","b":"Danilo Lusbin Ariza Rua","n":2},{"pair":"Diana Carolina Rubiano Labrador — Danilo Lusbin Ariza Rua","a":"Diana Carolina Rubiano Labrador","b":"Danilo Lusbin Ariza Rua","n":2},{"pair":"Edwin Alexander Puertas del Castillo — Jenifer Yoris Vasquez Aguilar","a":"Edwin Alexander Puertas del Castillo","b":"Jenifer Yoris Vasquez Aguilar","n":2},{"pair":"Edwin Alexander Puertas del Castillo — Yuranis Henriquez Nuñez","a":"Edwin Alexander Puertas del Castillo","b":"Yuranis Henriquez Nuñez","n":2},{"pair":"Hernando Rafael Altamar Mercado — Carlos Rafael Payares Guevara","a":"Hernando Rafael Altamar Mercado","b":"Carlos Rafael Payares Guevara","n":2},{"pair":"Hernando Rafael Altamar Mercado — Vilma Viviana Ojeda Caicedo","a":"Hernando Rafael Altamar Mercado","b":"Vilma Viviana Ojeda Caicedo","n":2},{"pair":"Vilma Viviana Ojeda Caicedo — Danilo Lusbin Ariza Rua","a":"Vilma Viviana Ojeda Caicedo","b":"Danilo Lusbin Ariza Rua","n":2},{"pair":"James Manuel Perez Moron — Lina Margarita Marrugo Salas","a":"James Manuel Perez Moron","b":"Lina Margarita Marrugo Salas","n":2},{"pair":"Jorgelina Cecilia Pasqualino — Diana Carolina Rubiano Labrador","a":"Jorgelina Cecilia Pasqualino","b":"Diana Carolina Rubiano Labrador","n":2},{"pair":"Edisson Chavarro Mesa — Alberto Patiño Vanegas","a":"Edisson Chavarro Mesa","b":"Alberto Patiño Vanegas","n":2}],"areas":[{"name":"Engineering","total":21,"Q1":11,"Q2":6,"Q3":4,"Q4":0,"No Q":0,"pct_q1":52.4},{"name":"Social Sciences","total":21,"Q1":12,"Q2":6,"Q3":2,"Q4":1,"No Q":0,"pct_q1":57.1},{"name":"Computer Science","total":11,"Q1":5,"Q2":4,"Q3":2,"Q4":0,"No Q":0,"pct_q1":45.5},{"name":"Psychology","total":9,"Q1":2,"Q2":1,"Q3":5,"Q4":1,"No Q":0,"pct_q1":22.2},{"name":"Medicine","total":8,"Q1":5,"Q2":1,"Q3":2,"Q4":0,"No Q":0,"pct_q1":62.5},{"name":"Environmental Science","total":7,"Q1":6,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":85.7},{"name":"Earth and Planetary Sciences","total":7,"Q1":4,"Q2":3,"Q3":0,"Q4":0,"No Q":0,"pct_q1":57.1},{"name":"Energy","total":7,"Q1":3,"Q2":1,"Q3":3,"Q4":0,"No Q":0,"pct_q1":42.9},{"name":"Materials Science","total":7,"Q1":5,"Q2":2,"Q3":0,"Q4":0,"No Q":0,"pct_q1":71.4},{"name":"Mathematics","total":6,"Q1":4,"Q2":1,"Q3":0,"Q4":1,"No Q":0,"pct_q1":66.7},{"name":"Chemical Engineering","total":6,"Q1":1,"Q2":4,"Q3":1,"Q4":0,"No Q":0,"pct_q1":16.7},{"name":"Physics and Astronomy","total":6,"Q1":3,"Q2":3,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Arts and Humanities","total":6,"Q1":3,"Q2":3,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Multidisciplinary","total":5,"Q1":4,"Q2":0,"Q3":0,"Q4":1,"No Q":0,"pct_q1":80.0},{"name":"Agricultural and Biological Sciences","total":4,"Q1":4,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0}]},"2026":{"kpis":{"n_docs":51,"n_articles":38,"n_authors":30,"n_schools":4,"q1":21,"q1q2":29,"has_q":36,"pct_q1":58.3,"pct_q1q2":80.6,"avg_sjr":0.77},"doc_types":{"Article":38,"Conference":7,"Review":5,"Other":1},"quartiles":{"Q1":21,"Q2":8,"Q3":6,"Q4":1,"No Q":2},"schools":[{"name":"Escuela de Transformación Digital","total":21,"Article":16,"Conference":5,"Review":0,"Other":0,"Q1":10,"Q2":2,"Q3":4,"Q4":0,"No Q":0,"pct_q1":62.5},{"name":"Escuela de Ingeniería, Arquitectura y Diseño","total":14,"Article":9,"Conference":2,"Review":3,"Other":0,"Q1":3,"Q2":3,"Q3":1,"Q4":0,"No Q":2,"pct_q1":42.9},{"name":"Escuela de Negocios, Leyes y Sociedad","total":12,"Article":11,"Conference":0,"Review":0,"Other":1,"Q1":5,"Q2":4,"Q3":1,"Q4":1,"No Q":0,"pct_q1":45.5},{"name":"Ciencias Básicas","total":8,"Article":4,"Conference":1,"Review":3,"Other":0,"Q1":4,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0}],"authors":[{"name":"David Sierra Porta","school":"Escuela de Transformación Digital","total":7,"Article":7,"Conference":0,"Review":0,"Other":0,"Q1":4,"Q2":1,"Q3":2,"Q4":0,"No Q":0,"pct_q1":57.1},{"name":"Miguel Efren Garces Prettel","school":"Escuela de Transformación Digital","total":6,"Article":6,"Conference":0,"Review":0,"Other":0,"Q1":3,"Q2":1,"Q3":2,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Rosa Leonor Acevedo Barrios","school":"Ciencias Básicas","total":5,"Article":3,"Conference":0,"Review":2,"Other":0,"Q1":3,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Juan Carlos Martinez Santos","school":"Escuela de Transformación Digital","total":4,"Article":1,"Conference":3,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Pedro Vazquez Miraz","school":"Escuela de Negocios, Leyes y Sociedad","total":3,"Article":3,"Conference":0,"Review":0,"Other":0,"Q1":0,"Q2":2,"Q3":0,"Q4":1,"No Q":0,"pct_q1":0.0},{"name":"Juan Gabriel Fajardo Cuadro","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":3,"Article":2,"Conference":0,"Review":1,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":1,"pct_q1":0.0},{"name":"Pablo Gustavo Salomo Abitbol Pineiro","school":"Escuela de Negocios, Leyes y Sociedad","total":2,"Article":2,"Conference":0,"Review":0,"Other":0,"Q1":2,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"David Javier Fortich Perez","school":"Escuela de Negocios, Leyes y Sociedad","total":2,"Article":1,"Conference":0,"Review":0,"Other":1,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Rafael David Mendez Anillo","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":2,"Article":2,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Karol Patricia Gutierrez Ruiz","school":"Escuela de Negocios, Leyes y Sociedad","total":2,"Article":2,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Edwin Alexander Puertas del Castillo","school":"Escuela de Transformación Digital","total":2,"Article":1,"Conference":1,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Jairo Enrique Serrano Castañeda","school":"Escuela de Transformación Digital","total":2,"Article":0,"Conference":2,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Luis Ángel Porto Hernández","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":2,"Article":2,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":1,"pct_q1":100.0},{"name":"Diana Carolina Rubiano Labrador","school":"Ciencias Básicas","total":2,"Article":1,"Conference":0,"Review":1,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Claudia Patricia Diaz Mendoza","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":2,"Article":2,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Lenny Alexandra Romero Perez","school":"Ciencias Básicas","total":2,"Article":0,"Conference":1,"Review":1,"Other":0,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0},{"name":"Elias Rafael Geney Castro","school":"Escuela de Negocios, Leyes y Sociedad","total":2,"Article":2,"Conference":0,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":1,"No Q":0,"pct_q1":0.0},{"name":"Jorgelina Cecilia Pasqualino","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":1,"Article":1,"Conference":0,"Review":0,"Other":0,"Q1":0,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":0.0},{"name":"Jorge Luis Alvis Arrieta","school":"Escuela de Negocios, Leyes y Sociedad","total":1,"Article":1,"Conference":0,"Review":0,"Other":0,"Q1":1,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Alfredo Miguel Abuchar Curi","school":"Escuela de Ingeniería, Arquitectura y Diseño","total":1,"Article":1,"Conference":0,"Review":0,"Other":0,"Q1":0,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":0.0}],"pairs":[{"pair":"Juan Carlos Martinez Santos — Edwin Alexander Puertas del Castillo","a":"Juan Carlos Martinez Santos","b":"Edwin Alexander Puertas del Castillo","n":2},{"pair":"Pedro Vazquez Miraz — Elias Rafael Geney Castro","a":"Pedro Vazquez Miraz","b":"Elias Rafael Geney Castro","n":2},{"pair":"Jorgelina Cecilia Pasqualino — Claudia Patricia Diaz Mendoza","a":"Jorgelina Cecilia Pasqualino","b":"Claudia Patricia Diaz Mendoza","n":1},{"pair":"Andres Guillermo Marrugo Hernandez — Lenny Alexandra Romero Perez","a":"Andres Guillermo Marrugo Hernandez","b":"Lenny Alexandra Romero Perez","n":1},{"pair":"Lenny Alexandra Romero Perez — Sonia Helena Contreras Ortiz","a":"Lenny Alexandra Romero Perez","b":"Sonia Helena Contreras Ortiz","n":1},{"pair":"Diana Carolina Rubiano Labrador — Rosa Leonor Acevedo Barrios","a":"Diana Carolina Rubiano Labrador","b":"Rosa Leonor Acevedo Barrios","n":1},{"pair":"Argemiro Palencia Diaz — Alfredo Miguel Abuchar Curi","a":"Argemiro Palencia Diaz","b":"Alfredo Miguel Abuchar Curi","n":1},{"pair":"Miguel Efren Garces Prettel — Pedro Vazquez Miraz","a":"Miguel Efren Garces Prettel","b":"Pedro Vazquez Miraz","n":1},{"pair":"Miguel Efren Garces Prettel — Jorge Luis Alvis Arrieta","a":"Miguel Efren Garces Prettel","b":"Jorge Luis Alvis Arrieta","n":1},{"pair":"Jorge Eliecer Duque Pardo — Jose Luis Villa Ramirez","a":"Jorge Eliecer Duque Pardo","b":"Jose Luis Villa Ramirez","n":1}],"areas":[{"name":"Physics and Astronomy","total":10,"Q1":8,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":80.0},{"name":"Social Sciences","total":10,"Q1":4,"Q2":4,"Q3":2,"Q4":0,"No Q":0,"pct_q1":40.0},{"name":"Psychology","total":6,"Q1":3,"Q2":2,"Q3":0,"Q4":1,"No Q":0,"pct_q1":50.0},{"name":"Engineering","total":6,"Q1":4,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Environmental Science","total":4,"Q1":1,"Q2":2,"Q3":1,"Q4":0,"No Q":0,"pct_q1":25.0},{"name":"Multidisciplinary","total":4,"Q1":4,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Chemical Engineering","total":4,"Q1":1,"Q2":3,"Q3":0,"Q4":0,"No Q":0,"pct_q1":25.0},{"name":"Computer Science","total":4,"Q1":2,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Materials Science","total":3,"Q1":1,"Q2":1,"Q3":1,"Q4":0,"No Q":0,"pct_q1":33.3},{"name":"Medicine","total":3,"Q1":2,"Q2":1,"Q3":0,"Q4":0,"No Q":0,"pct_q1":66.7},{"name":"Earth and Planetary Sciences","total":3,"Q1":3,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Sin clasificar","total":2,"Q1":0,"Q2":0,"Q3":0,"Q4":0,"No Q":2,"pct_q1":0},{"name":"Arts and Humanities","total":2,"Q1":2,"Q2":0,"Q3":0,"Q4":0,"No Q":0,"pct_q1":100.0},{"name":"Chemistry","total":2,"Q1":1,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":50.0},{"name":"Business, Management and Accounting","total":2,"Q1":1,"Q2":0,"Q3":1,"Q4":0,"No Q":0,"pct_q1":50.0}]}}};
 
 // ── PALETTE ─────────────────────────────────────────────────────
 const C = {
   Article:'#2563EB', Conference:'#EA580C', Review:'#059669', Other:'#9CA3AF',
-  Q1:'#10B981',  Q2:'#3B82F6',  Q3:'#F59E0B',  Q4:'#EF4444',  'No Q':'#CBD5E1',
+  Q1:'#10B981', Q2:'#3B82F6', Q3:'#F59E0B', Q4:'#EF4444', 'No Q':'#CBD5E1',
 };
-const TYPE_LABELS  = ['Article','Conference','Review','Other'];
-const Q_LABELS     = ['Q1','Q2','Q3','Q4','No Q'];
+const TYPE_LABELS = ['Article','Conference','Review','Other'];
+const Q_LABELS    = ['Q1','Q2','Q3','Q4','No Q'];
 const FONT = "'Segoe UI','Inter',Arial,sans-serif";
 
 // Chart.js defaults
@@ -456,12 +604,8 @@ function hBar(labels, datasets, opts={}){
       indexAxis:'y', responsive:true, maintainAspectRatio:false,
       animation:{duration:420, easing:'easeOutQuart'},
       plugins:{
-        legend:{position:'top',display:opts.legend!==false},
-        tooltip:{
-          callbacks:{
-            label: ctx => ` ${ctx.dataset.label||''}: ${ctx.parsed.x}`
-          }
-        }
+        legend:{position:'top', display:opts.legend!==false},
+        tooltip:{callbacks:{label: ctx => ` ${ctx.dataset.label||''}: ${ctx.parsed.x}`}}
       },
       scales:{
         x:{stacked:!!opts.stacked, grid:{color:'rgba(0,0,0,0.05)'},
@@ -483,12 +627,10 @@ function doughnut(labels, data, colors, opts={}){
       animation:{duration:420},
       plugins:{
         legend:{position:'right', labels:{font:{size:11}, padding:10}},
-        tooltip:{callbacks:{
-          label: ctx => {
-            const pct = total>0?(ctx.parsed/total*100).toFixed(1):'0';
-            return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
-          }
-        }}
+        tooltip:{callbacks:{label: ctx => {
+          const pct = total>0?(ctx.parsed/total*100).toFixed(1):'0';
+          return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+        }}}
       },
       ...opts
     }
@@ -496,34 +638,84 @@ function doughnut(labels, data, colors, opts={}){
 }
 function label(id, text){ const el=document.getElementById(id); if(el) el.textContent=text; }
 
+// ── DARK / LIGHT THEME ───────────────────────────────────────────
+let darkMode = localStorage.getItem('utb-theme') === 'dark';
+function applyTheme(dark){
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  const btn = document.getElementById('themeBtn');
+  if(btn) btn.innerHTML = dark ? '☀️ Claro' : '🌙 Oscuro';
+  // Update Chart.js color defaults
+  const col  = dark ? '#94A3B8' : '#64748B';
+  const grid = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  Chart.defaults.color = col;
+  // Re-apply to existing charts
+  Object.values(charts).forEach(ch=>{
+    if(ch.config && ch.config.type === 'bar'){
+      ['x','y'].forEach(ax=>{
+        if(ch.options.scales[ax]){
+          if(ch.options.scales[ax].grid) ch.options.scales[ax].grid.color = grid;
+          if(ch.options.scales[ax].ticks) ch.options.scales[ax].ticks.color = col;
+        }
+      });
+    }
+    if(ch.options.plugins && ch.options.plugins.legend && ch.options.plugins.legend.labels)
+      ch.options.plugins.legend.labels.color = col;
+    ch.update('none');
+  });
+}
+function toggleTheme(){
+  darkMode = !darkMode;
+  localStorage.setItem('utb-theme', darkMode ? 'dark' : 'light');
+  applyTheme(darkMode);
+}
+
+// ── HEIGHT RESIZE CONTROLS ───────────────────────────────────────
+function toggleResize(btn){
+  const card = btn.closest('.card');
+  const row  = card.querySelector('.resize-row');
+  if(!row) return;
+  const visible = row.style.display === 'flex';
+  row.style.display = visible ? 'none' : 'flex';
+  btn.style.background = visible ? '' : '#EFF6FF';
+  btn.style.color      = visible ? '' : '#1D4ED8';
+  btn.style.borderColor= visible ? '' : '#93C5FD';
+}
+function resizeChart(slider){
+  const card   = slider.closest('.card');
+  const wrap   = card.querySelector('.chart-wrap');
+  const lbl    = card.querySelector('.height-lbl');
+  const h      = parseInt(slider.value);
+  if(wrap) wrap.style.height = h + 'px';
+  if(lbl)  lbl.textContent   = h + 'px';
+  const canvas = wrap ? wrap.querySelector('canvas') : null;
+  if(canvas && charts[canvas.id]) charts[canvas.id].resize();
+}
+
 // ── KPI UPDATE ───────────────────────────────────────────────────
 function updateKPIs(){
   const k = D.by_year[year].kpis;
-  document.getElementById('k-docs').textContent = k.n_docs;
-  document.getElementById('k-arts').textContent = k.n_articles;
-  document.getElementById('k-q1').textContent   = k.pct_q1 + '%';
-  document.getElementById('k-q1q2').textContent = k.pct_q1q2 + '%';
-  document.getElementById('k-auth').textContent = k.n_authors;
-  document.getElementById('k-sch').textContent  = k.n_schools;
+  document.getElementById('k-docs').textContent  = k.n_docs;
+  document.getElementById('k-arts').textContent  = k.n_articles;
+  document.getElementById('k-q1').textContent    = k.pct_q1 + '%';
+  document.getElementById('k-q1q2').textContent  = k.pct_q1q2 + '%';
+  document.getElementById('k-auth').textContent  = k.n_authors;
+  document.getElementById('k-sch').textContent   = k.n_schools;
 }
 
 // ── CHART 1: TIMELINE (fixed, all years) ────────────────────────
 function drawTimeline(){
   const tl = D.timeline;
-  const labels = tl.map(r=>r.year);
+  const labels   = tl.map(r=>r.year);
   const datasets = TYPE_LABELS.map(t=>({
     label:t, data:tl.map(r=>r[t]||0),
-    backgroundColor:C[t], borderRadius:4,
-    borderSkipped:false,
+    backgroundColor:C[t], borderRadius:4, borderSkipped:false,
   }));
-  // Add total text via dataset trick
-  const totals = tl.map(r=>r.total||0);
   mkChart('c-timeline', hBar(labels, datasets, {stacked:true}));
 }
 
 // ── CHART 2: TYPE DONUT ─────────────────────────────────────────
 function drawTypeDonut(){
-  const dt = D.by_year[year].doc_types;
+  const dt   = D.by_year[year].doc_types;
   const vals = TYPE_LABELS.map(t=>dt[t]||0);
   label('lbl-donut-type', year);
   mkChart('c-type-donut', doughnut(TYPE_LABELS, vals, TYPE_LABELS.map(t=>C[t])));
@@ -531,8 +723,7 @@ function drawTypeDonut(){
 
 // ── CHART 3: Q1+Q2 mini donut ───────────────────────────────────
 function drawQ1Q2Mini(){
-  const k = D.by_year[year].kpis;
-  const has_q = k.has_q || 0;
+  const k   = D.by_year[year].kpis;
   const q1  = k.q1  || 0;
   const q2  = (D.by_year[year].quartiles['Q2']||0);
   const q3  = (D.by_year[year].quartiles['Q3']||0);
@@ -549,7 +740,7 @@ function drawQ1Q2Mini(){
 // ── CHART 4: QUARTILE TREND (fixed, all years) ──────────────────
 function drawQTrend(){
   const qt = D.quartile_trend;
-  const labels = qt.map(r=>r.year);
+  const labels   = qt.map(r=>r.year);
   const datasets = Q_LABELS.map(q=>({
     label:q, data:qt.map(r=>r[q]||0),
     backgroundColor:C[q], borderRadius:3, borderSkipped:false,
@@ -559,13 +750,13 @@ function drawQTrend(){
 
 // ── CHART 5: QUARTILE DONUT ─────────────────────────────────────
 function drawQDonut(){
-  const q = D.by_year[year].quartiles;
+  const q    = D.by_year[year].quartiles;
   const vals = Q_LABELS.map(l=>q[l]||0);
   label('lbl-q-donut', year);
   mkChart('c-q-donut', doughnut(Q_LABELS, vals, Q_LABELS.map(l=>C[l])));
 }
 
-// ── CHART 6: % Q1 POR ESCUELA (horizontal bar) ──────────────────
+// ── CHART 6: % Q1 POR ESCUELA ───────────────────────────────────
 function drawPctQ1(){
   const schools = D.by_year[year].schools.slice(0,10);
   const labels  = schools.map(s=>s.name);
@@ -592,27 +783,25 @@ function drawPctQ1(){
   });
 }
 
-// ── CHART 7: SCHOOL × QUARTILE (stacked horizontal) ─────────────
+// ── CHART 7: SCHOOL × QUARTILE ──────────────────────────────────
 function drawSchoolQ(){
-  const schools = D.by_year[year].schools;
-  const labels  = schools.map(s=>s.name).reverse();
+  const schools  = D.by_year[year].schools;
+  const labels   = schools.map(s=>s.name).reverse();
   label('lbl-sch-q', year);
   const datasets = Q_LABELS.map(q=>({
-    label:q,
-    data: schools.map(s=>s[q]||0).reverse(),
+    label:q, data:schools.map(s=>s[q]||0).reverse(),
     backgroundColor:C[q], borderRadius:3, borderSkipped:false,
   }));
   mkChart('c-sch-q', hBar(labels, datasets, {stacked:true}));
 }
 
-// ── CHART 8: SCHOOL × TYPE (stacked horizontal) ─────────────────
+// ── CHART 8: SCHOOL × TYPE ──────────────────────────────────────
 function drawSchoolType(){
-  const schools = D.by_year[year].schools;
-  const labels  = schools.map(s=>s.name).reverse();
+  const schools  = D.by_year[year].schools;
+  const labels   = schools.map(s=>s.name).reverse();
   label('lbl-sch-type', year);
   const datasets = TYPE_LABELS.map(t=>({
-    label:t,
-    data: schools.map(s=>s[t]||0).reverse(),
+    label:t, data:schools.map(s=>s[t]||0).reverse(),
     backgroundColor:C[t], borderRadius:3, borderSkipped:false,
   }));
   mkChart('c-sch-type', hBar(labels, datasets, {stacked:true}));
@@ -620,12 +809,11 @@ function drawSchoolType(){
 
 // ── CHART 9: AUTHORS × TYPE ─────────────────────────────────────
 function drawAuthType(){
-  const authors = D.by_year[year].authors;
-  const labels  = authors.map(a=>a.name).reverse();
+  const authors  = D.by_year[year].authors;
+  const labels   = authors.map(a=>a.name).reverse();
   label('lbl-auth-type', year);
   const datasets = TYPE_LABELS.map(t=>({
-    label:t,
-    data: authors.map(a=>a[t]||0).reverse(),
+    label:t, data:authors.map(a=>a[t]||0).reverse(),
     backgroundColor:C[t], borderRadius:3, borderSkipped:false,
   }));
   mkChart('c-auth-type', hBar(labels, datasets, {stacked:true}));
@@ -660,21 +848,14 @@ function drawAuthQ1(){
 // ── CHART 11: PAIRS ─────────────────────────────────────────────
 function drawPairs(){
   const pairs = D.by_year[year].pairs;
-  if(!pairs.length){
-    label('lbl-pairs', year+' (sin datos)');
-    return;
-  }
+  if(!pairs.length){ label('lbl-pairs', year+' (sin datos)'); return; }
   const labels = pairs.map(p=>p.pair).reverse();
   const vals   = pairs.map(p=>p.n).reverse();
   label('lbl-pairs', year);
-  // gradient color: more = darker blue
-  const maxN = Math.max(...vals, 1);
+  const maxN   = Math.max(...vals, 1);
   const colors = vals.map(v=>{
     const t = v/maxN;
-    const r = Math.round(191 - t*110);
-    const g = Math.round(219 - t*110);
-    const b = Math.round(254 - t*60);
-    return `rgb(${r},${g},${b})`;
+    return `rgb(${Math.round(191-t*110)},${Math.round(219-t*110)},${Math.round(254-t*60)})`;
   });
   mkChart('c-pairs',{type:'bar',
     data:{labels, datasets:[{
@@ -694,7 +875,49 @@ function drawPairs(){
   });
 }
 
-// ── RENDER ALL ───────────────────────────────────────────────────
+// ── CHART 12: AREAS × QUARTILE ──────────────────────────────────
+function drawAreaQ(){
+  const areas = D.by_year[year].areas;
+  if(!areas || !areas.length){ label('lbl-area-q', year+' (sin datos)'); return; }
+  const labels   = areas.map(a=>a.name).reverse();
+  label('lbl-area-q', year);
+  const datasets = Q_LABELS.map(q=>({
+    label:q, data:areas.map(a=>a[q]||0).reverse(),
+    backgroundColor:C[q], borderRadius:3, borderSkipped:false,
+  }));
+  mkChart('c-area-q', hBar(labels, datasets, {stacked:true}));
+}
+
+// ── CHART 13: % Q1 POR ÁREA ─────────────────────────────────────
+function drawAreaPct(){
+  const areas = D.by_year[year].areas;
+  if(!areas || !areas.length){ label('lbl-area-pct', year+' (sin datos)'); return; }
+  const sorted = [...areas].sort((a,b)=>(b.pct_q1||0)-(a.pct_q1||0));
+  const labels = sorted.map(a=>a.name).reverse();
+  const vals   = sorted.map(a=>a.pct_q1||0).reverse();
+  label('lbl-area-pct', year);
+  mkChart('c-area-pct',{type:'bar',
+    data:{labels, datasets:[{
+      label:'% Q1', data:vals,
+      backgroundColor: vals.map(v=>
+        v>=60?'#10B981':v>=40?'#3B82F6':v>=20?'#F59E0B':'#EF4444'),
+      borderRadius:4, borderSkipped:false,
+    }]},
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      animation:{duration:420},
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x.toFixed(1)}% artículos en Q1`}}},
+      scales:{
+        x:{max:100, grid:{color:'rgba(0,0,0,0.05)'},
+           ticks:{callback:v=>v+'%', font:{size:11}}},
+        y:{grid:{display:false}, ticks:{font:{size:11}}}
+      }
+    }
+  });
+}
+
+// ── RENDER ALL (year-sensitive charts) ───────────────────────────
 function renderAll(){
   updateKPIs();
   drawTypeDonut();
@@ -706,6 +929,8 @@ function renderAll(){
   drawAuthType();
   drawAuthQ1();
   drawPairs();
+  drawAreaQ();
+  drawAreaPct();
 }
 
 // ── YEAR FILTER SETUP ────────────────────────────────────────────
@@ -716,10 +941,7 @@ function setupYearFilter(){
     opt.value = opt.textContent = y;
     sel.appendChild(opt);
   });
-  sel.addEventListener('change', e=>{
-    year = e.target.value;
-    renderAll();
-  });
+  sel.addEventListener('change', e=>{ year = e.target.value; renderAll(); });
 }
 
 // ── NAV HIGHLIGHT ────────────────────────────────────────────────
@@ -741,9 +963,10 @@ function setupNav(){
 document.addEventListener('DOMContentLoaded',()=>{
   setupYearFilter();
   setupNav();
-  drawTimeline();   // fixed (all years)
-  drawQTrend();     // fixed (all years)
-  renderAll();      // year-sensitive charts
+  applyTheme(darkMode);  // restore saved theme
+  drawTimeline();  // fixed (all years)
+  drawQTrend();    // fixed (all years)
+  renderAll();     // year-sensitive charts
 });
 </script>
 </body>
