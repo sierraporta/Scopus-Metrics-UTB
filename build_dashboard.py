@@ -23,10 +23,19 @@ from openpyxl.utils import get_column_letter
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
 BASE_DIR      = Path(__file__).parent
 
-# Toma automáticamente el export de Scopus más reciente (por fecha de modificación).
-# Si prefieres fijar un archivo específico, comenta las dos líneas siguientes
-# y descomenta la tercera con el nombre exacto.
-_scopus_candidates = sorted(BASE_DIR.glob("scopus_export_*.csv"), key=lambda f: f.stat().st_mtime)
+# Toma automáticamente el export de Scopus más reciente ordenando por la fecha
+# que Scopus incrusta en el propio nombre del archivo (ej: "scopus_export_Jun 14-2026_...csv").
+# Esto funciona igual localmente y en GitHub Actions (donde st_mtime no es fiable).
+# Si prefieres fijar un archivo específico, comenta las tres líneas siguientes
+# y descomenta la última con el nombre exacto.
+from datetime import datetime as _dt
+def _scopus_date(p):
+    try:
+        date_str = p.stem.split("_", 2)[2].split("_")[0]   # "Jun 14-2026"
+        return _dt.strptime(date_str, "%b %d-%Y")
+    except Exception:
+        return _dt.min
+_scopus_candidates = sorted(BASE_DIR.glob("scopus_export_*.csv"), key=_scopus_date)
 SCOPUS_CSV    = _scopus_candidates[-1] if _scopus_candidates else None
 # SCOPUS_CSV  = BASE_DIR / "scopus_export_Jun 14-2026_1d2db208-3a63-4746-be63-c20b3217c430.csv"
 FACULTY_XLSX  = BASE_DIR / "Base de Datos Scopus 2025.xlsx"
