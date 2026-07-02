@@ -40,7 +40,7 @@ jobs:
 
       # 3. Instalar dependencias
       - name: Instalar dependencias
-        run: pip install pandas openpyxl numpy
+        run: pip install -r requirements.txt
 
       # 4. Ejecutar el script generador del dashboard
       - name: Generar dashboard
