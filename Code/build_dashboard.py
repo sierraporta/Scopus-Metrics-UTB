@@ -23,7 +23,7 @@ from openpyxl.utils import get_column_letter
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
 BASE_DIR      = Path(__file__).parent
 SCOPUS_CSV    = BASE_DIR / "scopus_export_Jun 14-2026_1d2db208-3a63-4746-be63-c20b3217c430.csv"
-FACULTY_XLSX  = BASE_DIR / "Base de Datos Scopus 2024.xlsx"
+FACULTY_XLSX  = BASE_DIR / "Base de Datos Scopus 2025.xlsx"
 SCIMAGO_CSV   = BASE_DIR / "scimagojr 2025.csv"
 OUT_DIR       = BASE_DIR / "utb_scopus_dashboard_single_pretty"
 START_YEAR    = 2022
@@ -85,7 +85,7 @@ def safe_int(x):
 
 # ─── LOAD FACULTY ─────────────────────────────────────────────────────────────
 print("Loading faculty...")
-faculty_raw = pd.read_excel(FACULTY_XLSX, sheet_name="Hoja1")
+faculty_raw = pd.read_excel(FACULTY_XLSX, sheet_name="DOCENTES DE PLANTA 2025-2")
 faculty_raw["_id_url"]  = faculty_raw.get("SCOPUS",   pd.Series([None]*len(faculty_raw))).apply(_extract_authorid)
 faculty_raw["_id_cell"] = faculty_raw.get("ID SCOPUS",pd.Series([None]*len(faculty_raw))).apply(_canon_id)
 faculty_raw["author_id"] = faculty_raw["_id_cell"].where(faculty_raw["_id_cell"].notna(), faculty_raw["_id_url"])
