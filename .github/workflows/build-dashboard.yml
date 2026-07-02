@@ -1,0 +1,56 @@
+name: Build UTB Scopus Dashboard
+
+# ── TRIGGERS ────────────────────────────────────────────────────────────────
+on:
+  push:
+    branches: [main]
+    paths:
+      # Se activa cuando subes un nuevo export de Scopus
+      - 'scopus_export_*.csv'
+      # También si actualizas el script o los datos de referencia
+      - 'build_dashboard.py'
+      - 'Base de Datos Scopus 2025.xlsx'
+      - 'scimagojr 2025.csv'
+
+  schedule:
+    # Corre automáticamente el día 1 y el 15 de cada mes a las 6:00 AM UTC
+    - cron: '0 6 1,15 * *'
+
+  # Permite lanzarlo manualmente desde la pestaña Actions en GitHub
+  workflow_dispatch:
+
+# ── JOB ─────────────────────────────────────────────────────────────────────
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # necesario para hacer commit de vuelta al repo
+
+    steps:
+      # 1. Clonar el repositorio
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+
+      # 2. Configurar Python
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # 3. Instalar dependencias
+      - name: Instalar dependencias
+        run: pip install pandas openpyxl numpy
+
+      # 4. Ejecutar el script generador del dashboard
+      - name: Generar dashboard
+        run: python build_dashboard.py
+
+      # 5. Commit y push automático (solo si hubo cambios)
+      - name: Commit y push del dashboard actualizado
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html autores_pivot_cuartiles.xlsx tables.xlsx
+          git diff --staged --quiet && echo "Sin cambios, nada que commitear." || \
+            git commit -m "🤖 Dashboard auto-actualizado [skip ci]" && git push
