@@ -234,18 +234,20 @@ def filter_year(df_in, ys):
 def doc_type_counts(base):
     return {dt: int(base[base["doc_type3"]==dt]["EID"].nunique()) for dt in DOC_TYPES}
 
-def quartile_counts(base, articles_only=True):
-    b = base[base["doc_type3"]=="Article"] if articles_only else base
-    return {q: int(b[b["quartile"]==q]["EID"].nunique()) for q in QUARTILES}
+def quartile_counts(base):
+    # Any doc (any type) whose ISSN matched Scimago gets its quartile counted
+    return {q: int(base[base["quartile"]==q]["EID"].nunique()) for q in QUARTILES}
 
 def kpis(base_ap, base_sp):
     n_docs    = int(base_ap["EID"].nunique())
     arts      = base_ap[base_ap["doc_type3"]=="Article"]
     n_arts    = int(arts["EID"].nunique())
-    q1        = int(arts[arts["quartile"]=="Q1"]["EID"].nunique())
-    q1q2      = int(arts[arts["quartile"].isin(["Q1","Q2"])]["EID"].nunique())
-    has_q     = int(arts[arts["quartile"]!="No Q"]["EID"].nunique())
-    avg_sjr   = round(float(arts[arts["sjr"]>0]["sjr"].mean()),3) if arts[arts["sjr"]>0].shape[0]>0 else 0
+    # Quality metrics: any doc whose ISSN matched Scimago (not just Articles)
+    indexed   = base_ap[base_ap["quartile"]!="No Q"]
+    q1        = int(indexed[indexed["quartile"]=="Q1"]["EID"].nunique())
+    q1q2      = int(indexed[indexed["quartile"].isin(["Q1","Q2"])]["EID"].nunique())
+    has_q     = int(indexed["EID"].nunique())
+    avg_sjr   = round(float(indexed[indexed["sjr"]>0]["sjr"].mean()),3) if indexed[indexed["sjr"]>0].shape[0]>0 else 0
     pct_q1    = round(q1/has_q*100,1)   if has_q > 0 else 0
     pct_q1q2  = round(q1q2/has_q*100,1) if has_q > 0 else 0
     n_authors = int(base_ap["author_id"].nunique())
@@ -266,8 +268,11 @@ def schools_data(base_ap, base_sp):
         row = {"name": esc, "total": int(sub["EID"].nunique())}
         for dt in DOC_TYPES:
             row[dt] = int(sub[sub["doc_type3"]==dt]["EID"].nunique())
-        for q in QUARTILES:
-            row[q] = int(art[art["quartile"]==q]["EID"].nunique())
+        # Quartile counts: any doc (any type) whose ISSN matched Scimago
+        indexed = sub[sub["quartile"]!="No Q"]
+        for q in ["Q1","Q2","Q3","Q4"]:
+            row[q] = int(indexed[indexed["quartile"]==q]["EID"].nunique())
+        row["No Q"] = int(sub[sub["quartile"]=="No Q"]["EID"].nunique())
         has_q = sum(row[q] for q in ["Q1","Q2","Q3","Q4"])
         row["pct_q1"] = round(row["Q1"]/has_q*100, 1) if has_q > 0 else 0
         rows.append(row)
@@ -281,13 +286,15 @@ def authors_data(base_ap):
            .head(TOP_AUTHORS))
     rows = []
     for _, r in tot.iterrows():
-        sub = base_ap[base_ap["author_id"]==r["author_id"]].drop_duplicates("EID")
-        art = sub[sub["doc_type3"]=="Article"]
-        row = {"name": r["DOCENTE"], "school": r["ESCUELA"], "total": int(r["total"])}
+        sub     = base_ap[base_ap["author_id"]==r["author_id"]].drop_duplicates("EID")
+        indexed = sub[sub["quartile"]!="No Q"]  # any type with Scimago match
+        row = {"name": r["DOCENTE"], "school": r["ESCUELA"],
+               "scopus_id": r["author_id"], "total": int(r["total"])}
         for dt in DOC_TYPES:
             row[dt] = int(sub[sub["doc_type3"]==dt].shape[0])
-        for q in QUARTILES:
-            row[q] = int(art[art["quartile"]==q].shape[0])
+        for q in ["Q1","Q2","Q3","Q4"]:
+            row[q] = int(indexed[indexed["quartile"]==q].shape[0])
+        row["No Q"] = int(sub[sub["quartile"]=="No Q"].shape[0])
         has_q = sum(row[q] for q in ["Q1","Q2","Q3","Q4"])
         row["pct_q1"] = round(row["Q1"]/has_q*100,1) if has_q>0 else 0
         rows.append(row)
@@ -338,13 +345,16 @@ def areas_data(area_sub):
 
 def authors_pivot_data():
     """
-    Pivot: one row per author, columns = (year × quartile) for ARTICLES only.
-    Returns list of dicts sorted by school → total_arts desc.
+    Pivot: one row per author.
+    Q1/Q2/Q3/Q4 = any doc type whose ISSN matched Scimago (includes indexed conference papers).
+    SC           = Articles with no Scimago match (unmatched journal articles).
+    Arts         = all Article-type documents.
+    Docs         = all documents.
     """
-    arts   = author_papers[author_papers["doc_type3"] == "Article"].copy()
-    all_ap = author_papers.copy()
+    indexed = author_papers[author_papers["quartile"] != "No Q"].copy()
+    arts    = author_papers[author_papers["doc_type3"] == "Article"].copy()
+    all_ap  = author_papers.copy()
 
-    # Unique author info (pick first school/name per author_id)
     info_df = (author_papers
                .drop_duplicates("author_id")
                [["author_id","DOCENTE","ESCUELA"]]
@@ -352,21 +362,21 @@ def authors_pivot_data():
 
     rows = []
     for _, info in info_df.iterrows():
-        aid   = info["author_id"]
-        a_art = arts[arts["author_id"] == aid]
-        a_all = all_ap[all_ap["author_id"] == aid]
-        row   = {"name": info["DOCENTE"],
-                 "school": info["ESCUELA"],
-                 "scopus_id": aid}
+        aid     = info["author_id"]
+        a_idx   = indexed[indexed["author_id"] == aid]  # indexed (any type)
+        a_art   = arts[arts["author_id"] == aid]        # articles only
+        a_all   = all_ap[all_ap["author_id"] == aid]
+        row     = {"name": info["DOCENTE"], "school": info["ESCUELA"], "scopus_id": aid}
         grand_arts = 0
         for y in years_list:
-            yg = a_art[a_art["Year"] == y]
-            ya = a_all[a_all["Year"] == y]
-            yd = {}
+            yi    = a_idx[a_idx["Year"] == y]
+            ya_art = a_art[a_art["Year"] == y]
+            ya    = a_all[a_all["Year"] == y]
+            yd    = {}
             for q in ["Q1","Q2","Q3","Q4"]:
-                yd[q] = int(yg[yg["quartile"]==q]["EID"].nunique())
-            yd["SC"]         = int(yg[yg["quartile"]=="No Q"]["EID"].nunique())
-            yd["total_arts"] = int(yg["EID"].nunique())
+                yd[q] = int(yi[yi["quartile"]==q]["EID"].nunique())
+            yd["SC"]         = int(ya_art[ya_art["quartile"]=="No Q"]["EID"].nunique())
+            yd["total_arts"] = int(ya_art["EID"].nunique())
             yd["total_docs"] = int(ya["EID"].nunique())
             row[str(y)] = yd
             grand_arts  += yd["total_arts"]
@@ -374,9 +384,7 @@ def authors_pivot_data():
         rows.append(row)
 
     rows.sort(key=lambda r: (r["school"], -r["_grand_arts"]))
-    # Remove helper key before serializing
-    for r in rows:
-        del r["_grand_arts"]
+    for r in rows: del r["_grand_arts"]
     return rows
 
 # ─── BUILD TIMELINE (always all years, fixed) ─────────────────────────────────
@@ -389,11 +397,11 @@ for y in years_list:
         row[dt] = int(sub[sub["doc_type3"]==dt]["EID"].nunique())
     timeline.append(row)
 
-# Quartile trend: articles only, all years
+# Quartile trend: any doc with Scimago match (not just Articles)
 q_trend = []
 for y in years_list:
-    sub = school_papers[(school_papers["Year"]==y) & (school_papers["doc_type3"]=="Article")]
-    row = {"year": str(y), "total": int(sub["EID"].nunique())}
+    sub = school_papers[school_papers["Year"]==y]
+    row = {"year": str(y), "total": int(sub[sub["quartile"]!="No Q"]["EID"].nunique())}
     for q in QUARTILES:
         row[q] = int(sub[sub["quartile"]==q]["EID"].nunique())
     q_trend.append(row)
@@ -531,27 +539,6 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
   padding:4px 10px;border-radius:6px}
 .card-hd-right{display:flex;align-items:center;gap:8px}
 .chart-wrap{position:relative}
-/* ── RESIZE CONTROLS ──────────────────────────────────────────── */
-.resize-btn{
-  background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:8px;
-  cursor:pointer;color:#64748B;font-size:11px;font-weight:700;
-  padding:5px 10px;line-height:1;letter-spacing:.3px;
-  transition:all .15s;flex-shrink:0;font-family:inherit;
-  display:inline-flex;align-items:center;gap:5px}
-.resize-btn:hover{border-color:#93C5FD;color:#1D4ED8;background:#EFF6FF;
-  box-shadow:0 2px 8px rgba(37,99,235,.12)}
-.resize-row{
-  display:none;align-items:center;gap:12px;
-  padding:12px 4px 2px;border-top:1px solid #F1F5F9;margin-top:16px}
-.height-slider{
-  flex:1;accent-color:#1D4ED8;cursor:pointer;
-  -webkit-appearance:none;height:4px;background:#E2E8F0;border-radius:2px;outline:none}
-.height-slider::-webkit-slider-thumb{
-  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
-  background:#1D4ED8;cursor:pointer;box-shadow:0 0 0 3px rgba(37,99,235,.15)}
-.height-lbl{
-  font-size:11.5px;color:#475569;min-width:44px;text-align:right;
-  font-weight:600;font-variant-numeric:tabular-nums}
 /* ── 2-COL GRID for small charts ─────────────────────────────── */
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
 /* ── NOTE BOXES ───────────────────────────────────────────────── */
@@ -638,11 +625,6 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 [data-theme="dark"] .note-b{background:#0C1E3E;border-color:#3B82F6;color:#BAE6FD}
 [data-theme="dark"] .note-s{background:#1E293B;border-color:#475569;color:#94A3B8}
 [data-theme="dark"] hr.div{border-color:rgba(255,255,255,.08)}
-[data-theme="dark"] .resize-btn{border-color:#334155;color:#64748B;background:#1E293B}
-[data-theme="dark"] .resize-btn:hover{border-color:#3B82F6;color:#93C5FD;background:#0C1E3E;box-shadow:0 2px 8px rgba(59,130,246,.15)}
-[data-theme="dark"] .resize-row{border-color:rgba(255,255,255,.06)}
-[data-theme="dark"] .height-slider{background:#334155}
-[data-theme="dark"] .height-lbl{color:#94A3B8}
 [data-theme="dark"] .pivot-wrap{border-color:rgba(255,255,255,.08)}
 [data-theme="dark"] .pivot-tbl th{background:#1E293B;color:#94A3B8}
 [data-theme="dark"] .pivot-tbl th,[data-theme="dark"] .pivot-tbl td{border-color:rgba(255,255,255,.06)}
@@ -805,15 +787,9 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-title">Documentos por año — apilado por tipo</span></span>
       <span class="card-hd-right">
         <span class="card-note">Serie completa</span>
-        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
       </span>
     </div>
-    <div class="chart-wrap" style="height:200px"><canvas id="c-timeline"></canvas></div>
-    <div class="resize-row">
-      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
-      <input type="range" class="height-slider" min="150" max="1400" step="10" value="300" oninput="resizeChart(this)">
-      <span class="height-lbl">200px</span>
-    </div>
+    <div class="chart-wrap" style="height:300px"><canvas id="c-timeline"></canvas></div>
   </div>
 
   <div class="grid-2">
@@ -823,7 +799,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
           <span class="card-title">Composición por tipo</span></span>
         <span class="card-note" id="lbl-donut-type">ALL</span>
       </div>
-      <div class="chart-wrap" style="height:240px"><canvas id="c-type-donut"></canvas></div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-type-donut"></canvas></div>
     </div>
     <div class="card">
       <div class="card-hd">
@@ -831,7 +807,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
           <span class="card-title">Artículos en Q1 y Q2</span></span>
         <span class="card-note" id="lbl-q1q2-mini">ALL</span>
       </div>
-      <div class="chart-wrap" style="height:240px"><canvas id="c-q1q2-mini"></canvas></div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-q1q2-mini"></canvas></div>
     </div>
   </div>
 </section>
@@ -859,15 +835,9 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-title">Evolución de cuartiles por año — artículos</span></span>
       <span class="card-hd-right">
         <span class="card-note">Serie completa</span>
-        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
       </span>
     </div>
-    <div class="chart-wrap" style="height:200px"><canvas id="c-q-trend"></canvas></div>
-    <div class="resize-row">
-      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
-      <input type="range" class="height-slider" min="150" max="1400" step="10" value="300" oninput="resizeChart(this)">
-      <span class="height-lbl">200px</span>
-    </div>
+    <div class="chart-wrap" style="height:300px"><canvas id="c-q-trend"></canvas></div>
   </div>
 
   <div class="grid-2">
@@ -877,7 +847,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
           <span class="card-title">Distribución de cuartiles</span></span>
         <span class="card-note" id="lbl-q-donut">ALL</span>
       </div>
-      <div class="chart-wrap" style="height:240px"><canvas id="c-q-donut"></canvas></div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-q-donut"></canvas></div>
     </div>
     <div class="card">
       <div class="card-hd">
@@ -885,15 +855,9 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
           <span class="card-title">% Artículos Q1 por escuela</span></span>
         <span class="card-hd-right">
           <span class="card-note" id="lbl-pct-q1">ALL</span>
-          <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
         </span>
       </div>
-      <div class="chart-wrap" style="height:240px"><canvas id="c-pct-q1"></canvas></div>
-      <div class="resize-row">
-        <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
-        <input type="range" class="height-slider" min="150" max="1400" step="10" value="240" oninput="resizeChart(this)">
-        <span class="height-lbl">240px</span>
-      </div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-pct-q1"></canvas></div>
     </div>
   </div>
 
@@ -903,15 +867,9 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-title">Artículos por escuela — apilado por cuartil</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-sch-q">ALL</span>
-        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
       </span>
     </div>
-    <div class="chart-wrap" style="height:__SCH_H__px"><canvas id="c-sch-q"></canvas></div>
-    <div class="resize-row">
-      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
-      <input type="range" class="height-slider" min="150" max="1400" step="10" value="__SCH_H__" oninput="resizeChart(this)">
-      <span class="height-lbl">__SCH_H__px</span>
-    </div>
+    <div class="chart-wrap" style="height:300px"><canvas id="c-sch-q"></canvas></div>
   </div>
 </section>
 
@@ -936,15 +894,9 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-title">Documentos por escuela — apilado por tipo</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-sch-type">ALL</span>
-        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
       </span>
     </div>
-    <div class="chart-wrap" style="height:__SCH_H__px"><canvas id="c-sch-type"></canvas></div>
-    <div class="resize-row">
-      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
-      <input type="range" class="height-slider" min="150" max="1400" step="10" value="__SCH_H__" oninput="resizeChart(this)">
-      <span class="height-lbl">__SCH_H__px</span>
-    </div>
+    <div class="chart-wrap" style="height:300px"><canvas id="c-sch-type"></canvas></div>
   </div>
 </section>
 
@@ -970,32 +922,20 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-title">Top __TOP_AUTHORS__ autores — documentos por tipo</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-auth-type">ALL</span>
-        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
       </span>
     </div>
-    <div class="chart-wrap" style="height:__AUTH_H__px"><canvas id="c-auth-type"></canvas></div>
-    <div class="resize-row">
-      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
-      <input type="range" class="height-slider" min="150" max="1400" step="10" value="__AUTH_H__" oninput="resizeChart(this)">
-      <span class="height-lbl">__AUTH_H__px</span>
-    </div>
+    <div class="chart-wrap" style="height:300px"><canvas id="c-auth-type"></canvas></div>
   </div>
 
   <div class="card">
     <div class="card-hd">
       <span><span class="card-dot" style="background:#10B981"></span>
-        <span class="card-title">Top __TOP_AUTHORS__ autores — artículos Q1</span></span>
+        <span class="card-title">Top __TOP_AUTHORS__ autores — documentos Q1 + Q2</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-auth-q1">ALL</span>
-        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
       </span>
     </div>
-    <div class="chart-wrap" style="height:__AUTH_H__px"><canvas id="c-auth-q1"></canvas></div>
-    <div class="resize-row">
-      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
-      <input type="range" class="height-slider" min="150" max="1400" step="10" value="__AUTH_H__" oninput="resizeChart(this)">
-      <span class="height-lbl">__AUTH_H__px</span>
-    </div>
+    <div class="chart-wrap" style="height:300px"><canvas id="c-auth-q1"></canvas></div>
   </div>
 </section>
 
@@ -1021,15 +961,9 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-title">Pares más frecuentes — documentos compartidos</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-pairs">ALL</span>
-        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
       </span>
     </div>
-    <div class="chart-wrap" style="height:__PAIRS_H__px"><canvas id="c-pairs"></canvas></div>
-    <div class="resize-row">
-      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
-      <input type="range" class="height-slider" min="150" max="1400" step="10" value="__PAIRS_H__" oninput="resizeChart(this)">
-      <span class="height-lbl">__PAIRS_H__px</span>
-    </div>
+    <div class="chart-wrap" style="height:300px"><canvas id="c-pairs"></canvas></div>
   </div>
 </section>
 
@@ -1057,15 +991,9 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-title">Artículos por área — apilado por cuartil</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-area-q">ALL</span>
-        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
       </span>
     </div>
-    <div class="chart-wrap" style="height:__AREA_H__px"><canvas id="c-area-q"></canvas></div>
-    <div class="resize-row">
-      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
-      <input type="range" class="height-slider" min="150" max="1400" step="10" value="__AREA_H__" oninput="resizeChart(this)">
-      <span class="height-lbl">__AREA_H__px</span>
-    </div>
+    <div class="chart-wrap" style="height:300px"><canvas id="c-area-q"></canvas></div>
   </div>
 
   <!-- % Q1 per area (traffic-light) -->
@@ -1075,15 +1003,9 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-title">% Artículos Q1 por área temática</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-area-pct">ALL</span>
-        <button class="resize-btn" onclick="toggleResize(this)" title="Ajustar altura">⇕</button>
       </span>
     </div>
-    <div class="chart-wrap" style="height:__AREA_H__px"><canvas id="c-area-pct"></canvas></div>
-    <div class="resize-row">
-      <span style="font-size:11px;color:#94A3B8;white-space:nowrap">Altura:</span>
-      <input type="range" class="height-slider" min="150" max="1400" step="10" value="__AREA_H__" oninput="resizeChart(this)">
-      <span class="height-lbl">__AREA_H__px</span>
-    </div>
+    <div class="chart-wrap" style="height:300px"><canvas id="c-area-pct"></canvas></div>
   </div>
 </section>
 
@@ -1301,27 +1223,6 @@ function toggleTheme(){
   applyTheme(darkMode);
 }
 
-// ── HEIGHT RESIZE CONTROLS ───────────────────────────────────────
-function toggleResize(btn){
-  const card = btn.closest('.card');
-  const row  = card.querySelector('.resize-row');
-  if(!row) return;
-  const visible = row.style.display === 'flex';
-  row.style.display = visible ? 'none' : 'flex';
-  btn.style.background = visible ? '' : '#EFF6FF';
-  btn.style.color      = visible ? '' : '#1D4ED8';
-  btn.style.borderColor= visible ? '' : '#93C5FD';
-}
-function resizeChart(slider){
-  const card   = slider.closest('.card');
-  const wrap   = card.querySelector('.chart-wrap');
-  const lbl    = card.querySelector('.height-lbl');
-  const h      = parseInt(slider.value);
-  if(wrap) wrap.style.height = h + 'px';
-  if(lbl)  lbl.textContent   = h + 'px';
-  const canvas = wrap ? wrap.querySelector('canvas') : null;
-  if(canvas && charts[canvas.id]) charts[canvas.id].resize();
-}
 
 // ── COUNT-UP ANIMATION ───────────────────────────────────────────
 function countUp(el, target, suffix='', decimals=0){
@@ -1469,24 +1370,29 @@ function drawAuthType(){
 // ── CHART 10: AUTHORS × Q1 ──────────────────────────────────────
 function drawAuthQ1(){
   const authors = D.by_year[year].authors
-    .filter(a=>(a.Q1||0)>0)
-    .sort((a,b)=>(b.Q1||0)-(a.Q1||0))
-    .slice(0,15);
+    .filter(a=>(a.Q1||0)+(a.Q2||0)>0)
+    .sort((a,b)=>((b.Q1||0)+(b.Q2||0))-((a.Q1||0)+(a.Q2||0)))
+    .slice(0,__TOP_AUTHORS__);
   const labels = authors.map(a=>a.name).reverse();
   label('lbl-auth-q1', year);
   mkChart('c-auth-q1',{type:'bar',
-    data:{labels, datasets:[{
-      label:'Artículos Q1', data:authors.map(a=>a.Q1||0).reverse(),
-      backgroundColor:'#10B981', borderRadius:4, borderSkipped:false,
-    }]},
+    data:{labels, datasets:[
+      {label:'Q1', data:authors.map(a=>a.Q1||0).reverse(),
+       backgroundColor:'#10B981', borderRadius:0, borderSkipped:false},
+      {label:'Q2', data:authors.map(a=>a.Q2||0).reverse(),
+       backgroundColor:'#6366F1', borderRadius:4, borderSkipped:false},
+    ]},
     options:{
       indexAxis:'y', responsive:true, maintainAspectRatio:false,
       animation:{duration:420},
-      plugins:{legend:{display:false},
-        tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x} artículos Q1`}}},
+      plugins:{
+        legend:{display:true, position:'top',
+          labels:{font:{size:11}, boxWidth:12, padding:16}},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x} docs ${ctx.dataset.label}`}}
+      },
       scales:{
-        x:{grid:{color:'rgba(0,0,0,0.05)'}, ticks:{font:{size:11}}},
-        y:{grid:{display:false}, ticks:{font:{size:11}}}
+        x:{stacked:true, grid:{color:'rgba(0,0,0,0.05)'}, ticks:{font:{size:11}}},
+        y:{stacked:true, grid:{display:false}, ticks:{font:{size:11}}}
       }
     }
   });
