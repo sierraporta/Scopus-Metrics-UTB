@@ -789,7 +789,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-note">Serie completa</span>
       </span>
     </div>
-    <div class="chart-wrap" style="height:300px"><canvas id="c-timeline"></canvas></div>
+    <div class="chart-wrap" style="height:250px"><canvas id="c-timeline"></canvas></div>
   </div>
 
   <div class="grid-2">
@@ -799,7 +799,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
           <span class="card-title">Composición por tipo</span></span>
         <span class="card-note" id="lbl-donut-type">ALL</span>
       </div>
-      <div class="chart-wrap" style="height:260px"><canvas id="c-type-donut"></canvas></div>
+      <div class="chart-wrap" style="height:200px"><canvas id="c-type-donut"></canvas></div>
     </div>
     <div class="card">
       <div class="card-hd">
@@ -807,7 +807,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
           <span class="card-title">Artículos en Q1 y Q2</span></span>
         <span class="card-note" id="lbl-q1q2-mini">ALL</span>
       </div>
-      <div class="chart-wrap" style="height:260px"><canvas id="c-q1q2-mini"></canvas></div>
+      <div class="chart-wrap" style="height:200px"><canvas id="c-q1q2-mini"></canvas></div>
     </div>
   </div>
 </section>
@@ -837,7 +837,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-note">Serie completa</span>
       </span>
     </div>
-    <div class="chart-wrap" style="height:300px"><canvas id="c-q-trend"></canvas></div>
+    <div class="chart-wrap" style="height:250px"><canvas id="c-q-trend"></canvas></div>
   </div>
 
   <div class="grid-2">
@@ -847,7 +847,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
           <span class="card-title">Distribución de cuartiles</span></span>
         <span class="card-note" id="lbl-q-donut">ALL</span>
       </div>
-      <div class="chart-wrap" style="height:260px"><canvas id="c-q-donut"></canvas></div>
+      <div class="chart-wrap" style="height:200px"><canvas id="c-q-donut"></canvas></div>
     </div>
     <div class="card">
       <div class="card-hd">
@@ -857,7 +857,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
           <span class="card-note" id="lbl-pct-q1">ALL</span>
         </span>
       </div>
-      <div class="chart-wrap" style="height:260px"><canvas id="c-pct-q1"></canvas></div>
+      <div class="chart-wrap" style="height:200px"><canvas id="c-pct-q1"></canvas></div>
     </div>
   </div>
 
@@ -869,7 +869,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-note" id="lbl-sch-q">ALL</span>
       </span>
     </div>
-    <div class="chart-wrap" style="height:300px"><canvas id="c-sch-q"></canvas></div>
+    <div class="chart-wrap" style="height:250px"><canvas id="c-sch-q"></canvas></div>
   </div>
 </section>
 
@@ -896,7 +896,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-note" id="lbl-sch-type">ALL</span>
       </span>
     </div>
-    <div class="chart-wrap" style="height:300px"><canvas id="c-sch-type"></canvas></div>
+    <div class="chart-wrap" style="height:250px"><canvas id="c-sch-type"></canvas></div>
   </div>
 </section>
 
@@ -924,7 +924,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-note" id="lbl-auth-type">ALL</span>
       </span>
     </div>
-    <div class="chart-wrap" style="height:300px"><canvas id="c-auth-type"></canvas></div>
+    <div class="chart-wrap" style="height:400px"><canvas id="c-auth-type"></canvas></div>
   </div>
 
   <div class="card">
@@ -935,7 +935,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-note" id="lbl-auth-q1">ALL</span>
       </span>
     </div>
-    <div class="chart-wrap" style="height:300px"><canvas id="c-auth-q1"></canvas></div>
+    <div class="chart-wrap" style="height:400px"><canvas id="c-auth-q1"></canvas></div>
   </div>
 </section>
 
@@ -963,7 +963,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-note" id="lbl-pairs">ALL</span>
       </span>
     </div>
-    <div class="chart-wrap" style="height:300px"><canvas id="c-pairs"></canvas></div>
+    <div class="chart-wrap" style="height:400px"><canvas id="c-pairs"></canvas></div>
   </div>
 </section>
 
@@ -993,7 +993,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-note" id="lbl-area-q">ALL</span>
       </span>
     </div>
-    <div class="chart-wrap" style="height:300px"><canvas id="c-area-q"></canvas></div>
+    <div class="chart-wrap" style="height:350px"><canvas id="c-area-q"></canvas></div>
   </div>
 
   <!-- % Q1 per area (traffic-light) -->
@@ -1005,7 +1005,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         <span class="card-note" id="lbl-area-pct">ALL</span>
       </span>
     </div>
-    <div class="chart-wrap" style="height:300px"><canvas id="c-area-pct"></canvas></div>
+    <div class="chart-wrap" style="height:350px"><canvas id="c-area-pct"></canvas></div>
   </div>
 </section>
 
