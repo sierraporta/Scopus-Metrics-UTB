@@ -387,6 +387,56 @@ def authors_pivot_data():
     for r in rows: del r["_grand_arts"]
     return rows
 
+def build_papers_index():
+    """Build paper-detail lookup tables for rich HTML tooltips.
+
+    Returns
+    -------
+    papers_by_author : {scopus_id: [{t, j, y, q}, ...]}  max 30 per author
+    papers_by_area   : {area_name: [{t, j, y, q}, ...]}  max 20 per area
+    Sorted: quartile priority (Q1 first), then year descending.
+    """
+    eid_info = (df[["EID","Title","Source title"]]
+                .drop_duplicates("EID")
+                .set_index("EID"))
+    Q_PRIO = {"Q1":0,"Q2":1,"Q3":2,"Q4":3,"No Q":4}
+
+    # ── papers_by_author ─────────────────────────────────────────
+    ap = author_papers.drop_duplicates(["EID","author_id"]).copy()
+    ap = ap.join(eid_info, on="EID", how="left")
+    ap["_q"] = ap["quartile"].map(Q_PRIO).fillna(4)
+    ap = ap.sort_values(["author_id","_q","Year"], ascending=[True,True,False])
+    papers_by_author = {}
+    for aid, grp in ap.groupby("author_id"):
+        entries = []
+        for _, r in grp.head(30).iterrows():
+            t = str(r.get("Title","") or "").strip()
+            if len(t) > 120: t = t[:117] + "…"
+            entries.append({"t":t,
+                            "j":str(r.get("Source title","") or "").strip(),
+                            "y":int(r["Year"]),
+                            "q":str(r["quartile"])})
+        papers_by_author[str(aid)] = entries
+
+    # ── papers_by_area ───────────────────────────────────────────
+    area_pap = area_papers.drop_duplicates(["EID","area"]).copy()
+    area_pap = area_pap.join(eid_info, on="EID", how="left")
+    area_pap["_q"] = area_pap["quartile"].map(Q_PRIO).fillna(4)
+    area_pap = area_pap.sort_values(["area","_q","Year"], ascending=[True,True,False])
+    papers_by_area = {}
+    for area_name, grp in area_pap.groupby("area"):
+        entries = []
+        for _, r in grp.head(20).iterrows():
+            t = str(r.get("Title","") or "").strip()
+            if len(t) > 120: t = t[:117] + "…"
+            entries.append({"t":t,
+                            "j":str(r.get("Source title","") or "").strip(),
+                            "y":int(r["Year"]),
+                            "q":str(r["quartile"])})
+        papers_by_area[str(area_name)] = entries
+
+    return papers_by_author, papers_by_area
+
 # ─── BUILD TIMELINE (always all years, fixed) ─────────────────────────────────
 print("Computing timeline aggregations...")
 timeline = []
@@ -441,6 +491,12 @@ print(f"  Pivot: {len(authors_pivot)} authors × {len(years_list)} years")
 
 payload["authors_pivot"] = {"years": [str(y) for y in years_list],
                              "rows":  authors_pivot}
+
+print("Building papers index for tooltips...")
+papers_by_author, papers_by_area = build_papers_index()
+payload["papers_by_author"] = papers_by_author
+payload["papers_by_area"]   = papers_by_area
+print(f"  Tooltip index: {len(papers_by_author)} authors, {len(papers_by_area)} areas")
 print("Data payload ready.")
 
 # ─── HTML TEMPLATE ────────────────────────────────────────────────────────────
@@ -680,6 +736,37 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 @media(max-width:580px){
   .hero-title{font-size:26px}.kpi-grid{grid-template-columns:repeat(2,1fr)}
   .grid-2{grid-template-columns:1fr}}
+/* ── RICH CHART TOOLTIPS ──────────────────────────────────────── */
+.ch-tt{
+  position:fixed;z-index:9999;pointer-events:auto;
+  background:#fff;border:1px solid #E2E8F0;border-radius:10px;
+  box-shadow:0 8px 28px rgba(0,0,0,.14);padding:10px 13px;
+  width:680px;max-height:420px;overflow-y:auto;
+  font-size:10px;color:#334155;opacity:0;transition:opacity .15s;
+}
+.ch-tt.tt-vis{opacity:1}
+.ch-tt .tt-hdr{
+  font-weight:700;font-size:11px;color:#1e293b;
+  border-bottom:1px solid #E2E8F0;padding-bottom:5px;margin-bottom:7px;
+}
+.ch-tt .tt-row{
+  display:flex;gap:6px;align-items:flex-start;
+  padding:3px 0;border-bottom:1px solid #F1F5F9;
+}
+.ch-tt .tt-row:last-child{border-bottom:none}
+.tt-q{flex-shrink:0;font-size:8px;font-weight:700;padding:2px 4px;
+  border-radius:3px;color:#fff;margin-top:2px;line-height:1.3}
+.tt-q.Q1{background:#10B981}.tt-q.Q2{background:#6366F1}
+.tt-q.Q3{background:#F59E0B}.tt-q.Q4{background:#EF4444}
+.tt-q.NoQ{background:#94A3B8}
+.tt-title{font-size:9.5px;color:#1e293b;line-height:1.4}
+.tt-jrnl{font-size:8.5px;color:#64748B;margin-top:1px}
+.tt-more{text-align:center;color:#94A3B8;font-size:8.5px;padding-top:5px}
+[data-theme="dark"] .ch-tt{background:#1E293B;border-color:#334155;color:#CBD5E1}
+[data-theme="dark"] .ch-tt .tt-hdr{color:#F1F5F9;border-color:#334155}
+[data-theme="dark"] .ch-tt .tt-row{border-color:#2D3F55}
+[data-theme="dark"] .tt-title{color:#F1F5F9}
+[data-theme="dark"] .tt-jrnl{color:#94A3B8}
 </style>
 </head>
 <body>
@@ -930,7 +1017,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   <div class="card">
     <div class="card-hd">
       <span><span class="card-dot" style="background:#10B981"></span>
-        <span class="card-title">Top __TOP_AUTHORS__ autores — documentos Q1 + Q2</span></span>
+        <span class="card-title">Top __TOP_AUTHORS__ autores — documentos por cuartil</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-auth-q1">ALL</span>
       </span>
@@ -1145,6 +1232,83 @@ let year = 'ALL';
 const charts = {};
 
 // ── UTILITIES ────────────────────────────────────────────────────
+// ── RICH TOOLTIP SYSTEM ─────────────────────────────────────────
+const _ttEls = {}, _ttHideTimers = {};
+function _getTtEl(canvasId){
+  if(!_ttEls[canvasId]){
+    const el = document.createElement('div');
+    el.className = 'ch-tt';
+    document.body.appendChild(el);
+    // Hide when mouse leaves the tooltip panel itself
+    el.addEventListener('mouseleave', ()=>{ el.classList.remove('tt-vis'); });
+    _ttEls[canvasId] = el;
+  }
+  return _ttEls[canvasId];
+}
+const _QB = {
+  Q1:'<span class="tt-q Q1">Q1</span>',
+  Q2:'<span class="tt-q Q2">Q2</span>',
+  Q3:'<span class="tt-q Q3">Q3</span>',
+  Q4:'<span class="tt-q Q4">Q4</span>',
+};
+function qBadge(q){ return _QB[q]||'<span class="tt-q NoQ">SC</span>'; }
+
+function _buildTtHTML(header, papers){
+  const shown = papers.slice(0,10);
+  const extra = papers.length>10
+    ? `<div class="tt-more">+${papers.length-10} documentos más</div>` : '';
+  const rows = shown.map(p=>`
+    <div class="tt-row">
+      ${qBadge(p.q)}
+      <div>
+        <div class="tt-title">${p.t||'(sin título)'}</div>
+        <div class="tt-jrnl">${p.j||''} · ${p.y}</div>
+      </div>
+    </div>`).join('');
+  return `<div class="tt-hdr">${header}</div>${rows}${extra}`;
+}
+
+/**
+ * makeExternalTooltip(getPapers)
+ * getPapers(dp, chart) → {label, papers, total}
+ *   label  : string shown in header
+ *   papers : array of {t,j,y,q}
+ *   total  : overall count for the subject
+ */
+function makeExternalTooltip(getPapers){
+  return function(context){
+    const {chart, tooltip} = context;
+    const cid = chart.canvas.id;
+    const el  = _getTtEl(cid);
+    if(tooltip.opacity===0){
+      // Delay hide so user can move mouse onto the tooltip panel
+      clearTimeout(_ttHideTimers[cid]);
+      _ttHideTimers[cid] = setTimeout(()=>{
+        if(!el.matches(':hover')) el.classList.remove('tt-vis');
+      }, 350);
+      return;
+    }
+    clearTimeout(_ttHideTimers[cid]);
+    const dp = tooltip.dataPoints && tooltip.dataPoints[0];
+    if(!dp){ el.classList.remove('tt-vis'); return; }
+    const {label, papers, total} = getPapers(dp, chart);
+    if(!papers || !papers.length){ el.classList.remove('tt-vis'); return; }
+    const shown = Math.min(10, papers.length);
+    const hdr = `Top ${shown} de ${total} doc${total!==1?'s':''} · <em>${label}</em>`;
+    el.innerHTML = _buildTtHTML(hdr, papers);
+    el.classList.add('tt-vis');
+    // Position: fixed coords relative to viewport
+    const rect = chart.canvas.getBoundingClientRect();
+    const cx   = rect.left + tooltip.caretX + 16;
+    const cy   = rect.top  + tooltip.caretY - 24;
+    const ttW  = 680;
+    el.style.top  = Math.max(4, cy) + 'px';
+    el.style.left = (cx + ttW > window.innerWidth - 8
+                     ? rect.left + tooltip.caretX - ttW - 16
+                     : cx) + 'px';
+  };
+}
+
 function mkChart(id, cfg){
   const ctx = document.getElementById(id);
   if(!ctx) return;
@@ -1364,14 +1528,26 @@ function drawAuthType(){
     label:t, data:authors.map(a=>a[t]||0).reverse(),
     backgroundColor:C[t], borderRadius:3, borderSkipped:false,
   }));
-  mkChart('c-auth-type', hBar(labels, datasets, {stacked:true}));
+  const cfg = hBar(labels, datasets, {stacked:true});
+  cfg.options.plugins.tooltip = {
+    enabled:false,
+    external: makeExternalTooltip((dp)=>{
+      const nm  = dp.label;
+      const obj = D.by_year[year].authors.find(a=>a.name===nm);
+      const sid = obj ? obj.scopus_id : null;
+      const all = sid ? (D.papers_by_author[sid]||[]) : [];
+      const papers = (year==='ALL') ? all : all.filter(p=>String(p.y)===year);
+      return {label:nm, papers, total:papers.length};
+    })
+  };
+  mkChart('c-auth-type', cfg);
 }
 
 // ── CHART 10: AUTHORS × Q1 ──────────────────────────────────────
 function drawAuthQ1(){
   const authors = D.by_year[year].authors
-    .filter(a=>(a.Q1||0)+(a.Q2||0)>0)
-    .sort((a,b)=>((b.Q1||0)+(b.Q2||0))-((a.Q1||0)+(a.Q2||0)))
+    .filter(a=>(a.Q1||0)+(a.Q2||0)+(a.Q3||0)+(a.Q4||0)+(a['No Q']||0)>0)
+    .sort((a,b)=>((b.Q1||0)+(b.Q2||0)+(b.Q3||0)+(b.Q4||0))-((a.Q1||0)+(a.Q2||0)+(a.Q3||0)+(a.Q4||0)))
     .slice(0,__TOP_AUTHORS__);
   const labels = authors.map(a=>a.name).reverse();
   label('lbl-auth-q1', year);
@@ -1380,15 +1556,31 @@ function drawAuthQ1(){
       {label:'Q1', data:authors.map(a=>a.Q1||0).reverse(),
        backgroundColor:'#10B981', borderRadius:0, borderSkipped:false},
       {label:'Q2', data:authors.map(a=>a.Q2||0).reverse(),
-       backgroundColor:'#6366F1', borderRadius:4, borderSkipped:false},
+       backgroundColor:'#6366F1', borderRadius:0, borderSkipped:false},
+      {label:'Q3', data:authors.map(a=>a.Q3||0).reverse(),
+       backgroundColor:'#F59E0B', borderRadius:0, borderSkipped:false},
+      {label:'Q4', data:authors.map(a=>a.Q4||0).reverse(),
+       backgroundColor:'#EF4444', borderRadius:0, borderSkipped:false},
+      {label:'SC',  data:authors.map(a=>a['No Q']||0).reverse(),
+       backgroundColor:'#CBD5E1', borderRadius:4, borderSkipped:false},
     ]},
     options:{
       indexAxis:'y', responsive:true, maintainAspectRatio:false,
       animation:{duration:420},
       plugins:{
         legend:{display:true, position:'top',
-          labels:{font:{size:11}, boxWidth:12, padding:16}},
-        tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x} docs ${ctx.dataset.label}`}}
+          labels:{font:{size:11}, boxWidth:12, padding:14}},
+        tooltip:{
+          enabled:false,
+          external: makeExternalTooltip((dp)=>{
+            const nm  = dp.label;
+            const obj = D.by_year[year].authors.find(a=>a.name===nm);
+            const sid = obj ? obj.scopus_id : null;
+            const all = sid ? (D.papers_by_author[sid]||[]) : [];
+            const papers = (year==='ALL') ? all : all.filter(p=>String(p.y)===year);
+            return {label:nm, papers, total:papers.length};
+          })
+        }
       },
       scales:{
         x:{stacked:true, grid:{color:'rgba(0,0,0,0.05)'}, ticks:{font:{size:11}}},
@@ -1438,7 +1630,17 @@ function drawAreaQ(){
     label:q, data:areas.map(a=>a[q]||0).reverse(),
     backgroundColor:C[q], borderRadius:3, borderSkipped:false,
   }));
-  mkChart('c-area-q', hBar(labels, datasets, {stacked:true}));
+  const cfg = hBar(labels, datasets, {stacked:true});
+  cfg.options.plugins.tooltip = {
+    enabled:false,
+    external: makeExternalTooltip((dp)=>{
+      const aName  = dp.label;
+      const all    = D.papers_by_area[aName]||[];
+      const papers = (year==='ALL') ? all : all.filter(p=>String(p.y)===year);
+      return {label:aName, papers, total:papers.length};
+    })
+  };
+  mkChart('c-area-q', cfg);
 }
 
 // ── CHART 13: % Q1 POR ÁREA ─────────────────────────────────────
@@ -1459,8 +1661,21 @@ function drawAreaPct(){
     options:{
       indexAxis:'y', responsive:true, maintainAspectRatio:false,
       animation:{duration:420},
-      plugins:{legend:{display:false},
-        tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x.toFixed(1)}% artículos en Q1`}}},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          enabled:false,
+          external: makeExternalTooltip((dp)=>{
+            const aName  = dp.label;
+            const all    = D.papers_by_area[aName]||[];
+            // For pct chart show only Q1 papers in tooltip
+            const q1all  = all.filter(p=>p.q==='Q1');
+            const papers = (year==='ALL') ? q1all : q1all.filter(p=>String(p.y)===year);
+            const total  = (year==='ALL') ? all.length : all.filter(p=>String(p.y)===year).length;
+            return {label:aName, papers, total};
+          })
+        }
+      },
       scales:{
         x:{max:100, grid:{color:'rgba(0,0,0,0.05)'},
            ticks:{callback:v=>v+'%', font:{size:11}}},
