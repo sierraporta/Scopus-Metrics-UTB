@@ -738,10 +738,10 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   .grid-2{grid-template-columns:1fr}}
 /* ── RICH CHART TOOLTIPS ──────────────────────────────────────── */
 .ch-tt{
-  position:fixed;z-index:9999;pointer-events:auto;
+  position:fixed;z-index:9999;pointer-events:none;
   background:#fff;border:1px solid #E2E8F0;border-radius:10px;
   box-shadow:0 8px 28px rgba(0,0,0,.14);padding:10px 13px;
-  width:680px;max-height:420px;overflow-y:auto;
+  width:680px;max-height:420px;overflow-y:hidden;
   font-size:10px;color:#334155;opacity:0;transition:opacity .15s;
 }
 .ch-tt.tt-vis{opacity:1}
@@ -1233,14 +1233,12 @@ const charts = {};
 
 // ── UTILITIES ────────────────────────────────────────────────────
 // ── RICH TOOLTIP SYSTEM ─────────────────────────────────────────
-const _ttEls = {}, _ttHideTimers = {};
+const _ttEls = {};
 function _getTtEl(canvasId){
   if(!_ttEls[canvasId]){
     const el = document.createElement('div');
     el.className = 'ch-tt';
     document.body.appendChild(el);
-    // Hide when mouse leaves the tooltip panel itself
-    el.addEventListener('mouseleave', ()=>{ el.classList.remove('tt-vis'); });
     _ttEls[canvasId] = el;
   }
   return _ttEls[canvasId];
@@ -1278,17 +1276,8 @@ function _buildTtHTML(header, papers){
 function makeExternalTooltip(getPapers){
   return function(context){
     const {chart, tooltip} = context;
-    const cid = chart.canvas.id;
-    const el  = _getTtEl(cid);
-    if(tooltip.opacity===0){
-      // Delay hide so user can move mouse onto the tooltip panel
-      clearTimeout(_ttHideTimers[cid]);
-      _ttHideTimers[cid] = setTimeout(()=>{
-        if(!el.matches(':hover')) el.classList.remove('tt-vis');
-      }, 350);
-      return;
-    }
-    clearTimeout(_ttHideTimers[cid]);
+    const el = _getTtEl(chart.canvas.id);
+    if(tooltip.opacity===0){ el.classList.remove('tt-vis'); return; }
     const dp = tooltip.dataPoints && tooltip.dataPoints[0];
     if(!dp){ el.classList.remove('tt-vis'); return; }
     const {label, papers, total} = getPapers(dp, chart);
