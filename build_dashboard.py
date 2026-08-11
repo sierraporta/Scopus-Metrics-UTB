@@ -390,50 +390,49 @@ def authors_pivot_data():
 def build_papers_index():
     """Build paper-detail lookup tables for rich HTML tooltips.
 
-    Returns
-    -------
-    papers_by_author : {scopus_id: [{t, j, y, q}, ...]}  max 30 per author
-    papers_by_area   : {area_name: [{t, j, y, q}, ...]}  max 20 per area
-    Sorted: quartile priority (Q1 first), then year descending.
+    Structure: {id: {"ALL": [...], "2022": [...], "2023": [...], ...}}
+    Indexed by year in Python so JS never needs to filter — avoids
+    truncation bugs when a global .head(N) cuts year-specific papers.
     """
     eid_info = (df[["EID","Title","Source title"]]
                 .drop_duplicates("EID")
                 .set_index("EID"))
     Q_PRIO = {"Q1":0,"Q2":1,"Q3":2,"Q4":3,"No Q":4}
 
+    def _rows(grp, cap):
+        out = []
+        for _, r in grp.head(cap).iterrows():
+            t = str(r.get("Title","") or "").strip()
+            if len(t) > 120: t = t[:117] + "…"
+            out.append({"t":t,
+                        "j":str(r.get("Source title","") or "").strip(),
+                        "y":int(r["Year"]),
+                        "q":str(r["quartile"])})
+        return out
+
     # ── papers_by_author ─────────────────────────────────────────
     ap = author_papers.drop_duplicates(["EID","author_id"]).copy()
     ap = ap.join(eid_info, on="EID", how="left")
     ap["_q"] = ap["quartile"].map(Q_PRIO).fillna(4)
-    ap = ap.sort_values(["author_id","_q","Year"], ascending=[True,True,False])
     papers_by_author = {}
     for aid, grp in ap.groupby("author_id"):
-        entries = []
-        for _, r in grp.head(30).iterrows():
-            t = str(r.get("Title","") or "").strip()
-            if len(t) > 120: t = t[:117] + "…"
-            entries.append({"t":t,
-                            "j":str(r.get("Source title","") or "").strip(),
-                            "y":int(r["Year"]),
-                            "q":str(r["quartile"])})
-        papers_by_author[str(aid)] = entries
+        slot = {"ALL": _rows(grp.sort_values(["_q","Year"],
+                                              ascending=[True,False]), 30)}
+        for yr, ygrp in grp.groupby("Year"):
+            slot[str(yr)] = _rows(ygrp.sort_values("_q"), 30)
+        papers_by_author[str(aid)] = slot
 
     # ── papers_by_area ───────────────────────────────────────────
     area_pap = area_papers.drop_duplicates(["EID","area"]).copy()
     area_pap = area_pap.join(eid_info, on="EID", how="left")
     area_pap["_q"] = area_pap["quartile"].map(Q_PRIO).fillna(4)
-    area_pap = area_pap.sort_values(["area","_q","Year"], ascending=[True,True,False])
     papers_by_area = {}
     for area_name, grp in area_pap.groupby("area"):
-        entries = []
-        for _, r in grp.head(20).iterrows():
-            t = str(r.get("Title","") or "").strip()
-            if len(t) > 120: t = t[:117] + "…"
-            entries.append({"t":t,
-                            "j":str(r.get("Source title","") or "").strip(),
-                            "y":int(r["Year"]),
-                            "q":str(r["quartile"])})
-        papers_by_area[str(area_name)] = entries
+        slot = {"ALL": _rows(grp.sort_values(["_q","Year"],
+                                              ascending=[True,False]), 20)}
+        for yr, ygrp in grp.groupby("Year"):
+            slot[str(yr)] = _rows(ygrp.sort_values("_q"), 20)
+        papers_by_area[str(area_name)] = slot
 
     return papers_by_author, papers_by_area
 
@@ -1524,8 +1523,8 @@ function drawAuthType(){
       const nm  = dp.label;
       const obj = D.by_year[year].authors.find(a=>a.name===nm);
       const sid = obj ? obj.scopus_id : null;
-      const all = sid ? (D.papers_by_author[sid]||[]) : [];
-      const papers = (year==='ALL') ? all : all.filter(p=>String(p.y)===year);
+      const slot = sid ? (D.papers_by_author[sid]||{}) : {};
+      const papers = slot[year]||[];
       return {label:nm, papers, total:papers.length};
     })
   };
@@ -1565,8 +1564,8 @@ function drawAuthQ1(){
             const nm  = dp.label;
             const obj = D.by_year[year].authors.find(a=>a.name===nm);
             const sid = obj ? obj.scopus_id : null;
-            const all = sid ? (D.papers_by_author[sid]||[]) : [];
-            const papers = (year==='ALL') ? all : all.filter(p=>String(p.y)===year);
+            const slot = sid ? (D.papers_by_author[sid]||{}) : {};
+            const papers = slot[year]||[];
             return {label:nm, papers, total:papers.length};
           })
         }
@@ -1623,9 +1622,9 @@ function drawAreaQ(){
   cfg.options.plugins.tooltip = {
     enabled:false,
     external: makeExternalTooltip((dp)=>{
-      const aName  = dp.label;
-      const all    = D.papers_by_area[aName]||[];
-      const papers = (year==='ALL') ? all : all.filter(p=>String(p.y)===year);
+      const aName = dp.label;
+      const slot  = D.papers_by_area[aName]||{};
+      const papers = slot[year]||[];
       return {label:aName, papers, total:papers.length};
     })
   };
@@ -1655,13 +1654,12 @@ function drawAreaPct(){
         tooltip:{
           enabled:false,
           external: makeExternalTooltip((dp)=>{
-            const aName  = dp.label;
-            const all    = D.papers_by_area[aName]||[];
-            // For pct chart show only Q1 papers in tooltip
-            const q1all  = all.filter(p=>p.q==='Q1');
-            const papers = (year==='ALL') ? q1all : q1all.filter(p=>String(p.y)===year);
-            const total  = (year==='ALL') ? all.length : all.filter(p=>String(p.y)===year).length;
-            return {label:aName, papers, total};
+            const aName = dp.label;
+            const slot  = D.papers_by_area[aName]||{};
+            const all   = slot[year]||[];
+            // For pct chart show only Q1 papers
+            const papers = all.filter(p=>p.q==='Q1');
+            return {label:aName, papers, total:all.length};
           })
         }
       },
