@@ -2071,10 +2071,6 @@ print(f"   Height controls: 10 bar charts con slider ⇕")
 # ─── EXCEL PIVOT ──────────────────────────────────────────────────────────────
 print("\nGenerating Excel pivot...")
 
-wb = openpyxl.Workbook()
-ws = wb.active
-ws.title = "Pivot Autores"
-
 # ── Style helpers ──────────────────────────────────────────────────────────────
 def _fill(hex_color):
     return PatternFill("solid", fgColor=hex_color.lstrip("#"))
@@ -2103,142 +2099,138 @@ FIXED_COLS = 3  # Docente, Escuela, Scopus ID
 Q_SUB      = ["Q1","Q2","Q3","Q4","SC","Arts","Docs"]  # 7 per year
 TOTAL_COLS = FIXED_COLS + len(years_list) * len(Q_SUB) + 2  # +2 for grand total
 
-# ── Row 1: top headers ─────────────────────────────────────────────────────────
-row1 = [None, None, None]  # fixed cols (will merge vertically)
-for yi, y in enumerate(years_list):
-    row1 += [str(y)] + [None]*6   # 7 cols per year, merged
-row1 += ["Total", None]           # grand total, merged
+def _write_pivot_sheet(ws, pivot_src):
+    """Write a full pivot sheet into ws using pivot_src as data rows."""
+    # ── Row 1: top headers ─────────────────────────────────────────────────────
+    row1 = [None, None, None]  # fixed cols (will merge vertically)
+    for yi, y in enumerate(years_list):
+        row1 += [str(y)] + [None]*6   # 7 cols per year, merged
+    row1 += ["Total", None]           # grand total, merged
+    ws.append(row1)
 
-ws.append(row1)
-
-# ── Row 2: sub-headers ────────────────────────────────────────────────────────
-row2 = ["Docente", "Escuela", "Scopus ID"]
-for y in years_list:
-    row2 += Q_SUB
-row2 += ["Arts", "Docs"]
-
-ws.append(row2)
-
-# ── Merge year-group headers ───────────────────────────────────────────────────
-# Fixed 3 cols: merge rows 1-2
-for c in range(1, FIXED_COLS+1):
-    ws.merge_cells(start_row=1, start_column=c, end_row=2, end_column=c)
-
-# Year groups: merge across 7 cols in row 1
-for yi in range(len(years_list)):
-    c_start = FIXED_COLS + yi * len(Q_SUB) + 1
-    c_end   = c_start + len(Q_SUB) - 1
-    ws.merge_cells(start_row=1, start_column=c_start, end_row=1, end_column=c_end)
-
-# Grand total: merge across 2 cols in row 1
-tot_start = FIXED_COLS + len(years_list) * len(Q_SUB) + 1
-ws.merge_cells(start_row=1, start_column=tot_start, end_row=1, end_column=tot_start+1)
-
-# ── Style header rows ─────────────────────────────────────────────────────────
-for r_idx in [1, 2]:
-    for c_idx in range(1, TOTAL_COLS + 1):
-        cell = ws.cell(row=r_idx, column=c_idx)
-        cell.font      = _font(bold=True, color="1E293B", size=11)
-        cell.alignment = _align()
-        cell.border    = _border_thin()
-        # Year-group background
-        col_in_data = c_idx - FIXED_COLS
-        if col_in_data > 0:
-            yi = (col_in_data - 1) // len(Q_SUB)
-            if yi < len(years_list):
-                cell.fill = YR_FILLS[yi % len(YR_FILLS)]
-            else:
-                cell.fill = TOT_FILL
-        else:
-            cell.fill = HDR_FILL
-        # Sub-header Q column colors (row 2)
-        if r_idx == 2 and col_in_data > 0:
-            sub_idx = (col_in_data - 1) % len(Q_SUB)
-            if sub_idx < 5:
-                q = Q_SUB[sub_idx]
-                cell.font = _font(bold=True, color=Q_COLORS[q], size=11)
-
-# ── Data rows ─────────────────────────────────────────────────────────────────
-current_school = None
-data_row_start = 3
-for r in authors_pivot:
-    # School separator row
-    if r["school"] != current_school:
-        current_school = r["school"]
-        sep_row = [f"  🏫  {current_school}"] + [""] * (TOTAL_COLS - 1)
-        ws.append(sep_row)
-        sr = ws.max_row
-        ws.merge_cells(start_row=sr, start_column=1, end_row=sr, end_column=TOTAL_COLS)
-        c = ws.cell(row=sr, column=1)
-        c.fill      = SCH_FILL
-        c.font      = _font(bold=True, color="1D4ED8", size=11)
-        c.alignment = _align(h="left")
-        c.border    = _border_thin("top_thick")
-
-    # Author data row
-    grand_arts = grand_docs = 0
-    row_data = [r["name"], r["school"], r["scopus_id"]]
+    # ── Row 2: sub-headers ────────────────────────────────────────────────────
+    row2 = ["Docente", "Escuela", "Scopus ID"]
     for y in years_list:
-        yd = r.get(str(y), {})
-        for q in Q_SUB:
-            row_data.append(yd.get(q, 0) if q in ["Q1","Q2","Q3","Q4","SC"]
-                            else yd.get("total_arts",0) if q=="Arts"
-                            else yd.get("total_docs",0))
-        grand_arts += yd.get("total_arts", 0)
-        grand_docs += yd.get("total_docs", 0)
-    row_data += [grand_arts, grand_docs]
-    ws.append(row_data)
+        row2 += Q_SUB
+    row2 += ["Arts", "Docs"]
+    ws.append(row2)
 
-    dr = ws.max_row
-    is_even = (dr % 2 == 0)
-    for c_idx in range(1, TOTAL_COLS + 1):
-        cell     = ws.cell(row=dr, column=c_idx)
-        col_data = c_idx - FIXED_COLS
-        cell.border    = _border_thin()
-        cell.alignment = _align(h="left" if c_idx <= FIXED_COLS else "center")
-        # Background
-        if c_idx <= FIXED_COLS:
-            cell.fill = ROW_EVEN if is_even else PatternFill()
-            cell.font = _font(bold=(c_idx==1), color="0F172A")
-        elif col_data > len(years_list)*len(Q_SUB):
-            cell.fill = TOT_FILL
-            cell.font = _font(bold=True, color="4F46E5" if (col_data % 2 == 1) else "0891B2")
-        else:
-            yi      = (col_data - 1) // len(Q_SUB)
-            sub_idx = (col_data - 1) % len(Q_SUB)
-            cell.fill = YR_FILLS[yi % len(YR_FILLS)] if is_even else _fill("FFFFFF")
-            v = cell.value or 0
-            if sub_idx < 5 and v > 0:
-                q = Q_SUB[sub_idx]
-                cell.font = _font(bold=(sub_idx<4), color=Q_COLORS[q])
-            elif v == 0:
-                cell.value = "—"
-                cell.font  = _font(color="CBD5E1")
-            elif sub_idx == 5:
-                cell.font = _font(bold=True, color="4F46E5")
+    # ── Merge year-group headers ───────────────────────────────────────────────
+    for c in range(1, FIXED_COLS+1):
+        ws.merge_cells(start_row=1, start_column=c, end_row=2, end_column=c)
+    for yi in range(len(years_list)):
+        c_start = FIXED_COLS + yi * len(Q_SUB) + 1
+        c_end   = c_start + len(Q_SUB) - 1
+        ws.merge_cells(start_row=1, start_column=c_start, end_row=1, end_column=c_end)
+    tot_start = FIXED_COLS + len(years_list) * len(Q_SUB) + 1
+    ws.merge_cells(start_row=1, start_column=tot_start, end_row=1, end_column=tot_start+1)
+
+    # ── Style header rows ─────────────────────────────────────────────────────
+    for r_idx in [1, 2]:
+        for c_idx in range(1, TOTAL_COLS + 1):
+            cell = ws.cell(row=r_idx, column=c_idx)
+            cell.font      = _font(bold=True, color="1E293B", size=11)
+            cell.alignment = _align()
+            cell.border    = _border_thin()
+            col_in_data = c_idx - FIXED_COLS
+            if col_in_data > 0:
+                yi = (col_in_data - 1) // len(Q_SUB)
+                if yi < len(years_list):
+                    cell.fill = YR_FILLS[yi % len(YR_FILLS)]
+                else:
+                    cell.fill = TOT_FILL
             else:
-                cell.font = _font(bold=False, color="0891B2")
+                cell.fill = HDR_FILL
+            if r_idx == 2 and col_in_data > 0:
+                sub_idx = (col_in_data - 1) % len(Q_SUB)
+                if sub_idx < 5:
+                    q = Q_SUB[sub_idx]
+                    cell.font = _font(bold=True, color=Q_COLORS[q], size=11)
 
-# ── Column widths ──────────────────────────────────────────────────────────────
-ws.column_dimensions[get_column_letter(1)].width = 28  # Docente
-ws.column_dimensions[get_column_letter(2)].width = 22  # Escuela
-ws.column_dimensions[get_column_letter(3)].width = 14  # Scopus ID
-for c_idx in range(FIXED_COLS+1, TOTAL_COLS+1):
-    ws.column_dimensions[get_column_letter(c_idx)].width = 7
+    # ── Data rows ─────────────────────────────────────────────────────────────
+    current_school = None
+    for r in pivot_src:
+        if r["school"] != current_school:
+            current_school = r["school"]
+            sep_row = [f"  🏫  {current_school}"] + [""] * (TOTAL_COLS - 1)
+            ws.append(sep_row)
+            sr = ws.max_row
+            ws.merge_cells(start_row=sr, start_column=1, end_row=sr, end_column=TOTAL_COLS)
+            c = ws.cell(row=sr, column=1)
+            c.fill      = SCH_FILL
+            c.font      = _font(bold=True, color="1D4ED8", size=11)
+            c.alignment = _align(h="left")
+            c.border    = _border_thin("top_thick")
 
-# ── Freeze panes ──────────────────────────────────────────────────────────────
-ws.freeze_panes = get_column_letter(FIXED_COLS+1) + "3"
+        grand_arts = grand_docs = 0
+        row_data = [r["name"], r["school"], r["scopus_id"]]
+        for y in years_list:
+            yd = r.get(str(y), {})
+            for q in Q_SUB:
+                row_data.append(yd.get(q, 0) if q in ["Q1","Q2","Q3","Q4","SC"]
+                                else yd.get("total_arts",0) if q=="Arts"
+                                else yd.get("total_docs",0))
+            grand_arts += yd.get("total_arts", 0)
+            grand_docs += yd.get("total_docs", 0)
+        row_data += [grand_arts, grand_docs]
+        ws.append(row_data)
 
-# ── Row heights ───────────────────────────────────────────────────────────────
-ws.row_dimensions[1].height = 22
-ws.row_dimensions[2].height = 18
+        dr = ws.max_row
+        is_even = (dr % 2 == 0)
+        for c_idx in range(1, TOTAL_COLS + 1):
+            cell     = ws.cell(row=dr, column=c_idx)
+            col_data = c_idx - FIXED_COLS
+            cell.border    = _border_thin()
+            cell.alignment = _align(h="left" if c_idx <= FIXED_COLS else "center")
+            if c_idx <= FIXED_COLS:
+                cell.fill = ROW_EVEN if is_even else PatternFill()
+                cell.font = _font(bold=(c_idx==1), color="0F172A")
+            elif col_data > len(years_list)*len(Q_SUB):
+                cell.fill = TOT_FILL
+                cell.font = _font(bold=True, color="4F46E5" if (col_data % 2 == 1) else "0891B2")
+            else:
+                yi      = (col_data - 1) // len(Q_SUB)
+                sub_idx = (col_data - 1) % len(Q_SUB)
+                cell.fill = YR_FILLS[yi % len(YR_FILLS)] if is_even else _fill("FFFFFF")
+                v = cell.value or 0
+                if sub_idx < 5 and v > 0:
+                    q = Q_SUB[sub_idx]
+                    cell.font = _font(bold=(sub_idx<4), color=Q_COLORS[q])
+                elif v == 0:
+                    cell.value = "—"
+                    cell.font  = _font(color="CBD5E1")
+                elif sub_idx == 5:
+                    cell.font = _font(bold=True, color="4F46E5")
+                else:
+                    cell.font = _font(bold=False, color="0891B2")
+
+    # ── Column widths ──────────────────────────────────────────────────────────
+    ws.column_dimensions[get_column_letter(1)].width = 28
+    ws.column_dimensions[get_column_letter(2)].width = 22
+    ws.column_dimensions[get_column_letter(3)].width = 14
+    for c_idx in range(FIXED_COLS+1, TOTAL_COLS+1):
+        ws.column_dimensions[get_column_letter(c_idx)].width = 7
+
+    # ── Freeze panes + row heights ─────────────────────────────────────────────
+    ws.freeze_panes = get_column_letter(FIXED_COLS+1) + "3"
+    ws.row_dimensions[1].height = 22
+    ws.row_dimensions[2].height = 18
+
+# ── Build workbook with two source sheets ──────────────────────────────────────
+wb = openpyxl.Workbook()
+ws_sjr = wb.active
+ws_sjr.title = "Scimago JR 2025"
+_write_pivot_sheet(ws_sjr, authors_pivot)
+
+ws_cs = wb.create_sheet("CiteScore 2025")
+_write_pivot_sheet(ws_cs, authors_pivot_cs)
 
 # ── Save ──────────────────────────────────────────────────────────────────────
 pivot_path = OUT_DIR / "autores_pivot_cuartiles.xlsx"
 wb.save(pivot_path)
 pivot_kb = pivot_path.stat().st_size // 1024
 print(f"✅  Pivot Excel → {pivot_path}  ({pivot_kb} KB)")
-print(f"   {len(authors_pivot)} autores · {len(years_list)} años · {TOTAL_COLS} columnas")
+print(f"   {len(authors_pivot)} autores (SJR) · {len(authors_pivot_cs)} autores (CS) · {len(years_list)} años")
 
 # ─── GENERATE tables.xlsx ────────────────────────────────────────────────────
 print("Generating tables.xlsx...")
@@ -2274,23 +2266,7 @@ def _row(ws, vals, even=True):
 
 tb = openpyxl.Workbook()
 
-# ── Sheet 1: Artículos UTB completos ─────────────────────────────────────────
-ws1 = tb.active
-ws1.title = "Artículos UTB"
-_hdr(ws1, ["EID","Año","Tipo","Título","Revista","ISSN","Cuartil","SJR","Autores UTB","Escuelas"],
-     "0D2158", height=26)
-ws1.column_dimensions["A"].width = 22
-ws1.column_dimensions["B"].width = 6
-ws1.column_dimensions["C"].width = 12
-ws1.column_dimensions["D"].width = 55
-ws1.column_dimensions["E"].width = 38
-ws1.column_dimensions["F"].width = 12
-ws1.column_dimensions["G"].width = 8
-ws1.column_dimensions["H"].width = 9
-ws1.column_dimensions["I"].width = 38
-ws1.column_dimensions["J"].width = 30
-
-# Build author and school lookup per EID
+# Build author and school lookup per EID (shared across article sheets)
 from collections import defaultdict as _dd
 eid_utb_authors = _dd(list)
 eid_utb_schools = _dd(set)
@@ -2298,79 +2274,116 @@ for _, rr in author_papers.iterrows():
     eid_utb_authors[rr["EID"]].append(str(rr.get("DOCENTE","")))
     eid_utb_schools[rr["EID"]].add(str(rr.get("ESCUELA","")))
 
-seen_eids = set()
-for i, (_, rr) in enumerate(school_papers.drop_duplicates("EID").sort_values(["Year","EID"]).iterrows()):
-    eid = rr["EID"]
-    if eid in seen_eids: continue
-    seen_eids.add(eid)
-    info = scimago_lookup.get(rr.get("_matched_issn",""), {})
-    _row(ws1, [
-        eid,
-        int(rr["Year"]) if pd.notna(rr["Year"]) else "",
-        rr.get("doc_type3",""),
-        str(rr.get("Title",""))[:200],
-        str(rr.get("Source title",""))[:120],
-        str(rr.get("ISSN",""))[:20],
-        rr.get("quartile","No Q"),
-        info.get("sjr",""),
-        "; ".join(eid_utb_authors.get(eid,[]))[:200],
-        "; ".join(sorted(eid_utb_schools.get(eid,set())))[:120],
-    ], even=(i%2==0))
+def _write_articulos_sheet(ws, sp, q_col, metric_label, fill_hex):
+    """Write an Artículos sheet using sp (school_papers) and the given quartile column."""
+    _hdr(ws, ["EID","Año","Tipo","Título","Revista","ISSN","Cuartil",metric_label,"Autores UTB","Escuelas"],
+         fill_hex, height=26)
+    ws.column_dimensions["A"].width = 22
+    ws.column_dimensions["B"].width = 6
+    ws.column_dimensions["C"].width = 12
+    ws.column_dimensions["D"].width = 55
+    ws.column_dimensions["E"].width = 38
+    ws.column_dimensions["F"].width = 12
+    ws.column_dimensions["G"].width = 8
+    ws.column_dimensions["H"].width = 9
+    ws.column_dimensions["I"].width = 38
+    ws.column_dimensions["J"].width = 30
+    seen = set()
+    for i, (_, rr) in enumerate(sp.drop_duplicates("EID").sort_values(["Year","EID"]).iterrows()):
+        eid = rr["EID"]
+        if eid in seen: continue
+        seen.add(eid)
+        info = scimago_lookup.get(rr.get("_matched_issn",""), {})
+        metric_val = info.get("sjr","") if metric_label == "SJR" else rr.get("citescore","")
+        _row(ws, [
+            eid,
+            int(rr["Year"]) if pd.notna(rr["Year"]) else "",
+            rr.get("doc_type3",""),
+            str(rr.get("Title",""))[:200],
+            str(rr.get("Source title",""))[:120],
+            str(rr.get("ISSN",""))[:20],
+            rr.get(q_col,"No Q"),
+            metric_val,
+            "; ".join(eid_utb_authors.get(eid,[]))[:200],
+            "; ".join(sorted(eid_utb_schools.get(eid,set())))[:120],
+        ], even=(i%2==0))
+    ws.freeze_panes = "A2"
+    ws.auto_filter.ref = f"A1:J{ws.max_row}"
 
-ws1.freeze_panes = "A2"
-ws1.auto_filter.ref = f"A1:J{ws1.max_row}"
+def _write_resumen_anio_sheet(ws, sp, fill_hex):
+    """Write Resumen por año using the quartile column in sp."""
+    _hdr(ws, ["Año","Total docs","Artículos","Conferencias","Reviews","Otros",
+               "Arts Q1","Arts Q2","Arts Q3","Arts Q4","Arts No Q","% Q1","% Q1+Q2"],
+         fill_hex, height=28)
+    for ci, w in enumerate([8,10,10,12,10,8,9,9,9,9,10,8,9],1):
+        ws.column_dimensions[get_column_letter(ci)].width = w
+    for i, row in enumerate(timeline):
+        y   = row["year"]
+        sub = sp[sp["Year"]==int(y)]
+        art = sub[sub["doc_type3"]=="Article"]
+        q1  = int(art[art["quartile"]=="Q1"]["EID"].nunique())
+        q2  = int(art[art["quartile"]=="Q2"]["EID"].nunique())
+        q3  = int(art[art["quartile"]=="Q3"]["EID"].nunique())
+        q4  = int(art[art["quartile"]=="Q4"]["EID"].nunique())
+        nq  = int(art[art["quartile"]=="No Q"]["EID"].nunique())
+        has = q1+q2+q3+q4
+        _row(ws, [
+            y, row["total"], row["Article"], row["Conference"],
+            row["Review"], row["Other"],
+            q1, q2, q3, q4, nq,
+            f"{round(q1/has*100,1)}%" if has else "—",
+            f"{round((q1+q2)/has*100,1)}%" if has else "—",
+        ], even=(i%2==0))
+    ws.freeze_panes = "A2"
 
-# ── Sheet 2: Resumen por año ──────────────────────────────────────────────────
-ws2 = tb.create_sheet("Resumen por año")
-_hdr(ws2, ["Año","Total docs","Artículos","Conferencias","Reviews","Otros",
-           "Arts Q1","Arts Q2","Arts Q3","Arts Q4","Arts No Q","% Q1","% Q1+Q2"],
-     "1D4ED8", height=28)
-for ci, w in enumerate([8,10,10,12,10,8,9,9,9,9,10,8,9],1):
-    ws2.column_dimensions[get_column_letter(ci)].width = w
+def _write_resumen_escuela_sheet(ws, sch_list, fill_hex):
+    """Write Resumen por Escuela from a schools list."""
+    _hdr(ws, ["Escuela","Total docs","Artículos","Conferencias","Reviews","Otros",
+               "Q1","Q2","Q3","Q4","No Q","% Q1","Docentes activos"],
+         fill_hex, height=28)
+    for ci, w in enumerate([36,10,10,12,10,8,8,8,8,8,8,8,14],1):
+        ws.column_dimensions[get_column_letter(ci)].width = w
+    for i, s in enumerate(sch_list):
+        q1 = s.get("Q1",0); q2 = s.get("Q2",0); q3 = s.get("Q3",0); q4 = s.get("Q4",0)
+        has = q1+q2+q3+q4
+        _row(ws, [
+            s["name"], s["total"], s.get("Article",0), s.get("Conference",0),
+            s.get("Review",0), s.get("Other",0),
+            q1, q2, q3, q4, s.get("No Q",0),
+            f"{round(q1/has*100,1)}%" if has else "—",
+            s.get("n_authors",0),
+        ], even=(i%2==0))
+    ws.freeze_panes = "A2"
 
-for i, row in enumerate(timeline):
-    y   = row["year"]
-    sp  = school_papers[school_papers["Year"]==int(y)]
-    art = sp[sp["doc_type3"]=="Article"]
-    q1  = int(art[art["quartile"]=="Q1"]["EID"].nunique())
-    q2  = int(art[art["quartile"]=="Q2"]["EID"].nunique())
-    q3  = int(art[art["quartile"]=="Q3"]["EID"].nunique())
-    q4  = int(art[art["quartile"]=="Q4"]["EID"].nunique())
-    nq  = int(art[art["quartile"]=="No Q"]["EID"].nunique())
-    has = q1+q2+q3+q4
-    _row(ws2, [
-        y, row["total"], row["Article"], row["Conference"],
-        row["Review"], row["Other"],
-        q1, q2, q3, q4, nq,
-        f"{round(q1/has*100,1)}%" if has else "—",
-        f"{round((q1+q2)/has*100,1)}%" if has else "—",
-    ], even=(i%2==0))
+# Prepare a CS-renamed copy of school_papers for the "Resumen por año (CS)" sheet
+school_papers_cs = _use_cs(school_papers.copy())
 
-ws2.freeze_panes = "A2"
+# ── Sheet 1: Artículos UTB (SJR) ─────────────────────────────────────────────
+ws1 = tb.active
+ws1.title = "Artículos UTB (SJR)"
+_write_articulos_sheet(ws1, school_papers, "quartile", "SJR", "0D2158")
 
-# ── Sheet 3: Resumen por escuela ──────────────────────────────────────────────
-ws3 = tb.create_sheet("Resumen por Escuela")
-_hdr(ws3, ["Escuela","Total docs","Artículos","Conferencias","Reviews","Otros",
-           "Q1","Q2","Q3","Q4","No Q","% Q1","Docentes activos"],
-     "059669", height=28)
-for ci, w in enumerate([36,10,10,12,10,8,8,8,8,8,8,8,14],1):
-    ws3.column_dimensions[get_column_letter(ci)].width = w
+# ── Sheet 2: Artículos UTB (CS) ──────────────────────────────────────────────
+ws1cs = tb.create_sheet("Artículos UTB (CS)")
+_write_articulos_sheet(ws1cs, school_papers, "quartile_cs", "CiteScore", "1E3A5F")
 
-sch_all = by_year["ALL"]["schools"]
-for i, s in enumerate(sch_all):
-    q1 = s.get("Q1",0); q2 = s.get("Q2",0); q3 = s.get("Q3",0); q4 = s.get("Q4",0)
-    has = q1+q2+q3+q4
-    _row(ws3, [
-        s["name"], s["total"], s.get("Article",0), s.get("Conference",0),
-        s.get("Review",0), s.get("Other",0),
-        q1, q2, q3, q4, s.get("No Q",0),
-        f"{round(q1/has*100,1)}%" if has else "—",
-        s.get("n_authors",0),
-    ], even=(i%2==0))
+# ── Sheet 3: Resumen por año (SJR) ───────────────────────────────────────────
+ws2 = tb.create_sheet("Resumen por año (SJR)")
+_write_resumen_anio_sheet(ws2, school_papers, "1D4ED8")
 
-ws3.freeze_panes = "A2"
+# ── Sheet 4: Resumen por año (CS) ────────────────────────────────────────────
+ws2cs = tb.create_sheet("Resumen por año (CS)")
+_write_resumen_anio_sheet(ws2cs, school_papers_cs, "0369A1")
 
-# ── Sheet 4: Docentes activos ─────────────────────────────────────────────────
+# ── Sheet 5: Resumen por Escuela (SJR) ───────────────────────────────────────
+ws3 = tb.create_sheet("Resumen por Escuela (SJR)")
+_write_resumen_escuela_sheet(ws3, by_year["ALL"]["schools"], "059669")
+
+# ── Sheet 6: Resumen por Escuela (CS) ────────────────────────────────────────
+ws3cs = tb.create_sheet("Resumen por Escuela (CS)")
+_write_resumen_escuela_sheet(ws3cs, by_year_cs["ALL"]["schools"], "0D9488")
+
+# ── Sheet 7: Docentes activos ─────────────────────────────────────────────────
 ws4 = tb.create_sheet("Docentes activos")
 _hdr(ws4, ["Docente","Escuela","Scopus ID","Total docs","Artículos","Q1","Q2","Q3","Q4","No Q","% Q1"],
      "6366F1", height=26)
@@ -2394,4 +2407,4 @@ tables_path = OUT_DIR / "tables.xlsx"
 tb.save(tables_path)
 tables_kb = tables_path.stat().st_size // 1024
 print(f"✅  Tables Excel → {tables_path}  ({tables_kb} KB)")
-print(f"   Hojas: Artículos UTB · Resumen por año · Resumen por Escuela · Docentes activos")
+print(f"   Hojas: Artículos UTB (SJR/CS) · Resumen por año (SJR/CS) · Resumen por Escuela (SJR/CS) · Docentes activos")
