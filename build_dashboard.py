@@ -38,8 +38,9 @@ def _scopus_date(p):
 _scopus_candidates = sorted(BASE_DIR.glob("scopus_export_*.csv"), key=_scopus_date)
 SCOPUS_CSV    = _scopus_candidates[-1] if _scopus_candidates else None
 # SCOPUS_CSV  = BASE_DIR / "scopus_export_Jun 14-2026_1d2db208-3a63-4746-be63-c20b3217c430.csv"
-FACULTY_XLSX  = BASE_DIR / "Base de Datos Scopus 2025.xlsx"
-SCIMAGO_CSV   = BASE_DIR / "scimagojr 2025.csv"
+FACULTY_XLSX     = BASE_DIR / "Base de Datos Scopus 2025.xlsx"
+SCIMAGO_CSV      = BASE_DIR / "scimagojr 2025.csv"
+CITESCORE_XLSX   = BASE_DIR / "CiteScore 2025.xlsx"
 OUT_DIR       = BASE_DIR   # outputs van a la misma carpeta del script (raíz del repo)
 START_YEAR    = 2022
 TOP_AUTHORS   = 20
@@ -155,6 +156,70 @@ def get_quartile(issn_raw):
             return scimago_lookup[issn]
     return {"quartile":"No Q","sjr":0.0,"scimago_title":"","categories":"","areas":[]}
 
+# ─── LOAD CITESCORE 2025 ──────────────────────────────────────────────────────
+print("Loading CiteScore 2025...")
+
+def _norm_cs_issn(v):
+    """Normalize a CiteScore ISSN value (often stored as integer) to 8-char string."""
+    if v is None or (isinstance(v, float) and np.isnan(v)): return None
+    s = re.sub(r"[^0-9Xx]", "", str(v)).upper()
+    # Integer ISSNs lack leading zero — zero-pad to 8 chars
+    if re.fullmatch(r"[0-9]+", s) and len(s) < 8:
+        s = s.zfill(8)
+    return s if s else None
+
+# Read xlsx (10 MB — use openpyxl read_only for speed)
+_cs_rows = []   # (print_issn, e_issn, quartile_int, citescore, sub_area)
+_cs_wb = openpyxl.load_workbook(CITESCORE_XLSX, read_only=True, data_only=True)
+_cs_ws = _cs_wb.active
+_cs_headers = [c.value for c in next(_cs_ws.iter_rows(min_row=1, max_row=1))]
+_CI = {h:i for i,h in enumerate(_cs_headers)}
+for _row in _cs_ws.iter_rows(min_row=2, values_only=True):
+    _cs_rows.append((
+        _norm_cs_issn(_row[_CI["Print ISSN"]]),
+        _norm_cs_issn(_row[_CI["E-ISSN"]]),
+        _row[_CI["Quartile"]],          # integer 1-4 or None
+        _row[_CI["CiteScore"]],
+        str(_row[_CI["Scopus Sub-Subject Area"]] or "").strip(),
+    ))
+_cs_wb.close()
+
+# Build lookup: ISSN → {best_quartile, citescore, areas}
+# A journal appears once per subject area → take best (min) quartile
+_cs_tmp = {}   # issn → {q_best, cs_val, areas_set}
+for print_issn, e_issn, q_int, cs_val, area in _cs_rows:
+    q_str = f"Q{q_int}" if q_int in (1,2,3,4) else "No Q"
+    cs_f  = float(cs_val) if cs_val is not None else 0.0
+    for issn in filter(None, [print_issn, e_issn]):
+        if issn not in _cs_tmp:
+            _cs_tmp[issn] = {"q_best": q_str, "cs": cs_f, "areas": set()}
+        else:
+            # Keep best (lowest) quartile
+            cur = _cs_tmp[issn]["q_best"]
+            if q_str != "No Q" and (cur == "No Q" or int(q_str[1]) < int(cur[1])):
+                _cs_tmp[issn]["q_best"] = q_str
+        if area:
+            _cs_tmp[issn]["areas"].add(area)
+
+citescore_lookup = {
+    issn: {"quartile": v["q_best"], "citescore": v["cs"],
+           "areas": sorted(v["areas"])}
+    for issn, v in _cs_tmp.items()
+}
+del _cs_tmp, _cs_rows
+print(f"  CiteScore lookup: {len(citescore_lookup)} ISSNs")
+
+def get_quartile_cs(issn_raw):
+    for issn in norm_issns(issn_raw):
+        if issn in citescore_lookup:
+            return citescore_lookup[issn]
+    # Also try zero-padded version (CiteScore ISSNs may need padding)
+    for issn in norm_issns(issn_raw):
+        padded = issn.zfill(8)
+        if padded in citescore_lookup:
+            return citescore_lookup[padded]
+    return {"quartile":"No Q","citescore":0.0,"areas":[]}
+
 # ─── BUILD UTB PAPER-LEVEL DATASET ────────────────────────────────────────────
 print("Building author-paper dataset...")
 records = []
@@ -174,6 +239,7 @@ for _, r in df.iterrows():
     awas += [None]*(n-len(awas))
     short+= [None]*(n-len(short))
 
+    cs  = get_quartile_cs(issn)
     for i in range(n):
         name,_ = _parse_author_entry(awas[i]) if awas[i] else (None, None)
         if name is None and short[i]:
@@ -182,6 +248,7 @@ for _, r in df.iterrows():
         if aid in ("","nan","None"): aid = None
         records.append({"EID":eid,"Year":year,"doc_type3":dt3,"ISSN":issn,
                         "Source":src,"quartile":sci["quartile"],"sjr":sci["sjr"],
+                        "quartile_cs":cs["quartile"],
                         "author_id":aid,"author_name":name})
 
 authors_long = pd.DataFrame(records)
@@ -194,32 +261,41 @@ planta["DOCENTE"] = planta["author_id"].map(name_map).fillna(planta["author_name
 planta["ESCUELA"] = planta["author_id"].map(school_map).fillna("Sin Escuela")
 
 # Unique-paper credit per (EID, ESCUELA) and per (EID, DOCENTE)
-school_papers = planta[["EID","Year","ESCUELA","doc_type3","quartile","sjr"]].drop_duplicates()
-author_papers = planta[["EID","Year","author_id","DOCENTE","ESCUELA","doc_type3","quartile","sjr"]].drop_duplicates()
+school_papers = planta[["EID","Year","ESCUELA","doc_type3","quartile","quartile_cs","sjr"]].drop_duplicates()
+author_papers = planta[["EID","Year","author_id","DOCENTE","ESCUELA","doc_type3","quartile","quartile_cs","sjr"]].drop_duplicates()
 
 # UTB unique papers for area expansion
 utb_eids = set(school_papers["EID"].unique())
 unique_utb = df[df["EID"].isin(utb_eids)][["EID","Year","doc_type3","ISSN","quartile"]
     if "quartile" in df.columns else ["EID","Year","doc_type3","ISSN"]].drop_duplicates("EID").copy()
-# Re-attach quartile from planta (not df which has all papers)
-utb_q = school_papers[["EID","Year","doc_type3","quartile"]].drop_duplicates("EID")
-
-# Build EID → areas mapping from original df (via Scimago ISSN lookup)
-eid_to_areas = {}
+# Build EID → areas mapping from original df (via Scimago and CiteScore ISSN lookup)
+eid_to_areas = {}       # Scimago areas
+eid_to_areas_cs = {}    # CiteScore sub-subject areas
 for _, r in df[df["EID"].isin(utb_eids)].iterrows():
-    sci = get_quartile(r.get("ISSN"))
-    areas = sci.get("areas", [])
-    eid_to_areas[r["EID"]] = areas if areas else ["Sin clasificar"]
+    issn_r = r.get("ISSN")
+    sci  = get_quartile(issn_r)
+    cs_r = get_quartile_cs(issn_r)
+    areas_sci = sci.get("areas", [])
+    areas_cs  = cs_r.get("areas", [])
+    eid_to_areas[r["EID"]]    = areas_sci if areas_sci else ["Sin clasificar"]
+    eid_to_areas_cs[r["EID"]] = areas_cs  if areas_cs  else ["Sin clasificar"]
 
-# Build area_papers: expand each UTB paper by its Scimago areas
-area_rows = []
-for _, r in utb_q.iterrows():
-    for area in eid_to_areas.get(r["EID"], ["Sin clasificar"]):
-        area_rows.append({"EID": r["EID"], "Year": r["Year"],
-                          "doc_type3": r["doc_type3"], "quartile": r["quartile"],
-                          "area": area})
-area_papers = (pd.DataFrame(area_rows) if area_rows
-               else pd.DataFrame(columns=["EID","Year","doc_type3","quartile","area"]))
+# utb_q with both quartile columns
+utb_q = school_papers[["EID","Year","doc_type3","quartile","quartile_cs"]].drop_duplicates("EID")
+
+# Build area_papers (Scimago) and area_papers_cs (CiteScore)
+def _build_area_papers(utq, eid_areas_map, q_col):
+    rows = []
+    for _, r in utq.iterrows():
+        for area in eid_areas_map.get(r["EID"], ["Sin clasificar"]):
+            rows.append({"EID":r["EID"],"Year":r["Year"],
+                         "doc_type3":r["doc_type3"],"quartile":r[q_col],
+                         "area":area})
+    return (pd.DataFrame(rows) if rows
+            else pd.DataFrame(columns=["EID","Year","doc_type3","quartile","area"]))
+
+area_papers    = _build_area_papers(utb_q, eid_to_areas,    "quartile")
+area_papers_cs = _build_area_papers(utb_q, eid_to_areas_cs, "quartile_cs")
 
 years_list = sorted(df["Year"].unique().tolist())
 year_sels  = ["ALL"] + [str(y) for y in years_list]
@@ -230,6 +306,12 @@ print(f"  UTB papers: {author_papers['EID'].nunique()} unique, "
 def filter_year(df_in, ys):
     if ys == "ALL": return df_in
     return df_in[df_in["Year"] == int(ys)]
+
+def _use_cs(df_in):
+    """Return a copy with quartile_cs as the active 'quartile' column (for CiteScore mode)."""
+    if "quartile_cs" not in df_in.columns:
+        return df_in
+    return df_in.drop(columns=["quartile"]).rename(columns={"quartile_cs":"quartile"})
 
 def doc_type_counts(base):
     return {dt: int(base[base["doc_type3"]==dt]["EID"].nunique()) for dt in DOC_TYPES}
@@ -343,19 +425,24 @@ def areas_data(area_sub):
         rows.append(row)
     return rows
 
-def authors_pivot_data():
+def authors_pivot_data(q_col="quartile"):
     """
     Pivot: one row per author.
-    Q1/Q2/Q3/Q4 = any doc type whose ISSN matched Scimago (includes indexed conference papers).
-    SC           = Articles with no Scimago match (unmatched journal articles).
+    q_col selects which quartile column to use ("quartile" for Scimago, "quartile_cs" for CiteScore).
+    Q1/Q2/Q3/Q4 = any doc type whose ISSN matched the source.
+    SC           = Articles with no match.
     Arts         = all Article-type documents.
     Docs         = all documents.
     """
-    indexed = author_papers[author_papers["quartile"] != "No Q"].copy()
-    arts    = author_papers[author_papers["doc_type3"] == "Article"].copy()
-    all_ap  = author_papers.copy()
+    if q_col != "quartile":
+        ap_src = author_papers.drop(columns=["quartile"]).rename(columns={q_col:"quartile"})
+    else:
+        ap_src = author_papers
+    indexed = ap_src[ap_src["quartile"] != "No Q"].copy()
+    arts    = ap_src[ap_src["doc_type3"] == "Article"].copy()
+    all_ap  = ap_src.copy()
 
-    info_df = (author_papers
+    info_df = (ap_src
                .drop_duplicates("author_id")
                [["author_id","DOCENTE","ESCUELA"]]
                .copy())
@@ -387,17 +474,19 @@ def authors_pivot_data():
     for r in rows: del r["_grand_arts"]
     return rows
 
-def build_papers_index():
+def build_papers_index(q_col="quartile", ap_src=None, area_pap_src=None):
     """Build paper-detail lookup tables for rich HTML tooltips.
 
     Structure: {id: {"ALL": [...], "2022": [...], "2023": [...], ...}}
-    Indexed by year in Python so JS never needs to filter — avoids
-    truncation bugs when a global .head(N) cuts year-specific papers.
+    q_col selects which quartile column to use for sorting/labelling.
     """
     eid_info = (df[["EID","Title","Source title"]]
                 .drop_duplicates("EID")
                 .set_index("EID"))
     Q_PRIO = {"Q1":0,"Q2":1,"Q3":2,"Q4":3,"No Q":4}
+
+    if ap_src is None:   ap_src      = author_papers
+    if area_pap_src is None: area_pap_src = area_papers
 
     def _rows(grp, cap):
         out = []
@@ -411,7 +500,9 @@ def build_papers_index():
         return out
 
     # ── papers_by_author ─────────────────────────────────────────
-    ap = author_papers.drop_duplicates(["EID","author_id"]).copy()
+    ap = ap_src.drop_duplicates(["EID","author_id"]).copy()
+    if q_col != "quartile" and q_col in ap.columns:
+        ap = ap.drop(columns=["quartile"]).rename(columns={q_col:"quartile"})
     ap = ap.join(eid_info, on="EID", how="left")
     ap["_q"] = ap["quartile"].map(Q_PRIO).fillna(4)
     papers_by_author = {}
@@ -423,7 +514,7 @@ def build_papers_index():
         papers_by_author[str(aid)] = slot
 
     # ── papers_by_area ───────────────────────────────────────────
-    area_pap = area_papers.drop_duplicates(["EID","area"]).copy()
+    area_pap = area_pap_src.drop_duplicates(["EID","area"]).copy()
     area_pap = area_pap.join(eid_info, on="EID", how="left")
     area_pap["_q"] = area_pap["quartile"].map(Q_PRIO).fillna(4)
     papers_by_area = {}
@@ -447,21 +538,29 @@ for y in years_list:
     timeline.append(row)
 
 # Quartile trend: any doc with Scimago match (not just Articles)
-q_trend = []
+q_trend    = []
+q_trend_cs = []
 for y in years_list:
-    sub = school_papers[school_papers["Year"]==y]
-    row = {"year": str(y), "total": int(sub[sub["quartile"]!="No Q"]["EID"].nunique())}
+    sub   = school_papers[school_papers["Year"]==y]
+    sub_c = _use_cs(sub)
+    row   = {"year":str(y),"total":int(sub[sub["quartile"]!="No Q"]["EID"].nunique())}
+    row_c = {"year":str(y),"total":int(sub_c[sub_c["quartile"]!="No Q"]["EID"].nunique())}
     for q in QUARTILES:
-        row[q] = int(sub[sub["quartile"]==q]["EID"].nunique())
+        row[q]   = int(sub[sub["quartile"]==q]["EID"].nunique())
+        row_c[q] = int(sub_c[sub_c["quartile"]==q]["EID"].nunique())
     q_trend.append(row)
+    q_trend_cs.append(row_c)
 
 # ─── BUILD BY-YEAR DATA ───────────────────────────────────────────────────────
-print("Computing per-year slices...")
-by_year = {}
+print("Computing per-year slices (Scimago + CiteScore)...")
+by_year    = {}
+by_year_cs = {}
 for ys in year_sels:
-    ap_sub   = filter_year(author_papers, ys)
-    sp_sub   = filter_year(school_papers, ys)
-    area_sub = filter_year(area_papers, ys)
+    ap_sub      = filter_year(author_papers, ys)
+    sp_sub      = filter_year(school_papers, ys)
+    area_sub    = filter_year(area_papers,    ys)
+    area_sub_cs = filter_year(area_papers_cs, ys)
+    # Scimago slice
     by_year[ys] = {
         "kpis":      kpis(ap_sub, sp_sub),
         "doc_types": doc_type_counts(sp_sub),
@@ -471,6 +570,18 @@ for ys in year_sels:
         "pairs":     pairs_data(ap_sub),
         "areas":     areas_data(area_sub),
     }
+    # CiteScore slice (same functions, different quartile column)
+    ap_cs = _use_cs(ap_sub)
+    sp_cs = _use_cs(sp_sub)
+    by_year_cs[ys] = {
+        "kpis":      kpis(ap_cs, sp_cs),
+        "doc_types": doc_type_counts(sp_cs),
+        "quartiles": quartile_counts(sp_cs),
+        "schools":   schools_data(ap_cs, sp_cs),
+        "authors":   authors_data(ap_cs),
+        "pairs":     pairs_data(ap_cs),
+        "areas":     areas_data(area_sub_cs),
+    }
 
 # ─── FINAL PAYLOAD ────────────────────────────────────────────────────────────
 payload = {
@@ -479,23 +590,38 @@ payload = {
         "start_year": START_YEAR,
         "years":      year_sels,
     },
-    "timeline":       timeline,
-    "quartile_trend": q_trend,
-    "by_year":        by_year,
+    "timeline":       timeline,      # doc-type counts (source-independent)
+    "quartile_trend": q_trend,       # Scimago
+    "cs_q_trend":     q_trend_cs,    # CiteScore
+    "by_year":        by_year,       # Scimago
+    "cs_by_year":     by_year_cs,    # CiteScore
 }
 
-print("Building authors pivot...")
-authors_pivot = authors_pivot_data()
-print(f"  Pivot: {len(authors_pivot)} authors × {len(years_list)} years")
-
+print("Building authors pivot (Scimago)...")
+authors_pivot = authors_pivot_data(q_col="quartile")
+print(f"  Pivot Scimago: {len(authors_pivot)} authors × {len(years_list)} years")
 payload["authors_pivot"] = {"years": [str(y) for y in years_list],
                              "rows":  authors_pivot}
 
-print("Building papers index for tooltips...")
-papers_by_author, papers_by_area = build_papers_index()
+print("Building authors pivot (CiteScore)...")
+authors_pivot_cs = authors_pivot_data(q_col="quartile_cs")
+print(f"  Pivot CiteScore: {len(authors_pivot_cs)} authors × {len(years_list)} years")
+payload["cs_authors_pivot"] = {"years": [str(y) for y in years_list],
+                                "rows":  authors_pivot_cs}
+
+print("Building papers index for tooltips (Scimago)...")
+papers_by_author, papers_by_area = build_papers_index(
+    q_col="quartile", ap_src=author_papers, area_pap_src=area_papers)
 payload["papers_by_author"] = papers_by_author
 payload["papers_by_area"]   = papers_by_area
-print(f"  Tooltip index: {len(papers_by_author)} authors, {len(papers_by_area)} areas")
+print(f"  Scimago index: {len(papers_by_author)} authors, {len(papers_by_area)} areas")
+
+print("Building papers index for tooltips (CiteScore)...")
+papers_by_author_cs, papers_by_area_cs = build_papers_index(
+    q_col="quartile_cs", ap_src=author_papers, area_pap_src=area_papers_cs)
+payload["cs_papers_by_author"] = papers_by_author_cs
+payload["cs_papers_by_area"]   = papers_by_area_cs
+print(f"  CiteScore index: {len(papers_by_author_cs)} authors, {len(papers_by_area_cs)} areas")
 print("Data payload ready.")
 
 # ─── HTML TEMPLATE ────────────────────────────────────────────────────────────
@@ -535,16 +661,16 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
 .hero-title span{color:#93C5FD}
 .hero-desc{font-size:13.5px;line-height:1.8;color:rgba(255,255,255,.75);max-width:680px}
 .hero-desc strong{color:rgba(255,255,255,.95)}
-/* Year filter in hero */
+/* Year / source filter in hero */
 .year-filter-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;padding-top:4px}
 .year-filter-label{font-size:11px;font-weight:700;text-transform:uppercase;
   letter-spacing:.8px;color:rgba(255,255,255,.6)}
-#yearFilter{
+#yearFilter,#srcFilter{
   appearance:none;background:#1E3A8A url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2393C5FD' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
   border:1.5px solid rgba(147,197,253,.4);border-radius:8px;
   color:#fff;font-size:14px;font-weight:600;padding:8px 36px 8px 14px;
   cursor:pointer;min-width:110px;transition:border-color .15s}
-#yearFilter:hover{border-color:rgba(147,197,253,.75)}
+#yearFilter:hover,#srcFilter:hover{border-color:rgba(147,197,253,.75)}
 /* ── KPI STRIP ────────────────────────────────────────────────── */
 .kpi-strip{margin-bottom:24px;max-width:1180px;margin:-32px auto 0;padding:0 72px;position:relative;z-index:10}
 .kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:13px}
@@ -775,18 +901,28 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   <div class="hero-glow"></div><div class="hero-glow2"></div>
   <div class="hero-inner">
     <div class="hero-text">
-      <div class="hero-badge">&#128202; Scopus · Scimago JR 2025</div>
+      <div class="hero-badge">&#128202; Scopus · Scimago JR 2025 · CiteScore 2025</div>
       <h1 class="hero-title">UTB Scopus Dashboard <span>&#8805; __START_YEAR__</span></h1>
       <p class="hero-desc">
         Caracterización bibliométrica de la producción científica de docentes de planta de la
-        <strong>Universidad Tecnológica de Bolívar</strong>. Enriquecido con cuartiles
-        <strong>Scimago JR 2025</strong> para medir calidad de revista.
+        <strong>Universidad Tecnológica de Bolívar</strong>. Incorpora dos clasificadores
+        internacionales de revistas: <strong>Scimago JR 2025</strong> (SJR — índice de
+        prestigio ponderado por citas) y <strong>CiteScore 2025</strong> (índice Scopus
+        basado en citas sobre un período de cuatro años). Ambos asignan cuartiles Q1–Q4
+        y pueden alternarse desde el selector <em>Clasificador</em> del panel superior.
         Actualizado: <strong>__ACTU__</strong>.
       </p>
     </div>
     <div class="year-filter-wrap">
       <span class="year-filter-label">Filtro de año</span>
       <select id="yearFilter"></select>
+    </div>
+    <div class="year-filter-wrap">
+      <span class="year-filter-label">Clasificador</span>
+      <select id="srcFilter" onchange="setSource(this.value)">
+        <option value="scimago">Scimago JR 2025</option>
+        <option value="scopus">CiteScore 2025</option>
+      </select>
     </div>
   </div>
 </header>
@@ -837,7 +973,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 <nav class="nav-bar" id="navBar">
   <div class="nav-inner">
     <a class="nav-link active" href="#sec-prod">📈 Producción</a>
-    <a class="nav-link" href="#sec-calidad">🏆 Calidad (Scimago)</a>
+    <a class="nav-link" href="#sec-calidad" id="nav-calidad">🏆 Calidad</a>
     <a class="nav-link" href="#sec-escuelas">🏫 Escuelas</a>
     <a class="nav-link" href="#sec-autores">👤 Autores</a>
     <a class="nav-link" href="#sec-colab">🤝 Colaboración</a>
@@ -904,14 +1040,17 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 <section class="section" id="sec-calidad">
   <div class="section-hd">
     <div class="section-eye">Sección 2</div>
-    <h2 class="section-title">Calidad de Publicaciones — Scimago JR</h2>
-    <p class="section-sub">
-      Los cuartiles Scimago (Q1–Q4) miden el prestigio de la revista donde se publica:
-      Q1 representa el 25&nbsp;% de revistas con mayor impacto en su área temática.
-      Publicar en Q1 y Q2 es señal de visibilidad internacional y calidad científica reconocida,
-      y constituye el criterio de calidad más utilizado en convocatorias de Minciencias,
-      acreditación institucional y evaluación docente. El análisis aplica exclusivamente
-      a artículos (<em>Article</em>) cruzados por ISSN con el ranking Scimago JR 2025.
+    <h2 class="section-title">Calidad de Publicaciones — <span id="src-lbl-quality">Scimago JR</span></h2>
+    <p class="section-sub" id="src-desc-quality">
+      El clasificador activo asigna cuartiles Q1–Q4 a las revistas según su impacto relativo
+      dentro de cada área temática: Q1 agrupa el 25&nbsp;% de revistas con mayor impacto.
+      <strong>Scimago JR 2025</strong> utiliza el SJR (Scimago Journal Rank), un índice
+      de prestigio que pondera las citas recibidas según la influencia de la revista citante.
+      <strong>CiteScore 2025</strong>, desarrollado por Scopus, mide el promedio de citas
+      por documento en un ventana de cuatro años e incluye más tipos de documentos.
+      Ambas métricas son ampliamente aceptadas en convocatorias de Minciencias,
+      acreditación institucional y evaluación docente. Los cuartiles aplican a cualquier
+      documento cuyo ISSN esté indexado en el clasificador seleccionado.
     </p>
   </div>
 
@@ -1059,14 +1198,17 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 <section class="section" id="sec-areas">
   <div class="section-hd">
     <div class="section-eye">Sección 6</div>
-    <h2 class="section-title">Áreas Temáticas — Scimago JR</h2>
-    <p class="section-sub">
-      Distribución de los artículos por área temática según la clasificación Scimago JR,
-      mostrando las top __TOP_AREAS__ áreas con mayor presencia institucional.
-      Dado que una revista puede estar clasificada en varias áreas simultáneamente,
-      un mismo artículo puede contabilizarse en más de un campo (esto se aclara en la metodología).
-      Esta vista permite conocer las fortalezas disciplinares de la UTB, identificar áreas
-      emergentes y orientar la estrategia de investigación hacia campos con mayor visibilidad global.
+    <h2 class="section-title">Áreas Temáticas — <span id="src-lbl-areas">Scimago JR</span></h2>
+    <p class="section-sub" id="src-desc-areas">
+      Distribución de los artículos por área temática según el clasificador activo.
+      <strong>Scimago JR</strong> organiza las revistas en <strong>27 grandes áreas</strong>
+      disciplinares; <strong>CiteScore</strong> utiliza la taxonomía ASJC de Scopus con
+      <strong>~180 sub-áreas</strong> más granulares, por lo que la vista de áreas cambia
+      significativamente al cambiar de fuente. Dado que una revista puede estar clasificada
+      en varias áreas simultáneamente, un mismo artículo puede contabilizarse en más de un
+      campo (doble conteo intencional, aclarado en metodología). Esta vista permite
+      identificar las fortalezas disciplinares de la UTB y comparar el perfil temático
+      institucional según cada clasificador.
     </p>
   </div>
 
@@ -1127,7 +1269,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
       </table>
     </div>
     <p style="font-size:11.5px;color:#94A3B8;margin-top:12px">
-      SC = sin cuartil asignado en Scimago JR 2025 &nbsp;·&nbsp;
+      SC = sin cuartil asignado en <span id="pivot-sc-src">Scimago JR 2025</span> &nbsp;·&nbsp;
       Arts = total artículos &nbsp;·&nbsp; Docs = total documentos (todos los tipos)
     </p>
   </div>
@@ -1147,7 +1289,16 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     <ul>
       <li>Export CSV de Scopus (EID, año, tipo, autores, ISSN) filtrado desde __START_YEAR__.</li>
       <li>Base maestra de docentes de planta UTB con <em>Scopus Author ID</em>.</li>
-      <li><strong>Scimago JR 2025</strong>: cruce por ISSN normalizado para asignar cuartil (Q1–Q4) y área temática a cada artículo.</li>
+      <li><strong>Scimago JR 2025</strong> — <em>Scimago Journal Rank</em>: cruce por ISSN
+          normalizado que asigna cuartil SJR (Q1–Q4) y área temática (27 grandes áreas) a cada
+          documento cuyo ISSN figure en el ranking. El SJR es un índice de prestigio que
+          pondera las citas según la influencia de la revista citante.</li>
+      <li><strong>CiteScore 2025</strong> (Elsevier/Scopus): cruce por ISSN que asigna
+          cuartil CiteScore (Q1–Q4) y sub-área ASJC (~180 categorías, más granulares que
+          Scimago) a cada documento indexado. CiteScore mide el promedio de citas por
+          documento en una ventana de cuatro años e incluye artículos, conferencias y
+          revisiones. Ambos clasificadores pueden alternarse desde el selector
+          <em>Clasificador</em> del panel superior.</li>
     </ul>
   </div>
 
@@ -1156,9 +1307,15 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     <ul>
       <li><strong>Unidad de conteo:</strong> documentos únicos por <code>EID</code>, no apariciones de autor.</li>
       <li><strong>Crédito por Escuela:</strong> una Escuela recibe crédito si al menos un docente de esa Escuela es autor (un documento puede contar en varias Escuelas).</li>
-      <li><strong>Cuartiles y áreas:</strong> solo aplican a artículos (<em>Article</em>). Conference papers, libros, etc. aparecen como "No Q" / "Sin clasificar".</li>
-      <li><strong>Áreas múltiples:</strong> si una revista pertenece a varias áreas Scimago, el artículo se contabiliza en cada área (doble conteo intencional).</li>
-      <li><strong>% Q1 / Q1+Q2:</strong> calculado sobre artículos con cuartil asignado (excluye "No Q").</li>
+      <li><strong>Cuartiles:</strong> aplican a cualquier tipo de documento cuyo ISSN figure
+          en el clasificador activo (artículos, conferencias en series indexadas, etc.).
+          Los documentos sin coincidencia de ISSN aparecen como "No Q" / SC (sin cuartil).</li>
+      <li><strong>Áreas múltiples:</strong> si una revista pertenece a varias áreas del
+          clasificador activo, el artículo se contabiliza en cada área (doble conteo
+          intencional). Scimago JR maneja 27 áreas amplias; CiteScore usa ~180 sub-áreas
+          ASJC, por lo que el gráfico de áreas varía notablemente entre clasificadores.</li>
+      <li><strong>% Q1 / Q1+Q2:</strong> calculado sobre documentos con cuartil asignado
+          en la fuente activa (excluye "No Q" / SC).</li>
     </ul>
   </div>
 
@@ -1196,14 +1353,14 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     <strong>Créditos</strong> &mdash;
     Desarrollado por <strong>D. Sierra-Porta</strong> &copy; 2026 &middot;
     Universidad Tecnológica de Bolívar &middot;
-    <em>Datos: Scopus + Scimago JR 2025 &middot; Actualizado: __ACTU__</em>
+    <em>Datos: Scopus + Scimago JR 2025 + CiteScore 2025 &middot; Actualizado: __ACTU__</em>
   </div>
 </section>
 
 <footer>
   <strong>© 2026 D. Sierra-Porta — UTB</strong> &nbsp;·&nbsp;
   Período: desde __START_YEAR__ &nbsp;·&nbsp;
-  Fuente: Scopus + Scimago JR 2025 &nbsp;·&nbsp;
+  Fuente: Scopus + <span id="footer-src">Scimago JR 2025</span> &nbsp;·&nbsp;
   Conteos sobre documentos únicos (EID)
 </footer>
 
@@ -1227,7 +1384,43 @@ Chart.defaults.plugins.legend.labels.boxWidth = 11;
 Chart.defaults.plugins.legend.labels.padding  = 14;
 
 // ── STATE ────────────────────────────────────────────────────────
-let year = 'ALL';
+let year   = 'ALL';
+let source = 'scimago';
+
+// ── SOURCE HELPERS ────────────────────────────────────────────────
+// Returns the active by_year data for the selected classifier source
+function SBY(){ return source==='scimago' ? D.by_year : D.cs_by_year; }
+function SQT(){ return source==='scimago' ? D.quartile_trend : D.cs_q_trend; }
+function SPA(){ return source==='scimago' ? D.papers_by_author : D.cs_papers_by_author; }
+function SPR(){ return source==='scimago' ? D.papers_by_area   : D.cs_papers_by_area; }
+// Pivot is also source-specific (quartile counts differ per classifier)
+let P = D.authors_pivot;
+
+function setSource(s){
+  source = s;
+  P = s==='scimago' ? D.authors_pivot : D.cs_authors_pivot;
+  const isSci = s === 'scimago';
+  const srcShort = isSci ? 'Scimago JR' : 'CiteScore';
+  const srcFull  = isSci ? 'Scimago JR 2025' : 'CiteScore 2025';
+  // Nav label
+  const navLbl = document.getElementById('nav-calidad');
+  if(navLbl) navLbl.textContent = '🏆 Calidad (' + srcShort + ')';
+  // Footer
+  const srcLine = document.getElementById('footer-src');
+  if(srcLine) srcLine.textContent = srcFull;
+  // Section titles (dynamic spans)
+  const lblQuality = document.getElementById('src-lbl-quality');
+  if(lblQuality) lblQuality.textContent = srcShort;
+  const lblAreas = document.getElementById('src-lbl-areas');
+  if(lblAreas) lblAreas.textContent = srcShort;
+  // Pivot legend
+  const pivotSrc = document.getElementById('pivot-sc-src');
+  if(pivotSrc) pivotSrc.textContent = srcFull;
+  buildPivotHeader();
+  renderPivot();
+  drawQTrend();
+  renderAll();
+}
 const charts = {};
 
 // ── UTILITIES ────────────────────────────────────────────────────
@@ -1393,7 +1586,7 @@ function countUp(el, target, suffix='', decimals=0){
 
 // ── KPI UPDATE ───────────────────────────────────────────────────
 function updateKPIs(){
-  const k = D.by_year[year].kpis;
+  const k = SBY()[year].kpis;
   countUp(document.getElementById('k-docs'),  k.n_docs);
   countUp(document.getElementById('k-arts'),  k.n_articles);
   countUp(document.getElementById('k-q1'),    parseFloat(k.pct_q1),  '%', 1);
@@ -1415,7 +1608,7 @@ function drawTimeline(){
 
 // ── CHART 2: TYPE DONUT ─────────────────────────────────────────
 function drawTypeDonut(){
-  const dt   = D.by_year[year].doc_types;
+  const dt   = SBY()[year].doc_types;
   const vals = TYPE_LABELS.map(t=>dt[t]||0);
   label('lbl-donut-type', year);
   mkChart('c-type-donut', doughnut(TYPE_LABELS, vals, TYPE_LABELS.map(t=>C[t])));
@@ -1423,12 +1616,12 @@ function drawTypeDonut(){
 
 // ── CHART 3: Q1+Q2 mini donut ───────────────────────────────────
 function drawQ1Q2Mini(){
-  const k   = D.by_year[year].kpis;
+  const k   = SBY()[year].kpis;
   const q1  = k.q1  || 0;
-  const q2  = (D.by_year[year].quartiles['Q2']||0);
-  const q3  = (D.by_year[year].quartiles['Q3']||0);
-  const q4  = (D.by_year[year].quartiles['Q4']||0);
-  const noq = (D.by_year[year].quartiles['No Q']||0);
+  const q2  = (SBY()[year].quartiles['Q2']||0);
+  const q3  = (SBY()[year].quartiles['Q3']||0);
+  const q4  = (SBY()[year].quartiles['Q4']||0);
+  const noq = (SBY()[year].quartiles['No Q']||0);
   label('lbl-q1q2-mini', year);
   mkChart('c-q1q2-mini', doughnut(
     ['Q1','Q2','Q3','Q4','No Q'],
@@ -1439,7 +1632,7 @@ function drawQ1Q2Mini(){
 
 // ── CHART 4: QUARTILE TREND (fixed, all years) ──────────────────
 function drawQTrend(){
-  const qt = D.quartile_trend;
+  const qt = SQT();
   const labels   = qt.map(r=>r.year);
   const datasets = Q_LABELS.map(q=>({
     label:q, data:qt.map(r=>r[q]||0),
@@ -1450,7 +1643,7 @@ function drawQTrend(){
 
 // ── CHART 5: QUARTILE DONUT ─────────────────────────────────────
 function drawQDonut(){
-  const q    = D.by_year[year].quartiles;
+  const q    = SBY()[year].quartiles;
   const vals = Q_LABELS.map(l=>q[l]||0);
   label('lbl-q-donut', year);
   mkChart('c-q-donut', doughnut(Q_LABELS, vals, Q_LABELS.map(l=>C[l])));
@@ -1458,7 +1651,7 @@ function drawQDonut(){
 
 // ── CHART 6: % Q1 POR ESCUELA ───────────────────────────────────
 function drawPctQ1(){
-  const schools = D.by_year[year].schools.slice(0,10);
+  const schools = SBY()[year].schools.slice(0,10);
   const labels  = schools.map(s=>s.name);
   const vals    = schools.map(s=>s.pct_q1||0);
   label('lbl-pct-q1', year);
@@ -1485,7 +1678,7 @@ function drawPctQ1(){
 
 // ── CHART 7: SCHOOL × QUARTILE ──────────────────────────────────
 function drawSchoolQ(){
-  const schools  = D.by_year[year].schools;
+  const schools  = SBY()[year].schools;
   const labels   = schools.map(s=>s.name).reverse();
   label('lbl-sch-q', year);
   const datasets = Q_LABELS.map(q=>({
@@ -1497,7 +1690,7 @@ function drawSchoolQ(){
 
 // ── CHART 8: SCHOOL × TYPE ──────────────────────────────────────
 function drawSchoolType(){
-  const schools  = D.by_year[year].schools;
+  const schools  = SBY()[year].schools;
   const labels   = schools.map(s=>s.name).reverse();
   label('lbl-sch-type', year);
   const datasets = TYPE_LABELS.map(t=>({
@@ -1509,7 +1702,7 @@ function drawSchoolType(){
 
 // ── CHART 9: AUTHORS × TYPE ─────────────────────────────────────
 function drawAuthType(){
-  const authors  = D.by_year[year].authors;
+  const authors  = SBY()[year].authors;
   const labels   = authors.map(a=>a.name).reverse();
   label('lbl-auth-type', year);
   const datasets = TYPE_LABELS.map(t=>({
@@ -1521,9 +1714,9 @@ function drawAuthType(){
     enabled:false,
     external: makeExternalTooltip((dp)=>{
       const nm  = dp.label;
-      const obj = D.by_year[year].authors.find(a=>a.name===nm);
+      const obj = SBY()[year].authors.find(a=>a.name===nm);
       const sid = obj ? obj.scopus_id : null;
-      const slot = sid ? (D.papers_by_author[sid]||{}) : {};
+      const slot = sid ? (SPA()[sid]||{}) : {};
       const papers = slot[year]||[];
       return {label:nm, papers, total:papers.length};
     })
@@ -1533,7 +1726,7 @@ function drawAuthType(){
 
 // ── CHART 10: AUTHORS × Q1 ──────────────────────────────────────
 function drawAuthQ1(){
-  const authors = D.by_year[year].authors
+  const authors = SBY()[year].authors
     .filter(a=>(a.Q1||0)+(a.Q2||0)+(a.Q3||0)+(a.Q4||0)+(a['No Q']||0)>0)
     .sort((a,b)=>((b.Q1||0)+(b.Q2||0)+(b.Q3||0)+(b.Q4||0))-((a.Q1||0)+(a.Q2||0)+(a.Q3||0)+(a.Q4||0)))
     .slice(0,__TOP_AUTHORS__);
@@ -1562,9 +1755,9 @@ function drawAuthQ1(){
           enabled:false,
           external: makeExternalTooltip((dp)=>{
             const nm  = dp.label;
-            const obj = D.by_year[year].authors.find(a=>a.name===nm);
+            const obj = SBY()[year].authors.find(a=>a.name===nm);
             const sid = obj ? obj.scopus_id : null;
-            const slot = sid ? (D.papers_by_author[sid]||{}) : {};
+            const slot = sid ? (SPA()[sid]||{}) : {};
             const papers = slot[year]||[];
             return {label:nm, papers, total:papers.length};
           })
@@ -1580,7 +1773,7 @@ function drawAuthQ1(){
 
 // ── CHART 11: PAIRS ─────────────────────────────────────────────
 function drawPairs(){
-  const pairs = D.by_year[year].pairs;
+  const pairs = SBY()[year].pairs;
   if(!pairs.length){ label('lbl-pairs', year+' (sin datos)'); return; }
   const labels = pairs.map(p=>p.pair).reverse();
   const vals   = pairs.map(p=>p.n).reverse();
@@ -1610,7 +1803,7 @@ function drawPairs(){
 
 // ── CHART 12: AREAS × QUARTILE ──────────────────────────────────
 function drawAreaQ(){
-  const areas = D.by_year[year].areas;
+  const areas = SBY()[year].areas;
   if(!areas || !areas.length){ label('lbl-area-q', year+' (sin datos)'); return; }
   const labels   = areas.map(a=>a.name).reverse();
   label('lbl-area-q', year);
@@ -1623,7 +1816,7 @@ function drawAreaQ(){
     enabled:false,
     external: makeExternalTooltip((dp)=>{
       const aName = dp.label;
-      const slot  = D.papers_by_area[aName]||{};
+      const slot  = SPR()[aName]||{};
       const papers = slot[year]||[];
       return {label:aName, papers, total:papers.length};
     })
@@ -1633,7 +1826,7 @@ function drawAreaQ(){
 
 // ── CHART 13: % Q1 POR ÁREA ─────────────────────────────────────
 function drawAreaPct(){
-  const areas = D.by_year[year].areas;
+  const areas = SBY()[year].areas;
   if(!areas || !areas.length){ label('lbl-area-pct', year+' (sin datos)'); return; }
   const sorted = [...areas].sort((a,b)=>(b.pct_q1||0)-(a.pct_q1||0));
   const labels = sorted.map(a=>a.name).reverse();
@@ -1655,7 +1848,7 @@ function drawAreaPct(){
           enabled:false,
           external: makeExternalTooltip((dp)=>{
             const aName = dp.label;
-            const slot  = D.papers_by_area[aName]||{};
+            const slot  = SPR()[aName]||{};
             const all   = slot[year]||[];
             // For pct chart show only Q1 papers
             const papers = all.filter(p=>p.q==='Q1');
@@ -1673,7 +1866,7 @@ function drawAreaPct(){
 }
 
 // ── PIVOT TABLE ─────────────────────────────────────────────────
-const P = D.authors_pivot;
+// P is declared in SOURCE HELPERS above as `let P = D.authors_pivot`
 const Q_COLS = ['Q1','Q2','Q3','Q4','SC'];
 const Q_CSS  = {Q1:'q1v',Q2:'q2v',Q3:'q3v',Q4:'q4v',SC:'scv'};
 
