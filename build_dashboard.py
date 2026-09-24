@@ -425,6 +425,29 @@ def areas_data(area_sub):
         rows.append(row)
     return rows
 
+def areas_by_school_data(area_sub, sp_sub, n=10):
+    """Top N areas broken down by school (% within each school's total papers)."""
+    art_sub = area_sub[area_sub["doc_type3"] == "Article"]
+    if art_sub.empty or sp_sub.empty:
+        return {"top_areas": [], "schools": [], "data": {}}
+    eid_school = sp_sub[["EID","ESCUELA"]].drop_duplicates()
+    joined = art_sub.merge(eid_school, on="EID", how="left").dropna(subset=["ESCUELA"])
+    if joined.empty:
+        return {"top_areas": [], "schools": [], "data": {}}
+    top_areas = (joined.groupby("area")["EID"].nunique()
+                 .sort_values(ascending=False).head(n).index.tolist())
+    schools = sorted(sp_sub["ESCUELA"].unique().tolist())
+    data = {}
+    for sch in schools:
+        sch_art = joined[joined["ESCUELA"] == sch]
+        sch_total = max(int(sch_art["EID"].nunique()), 1)  # total articles in top areas (avoid /0)
+        data[sch] = {
+            "total": sch_total,
+            "areas": {area: round(int(sch_art[sch_art["area"]==area]["EID"].nunique()) / sch_total * 100, 1)
+                      for area in top_areas}
+        }
+    return {"top_areas": top_areas, "schools": schools, "data": data}
+
 def authors_pivot_data(q_col="quartile"):
     """
     Pivot: one row per author.
@@ -562,25 +585,27 @@ for ys in year_sels:
     area_sub_cs = filter_year(area_papers_cs, ys)
     # Scimago slice
     by_year[ys] = {
-        "kpis":      kpis(ap_sub, sp_sub),
-        "doc_types": doc_type_counts(sp_sub),
-        "quartiles": quartile_counts(sp_sub),
-        "schools":   schools_data(ap_sub, sp_sub),
-        "authors":   authors_data(ap_sub),
-        "pairs":     pairs_data(ap_sub),
-        "areas":     areas_data(area_sub),
+        "kpis":             kpis(ap_sub, sp_sub),
+        "doc_types":        doc_type_counts(sp_sub),
+        "quartiles":        quartile_counts(sp_sub),
+        "schools":          schools_data(ap_sub, sp_sub),
+        "authors":          authors_data(ap_sub),
+        "pairs":            pairs_data(ap_sub),
+        "areas":            areas_data(area_sub),
+        "areas_by_school":  areas_by_school_data(area_sub, sp_sub),
     }
     # CiteScore slice (same functions, different quartile column)
     ap_cs = _use_cs(ap_sub)
     sp_cs = _use_cs(sp_sub)
     by_year_cs[ys] = {
-        "kpis":      kpis(ap_cs, sp_cs),
-        "doc_types": doc_type_counts(sp_cs),
-        "quartiles": quartile_counts(sp_cs),
-        "schools":   schools_data(ap_cs, sp_cs),
-        "authors":   authors_data(ap_cs),
-        "pairs":     pairs_data(ap_cs),
-        "areas":     areas_data(area_sub_cs),
+        "kpis":             kpis(ap_cs, sp_cs),
+        "doc_types":        doc_type_counts(sp_cs),
+        "quartiles":        quartile_counts(sp_cs),
+        "schools":          schools_data(ap_cs, sp_cs),
+        "authors":          authors_data(ap_cs),
+        "pairs":            pairs_data(ap_cs),
+        "areas":            areas_data(area_sub_cs),
+        "areas_by_school":  areas_by_school_data(area_sub_cs, sp_sub),
     }
 
 # ─── FINAL PAYLOAD ────────────────────────────────────────────────────────────
@@ -678,11 +703,11 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
   box-shadow:0 6px 28px rgba(15,23,42,.10);border-top:10px solid var(--ac);
   transition:transform .16s,box-shadow .16s;animation:riseIn .5s ease both}
 .kpi-card:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(15,23,42,.15)}
-.kpi-card:nth-child(1){--ac:#2563EB;animation-delay:.04s}
-.kpi-card:nth-child(2){--ac:#059669;animation-delay:.08s}
-.kpi-card:nth-child(3){--ac:#10B981;animation-delay:.12s}
-.kpi-card:nth-child(4){--ac:#6366F1;animation-delay:.16s}
-.kpi-card:nth-child(5){--ac:#EA580C;animation-delay:.20s}
+.kpi-card:nth-child(1){--ac:#2B5EA8;animation-delay:.04s}
+.kpi-card:nth-child(2){--ac:#1A7A5E;animation-delay:.08s}
+.kpi-card:nth-child(3){--ac:#1A7A5E;animation-delay:.12s}
+.kpi-card:nth-child(4){--ac:#4E548A;animation-delay:.16s}
+.kpi-card:nth-child(5){--ac:#8B4E15;animation-delay:.20s}
 .kpi-card:nth-child(6){--ac:#0891B2;animation-delay:.24s}
 .kpi-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
   color:#94A3B8;margin-bottom:5px}
@@ -698,8 +723,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
 .nav-link{padding:7px 13px;font-size:12px;font-weight:600;color:#64748B;
   text-decoration:none;white-space:nowrap;border-radius:8px;margin:0 1px;
   transition:color .15s,background .15s;letter-spacing:.1px;border:none}
-.nav-link:hover{color:#1D4ED8;background:#EFF6FF}
-.nav-link.active{color:#1D4ED8;background:#DBEAFE;font-weight:700}
+.nav-link:hover{color:#1E4896;background:#EFF6FF}
+.nav-link.active{color:#1E4896;background:#DBEAFE;font-weight:700}
 /* ── SECTIONS ─────────────────────────────────────────────────── */
 .section{padding:52px 72px;max-width:1180px;margin:0 auto}
 .section-hd{margin-bottom:28px}
@@ -724,8 +749,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
 /* ── NOTE BOXES ───────────────────────────────────────────────── */
 .note{border-radius:9px;padding:13px 17px;font-size:13px;line-height:1.7;margin-bottom:18px}
-.note-y{background:#FEFCE8;border-left:10px solid #F59E0B;color:#78350F}
-.note-b{background:#EFF6FF;border-left:10px solid #3B82F6;color:#1E3A8A}
+.note-y{background:#FEFCE8;border-left:10px solid #9A6011;color:#78350F}
+.note-b{background:#EFF6FF;border-left:10px solid #2B5EA8;color:#1E3A8A}
 .note-s{background:#F8FAFC;border-left:10px solid #64748B;color:#334155}
 .note ul{margin-left:16px;margin-top:6px}.note li{margin:4px 0}
 /* ── CREDITS ──────────────────────────────────────────────────── */
@@ -769,16 +794,16 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 .pivot-tbl tbody .c-fix-1,.pivot-tbl tbody .c-fix-2,.pivot-tbl tbody .c-fix-3{
   background:#fff;text-align:left;color:#0F172A}
 /* School group header */
-.school-hdr td{background:#EFF6FF!important;color:#1D4ED8;font-weight:700;
+.school-hdr td{background:#EFF6FF!important;color:#1E4896;font-weight:700;
   font-size:12px;letter-spacing:.3px;border-top:2px solid #BFDBFE!important}
 /* Cell colors */
-.q1v{color:#059669;font-weight:700}
-.q2v{color:#2563EB;font-weight:600}
-.q3v{color:#D97706;font-weight:600}
-.q4v{color:#DC2626;font-weight:600}
+.q1v{color:#1A7A5E;font-weight:700}
+.q2v{color:#2B5EA8;font-weight:600}
+.q3v{color:#9A6011;font-weight:600}
+.q4v{color:#A83232;font-weight:600}
 .scv{color:#94A3B8;font-weight:500}
 .zerv{color:#E2E8F0}
-.tot-art{color:#6366F1;font-weight:700}
+.tot-art{color:#4E548A;font-weight:700}
 .tot-doc{color:#0891B2;font-weight:600}
 /* Year group separator */
 .yr-sep{border-left:2px solid #E2E8F0!important}
@@ -802,8 +827,8 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 [data-theme="dark"] .section-eye{color:#64748B}
 [data-theme="dark"] .card-title{color:#E2E8F0}
 [data-theme="dark"] .card-note{background:#0F172A;color:#64748B}
-[data-theme="dark"] .note-y{background:#2D1D02;border-color:#D97706;color:#FDE68A}
-[data-theme="dark"] .note-b{background:#0C1E3E;border-color:#3B82F6;color:#BAE6FD}
+[data-theme="dark"] .note-y{background:#2D1D02;border-color:#9A6011;color:#FDE68A}
+[data-theme="dark"] .note-b{background:#0C1E3E;border-color:#2B5EA8;color:#BAE6FD}
 [data-theme="dark"] .note-s{background:#1E293B;border-color:#475569;color:#94A3B8}
 [data-theme="dark"] hr.div{border-color:rgba(255,255,255,.08)}
 [data-theme="dark"] .pivot-wrap{border-color:rgba(255,255,255,.08)}
@@ -830,8 +855,8 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   background:#fff;border-radius:50%;transition:transform .25s cubic-bezier(.4,0,.2,1);
   box-shadow:0 1px 4px rgba(0,0,0,.18)}
 [data-theme="dark"] .theme-btn{border-color:#334155;color:#94A3B8;background:#1E293B}
-[data-theme="dark"] .theme-btn:hover{border-color:#3B82F6;background:#0C1E3E;box-shadow:0 2px 10px rgba(59,130,246,.15)}
-[data-theme="dark"] .theme-track{background:#3B82F6}
+[data-theme="dark"] .theme-btn:hover{border-color:#2B5EA8;background:#0C1E3E;box-shadow:0 2px 10px rgba(59,130,246,.15)}
+[data-theme="dark"] .theme-track{background:#2B5EA8}
 [data-theme="dark"] .theme-thumb{transform:translateX(15px)}
 /* ── KPI ICON ─────────────────────────────────────────────────── */
 .kpi-icon{font-size:22px;margin-bottom:4px;line-height:1;display:block;
@@ -840,7 +865,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 /* ── BACK TO TOP ──────────────────────────────────────────────── */
 .back-top{
   position:fixed;bottom:28px;right:28px;width:44px;height:44px;
-  border-radius:50%;background:#1D4ED8;color:#fff;border:none;
+  border-radius:50%;background:#1E4896;color:#fff;border:none;
   font-size:18px;font-weight:800;cursor:pointer;
   box-shadow:0 4px 20px rgba(29,78,216,.35);
   opacity:0;transform:translateY(10px);
@@ -848,8 +873,8 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   z-index:999;display:flex;align-items:center;justify-content:center}
 .back-top.visible{opacity:1;transform:translateY(0)}
 .back-top:hover{background:#1E40AF;box-shadow:0 6px 28px rgba(29,78,216,.45)}
-[data-theme="dark"] .back-top{background:#3B82F6;box-shadow:0 4px 20px rgba(59,130,246,.35)}
-[data-theme="dark"] .back-top:hover{background:#2563EB}
+[data-theme="dark"] .back-top{background:#2B5EA8;box-shadow:0 4px 20px rgba(59,130,246,.35)}
+[data-theme="dark"] .back-top:hover{background:#2B5EA8}
 /* ── ANIMATIONS ───────────────────────────────────────────────── */
 @keyframes riseIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 /* ── RESPONSIVE ───────────────────────────────────────────────── */
@@ -881,8 +906,8 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 .ch-tt .tt-row:last-child{border-bottom:none}
 .tt-q{flex-shrink:0;font-size:8px;font-weight:700;padding:2px 4px;
   border-radius:3px;color:#fff;margin-top:2px;line-height:1.3}
-.tt-q.Q1{background:#10B981}.tt-q.Q2{background:#6366F1}
-.tt-q.Q3{background:#F59E0B}.tt-q.Q4{background:#EF4444}
+.tt-q.Q1{background:#1A7A5E}.tt-q.Q2{background:#2B5EA8}
+.tt-q.Q3{background:#9A6011}.tt-q.Q4{background:#A83232}
 .tt-q.NoQ{background:#94A3B8}
 .tt-title{font-size:9.5px;color:#1e293b;line-height:1.4}
 .tt-jrnl{font-size:8.5px;color:#64748B;margin-top:1px}
@@ -1005,7 +1030,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#2563EB"></span>
+      <span><span class="card-dot" style="background:#2B5EA8"></span>
         <span class="card-title">Documentos por año — apilado por tipo</span></span>
       <span class="card-hd-right">
         <span class="card-note">Serie completa</span>
@@ -1017,7 +1042,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   <div class="grid-2">
     <div class="card">
       <div class="card-hd">
-        <span><span class="card-dot" style="background:#6366F1"></span>
+        <span><span class="card-dot" style="background:#4E548A"></span>
           <span class="card-title">Composición por tipo</span></span>
         <span class="card-note" id="lbl-donut-type">ALL</span>
       </div>
@@ -1025,7 +1050,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     </div>
     <div class="card">
       <div class="card-hd">
-        <span><span class="card-dot" style="background:#10B981"></span>
+        <span><span class="card-dot" style="background:#1A7A5E"></span>
           <span class="card-title">Artículos en Q1 y Q2</span></span>
         <span class="card-note" id="lbl-q1q2-mini">ALL</span>
       </div>
@@ -1056,8 +1081,8 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#10B981"></span>
-        <span class="card-title">Evolución de cuartiles por año — artículos</span></span>
+      <span><span class="card-dot" style="background:#1A7A5E"></span>
+        <span class="card-title">Evolución de cuartiles por año — docs clasificados</span></span>
       <span class="card-hd-right">
         <span class="card-note">Serie completa</span>
       </span>
@@ -1068,7 +1093,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   <div class="grid-2">
     <div class="card">
       <div class="card-hd">
-        <span><span class="card-dot" style="background:#10B981"></span>
+        <span><span class="card-dot" style="background:#1A7A5E"></span>
           <span class="card-title">Distribución de cuartiles</span></span>
         <span class="card-note" id="lbl-q-donut">ALL</span>
       </div>
@@ -1076,7 +1101,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     </div>
     <div class="card">
       <div class="card-hd">
-        <span><span class="card-dot" style="background:#6366F1"></span>
+        <span><span class="card-dot" style="background:#4E548A"></span>
           <span class="card-title">% Artículos Q1 por escuela</span></span>
         <span class="card-hd-right">
           <span class="card-note" id="lbl-pct-q1">ALL</span>
@@ -1088,7 +1113,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#10B981"></span>
+      <span><span class="card-dot" style="background:#1A7A5E"></span>
         <span class="card-title">Artículos por escuela — apilado por cuartil</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-sch-q">ALL</span>
@@ -1115,7 +1140,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   </div>
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#059669"></span>
+      <span><span class="card-dot" style="background:#1A7A5E"></span>
         <span class="card-title">Documentos por escuela — apilado por tipo</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-sch-type">ALL</span>
@@ -1143,7 +1168,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#EA580C"></span>
+      <span><span class="card-dot" style="background:#8B4E15"></span>
         <span class="card-title">Top __TOP_AUTHORS__ autores — documentos por tipo</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-auth-type">ALL</span>
@@ -1154,7 +1179,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#10B981"></span>
+      <span><span class="card-dot" style="background:#1A7A5E"></span>
         <span class="card-title">Top __TOP_AUTHORS__ autores — documentos por cuartil</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-auth-q1">ALL</span>
@@ -1215,7 +1240,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   <!-- Stacked bar: articles per area × quartile -->
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#10B981"></span>
+      <span><span class="card-dot" style="background:#1A7A5E"></span>
         <span class="card-title">Artículos por área — apilado por cuartil</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-area-q">ALL</span>
@@ -1227,13 +1252,30 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   <!-- % Q1 per area (traffic-light) -->
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#6366F1"></span>
+      <span><span class="card-dot" style="background:#4E548A"></span>
         <span class="card-title">% Artículos Q1 por área temática</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-area-pct">ALL</span>
       </span>
     </div>
     <div class="chart-wrap" style="height:350px"><canvas id="c-area-pct"></canvas></div>
+  </div>
+
+  <!-- Heatmap: top 10 areas × school -->
+  <div class="card">
+    <div class="card-hd">
+      <span><span class="card-dot" style="background:#9A6011"></span>
+        <span class="card-title">Perfil temático por escuela — Top 10 áreas</span></span>
+      <span class="card-hd-right">
+        <span class="card-note" id="lbl-area-heatmap">ALL</span>
+      </span>
+    </div>
+    <p style="font-size:12px;color:#64748B;margin:0 18px 10px;">
+      Cada celda muestra el <strong>% de artículos de la escuela</strong> que caen en esa área temática
+      — normaliza el tamaño de cada escuela y revela su perfil disciplinar. Mayor intensidad = mayor
+      concentración. Doble conteo intencional: un artículo multi-área aparece en varias columnas.
+    </p>
+    <div id="c-area-heatmap" style="overflow-x:auto;padding:0 18px 18px;"></div>
   </div>
 </section>
 
@@ -1327,7 +1369,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   </div>
 
   <a class="card" href="tables.xlsx" style="display:flex;align-items:center;gap:18px;
-    text-decoration:none;color:inherit;border-left:4px solid #059669">
+    text-decoration:none;color:inherit;border-left:4px solid #1A7A5E">
     <span style="font-size:32px">📊</span>
     <div>
       <div style="font-weight:700;color:#0F172A;margin-bottom:3px">Tablas de datos (Excel)</div>
@@ -1338,7 +1380,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   </a>
 
   <a class="card" href="autores_pivot_cuartiles.xlsx" style="display:flex;align-items:center;gap:18px;
-    text-decoration:none;color:inherit;border-left:4px solid #6366F1">
+    text-decoration:none;color:inherit;border-left:4px solid #4E548A">
     <span style="font-size:32px">🗂️</span>
     <div>
       <div style="font-weight:700;color:#0F172A;margin-bottom:3px">Tabla pivot autores — cuartiles por año (Excel)</div>
@@ -1370,8 +1412,8 @@ const D = __DATA_JSON__;
 
 // ── PALETTE ─────────────────────────────────────────────────────
 const C = {
-  Article:'#2563EB', Conference:'#EA580C', Review:'#059669', Other:'#9CA3AF',
-  Q1:'#10B981', Q2:'#3B82F6', Q3:'#F59E0B', Q4:'#EF4444', 'No Q':'#CBD5E1',
+  Article:'#2B5EA8', Conference:'#8B4E15', Review:'#1A7A5E', Other:'#9CA3AF',
+  Q1:'#1A7A5E', Q2:'#2B5EA8', Q3:'#9A6011', Q4:'#A83232', 'No Q':'#CBD5E1',
 };
 const TYPE_LABELS = ['Article','Conference','Review','Other'];
 const Q_LABELS    = ['Q1','Q2','Q3','Q4','No Q'];
@@ -1659,7 +1701,7 @@ function drawPctQ1(){
     data:{labels, datasets:[{
       label:'% Q1', data:vals,
       backgroundColor:schools.map(s=>
-        s.pct_q1>=60?'#10B981':s.pct_q1>=40?'#3B82F6':s.pct_q1>=20?'#F59E0B':'#EF4444'),
+        s.pct_q1>=60?'#1A7A5E':s.pct_q1>=40?'#2B5EA8':s.pct_q1>=20?'#9A6011':'#A83232'),
       borderRadius:4, borderSkipped:false,
     }]},
     options:{
@@ -1735,13 +1777,13 @@ function drawAuthQ1(){
   mkChart('c-auth-q1',{type:'bar',
     data:{labels, datasets:[
       {label:'Q1', data:authors.map(a=>a.Q1||0).reverse(),
-       backgroundColor:'#10B981', borderRadius:0, borderSkipped:false},
+       backgroundColor:'#1A7A5E', borderRadius:0, borderSkipped:false},
       {label:'Q2', data:authors.map(a=>a.Q2||0).reverse(),
-       backgroundColor:'#6366F1', borderRadius:0, borderSkipped:false},
+       backgroundColor:'#4E548A', borderRadius:0, borderSkipped:false},
       {label:'Q3', data:authors.map(a=>a.Q3||0).reverse(),
-       backgroundColor:'#F59E0B', borderRadius:0, borderSkipped:false},
+       backgroundColor:'#9A6011', borderRadius:0, borderSkipped:false},
       {label:'Q4', data:authors.map(a=>a.Q4||0).reverse(),
-       backgroundColor:'#EF4444', borderRadius:0, borderSkipped:false},
+       backgroundColor:'#A83232', borderRadius:0, borderSkipped:false},
       {label:'SC',  data:authors.map(a=>a['No Q']||0).reverse(),
        backgroundColor:'#CBD5E1', borderRadius:4, borderSkipped:false},
     ]},
@@ -1836,7 +1878,7 @@ function drawAreaPct(){
     data:{labels, datasets:[{
       label:'% Q1', data:vals,
       backgroundColor: vals.map(v=>
-        v>=60?'#10B981':v>=40?'#3B82F6':v>=20?'#F59E0B':'#EF4444'),
+        v>=60?'#1A7A5E':v>=40?'#2B5EA8':v>=20?'#9A6011':'#A83232'),
       borderRadius:4, borderSkipped:false,
     }]},
     options:{
@@ -1863,6 +1905,87 @@ function drawAreaPct(){
       }
     }
   });
+}
+
+// ── HEATMAP: TOP 10 ÁREAS × ESCUELA ─────────────────────────────
+function _heatColor(pct, maxPct){
+  // white → indigo: interpolate RGB
+  if(!maxPct) return '#F8FAFC';
+  const t = Math.min(pct / maxPct, 1);
+  // from #F8FAFC (248,250,252) → #1E3A8A (30,58,138)
+  const r = Math.round(248 + (30  - 248) * t);
+  const g = Math.round(250 + (58  - 250) * t);
+  const b = Math.round(252 + (138 - 252) * t);
+  return `rgb(${r},${g},${b})`;
+}
+function drawAreaHeatmap(){
+  const abs = SBY()[year].areas_by_school;
+  label('lbl-area-heatmap', year);
+  const wrap = document.getElementById('c-area-heatmap');
+  if(!wrap) return;
+  if(!abs || !abs.top_areas || !abs.top_areas.length){ wrap.innerHTML=''; return; }
+
+  // Find max value across all cells for colour scaling
+  let maxVal = 0;
+  abs.schools.forEach(sch=>{
+    const d = abs.data[sch] || {};
+    abs.top_areas.forEach(a=>{ if((d.areas||{})[a] > maxVal) maxVal = d.areas[a]; });
+  });
+
+  // Remove only "Escuela de " / "Escuela " prefix, keep the rest intact
+  const schLabel = s => s.replace(/^Escuela de /i,'').replace(/^Escuela /i,'').trim();
+  // Shorten area names to 18 chars
+  const areaLabel = a => a.length > 18 ? a.slice(0,16)+'…' : a;
+
+  // Filter out schools with no papers at all in these areas
+  const activeSchools = abs.schools.filter(sch=>{
+    const d = abs.data[sch]||{};
+    return abs.top_areas.some(a=> ((d.areas||{})[a]||0) > 0);
+  });
+
+  let html = `<table style="border-collapse:collapse;width:100%;font-size:12px;font-family:inherit;">`;
+
+  // Header row: area names rotated
+  html += `<thead><tr><th style="min-width:160px;text-align:left;padding:4px 8px;font-weight:600;color:#475569;border-bottom:2px solid #E2E8F0;">Escuela</th>`;
+  abs.top_areas.forEach(a=>{
+    html += `<th style="text-align:center;padding:4px 6px;font-weight:600;color:#475569;border-bottom:2px solid #E2E8F0;min-width:72px;max-width:90px;vertical-align:bottom;">
+      <div style="writing-mode:vertical-rl;transform:rotate(180deg);height:90px;display:flex;align-items:flex-start;font-size:11px;line-height:1.2;">${areaLabel(a)}</div>
+    </th>`;
+  });
+  html += `<th style="text-align:center;padding:4px 6px;font-weight:700;color:#1E3A8A;border-bottom:2px solid #E2E8F0;border-left:2px solid #E2E8F0;min-width:52px;">Total<br>arts.</th>`;
+  html += `</tr></thead><tbody>`;
+
+  // Data rows
+  activeSchools.forEach((sch, ri)=>{
+    const d = abs.data[sch] || {};
+    const rowBg = ri % 2 === 0 ? '#F8FAFC' : '#FFFFFF';
+    html += `<tr style="background:${rowBg}">`;
+    html += `<td style="padding:7px 8px;font-weight:600;color:#1E293B;white-space:nowrap;border-bottom:1px solid #E2E8F0;">${schLabel(sch)}</td>`;
+    abs.top_areas.forEach(a=>{
+      const v = (d.areas||{})[a] || 0;
+      const bg = _heatColor(v, maxVal);
+      // text colour: white when background is dark enough
+      const t = maxVal ? v / maxVal : 0;
+      const txtColor = t > 0.55 ? '#FFFFFF' : '#334155';
+      const disp = v > 0 ? v.toFixed(1)+'%' : '—';
+      html += `<td style="text-align:center;padding:7px 4px;background:${bg};color:${txtColor};font-weight:${v>0?600:400};border-bottom:1px solid #E2E8F0;border-left:1px solid #EEF2FF;">${disp}</td>`;
+    });
+    // Total articles column
+    const tot = d.total || 0;
+    html += `<td style="text-align:center;padding:7px 6px;font-weight:700;color:#1E3A8A;border-bottom:1px solid #E2E8F0;border-left:2px solid #E2E8F0;">${tot}</td>`;
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table>`;
+  // Colour scale legend
+  html += `<div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:#64748B;">
+    <span>0%</span>
+    <div style="width:120px;height:10px;border-radius:4px;background:linear-gradient(to right,#F8FAFC,#1E3A8A);border:1px solid #E2E8F0;"></div>
+    <span>${maxVal.toFixed(1)}%</span>
+    <span style="margin-left:8px;">(máximo por celda)</span>
+  </div>`;
+
+  wrap.innerHTML = html;
 }
 
 // ── PIVOT TABLE ─────────────────────────────────────────────────
@@ -1980,6 +2103,7 @@ function renderAll(){
   drawPairs();
   drawAreaQ();
   drawAreaPct();
+  drawAreaHeatmap();
 }
 
 // ── YEAR FILTER SETUP ────────────────────────────────────────────
@@ -2080,7 +2204,7 @@ def _align(h="center", v="center", wrap=False):
     return Alignment(horizontal=h, vertical=v, wrap_text=wrap)
 def _border_thin(sides="all"):
     thin = Side(style="thin", color="E2E8F0")
-    thick = Side(style="medium", color="94A3B8")
+    thick = Side(style="medium", color="8896A8")
     b = {"left": thin, "right": thin, "top": thin, "bottom": thin}
     if sides == "left_thick":  b["left"]  = thick
     if sides == "top_thick":   b["top"]   = thick
@@ -2090,7 +2214,7 @@ def _border_thin(sides="all"):
 HDR_FILL  = _fill("#F0F4F9")
 YR_FILLS  = [_fill("#EFF6FF"), _fill("#F0FDF4"), _fill("#FEF9C3"),
              _fill("#FFF1F2"), _fill("#F5F3FF")]
-Q_COLORS  = {"Q1":"059669","Q2":"2563EB","Q3":"D97706","Q4":"DC2626","SC":"94A3B8"}
+Q_COLORS  = {"Q1":"1A7A5E","Q2":"2B5EA8","Q3":"9A6011","Q4":"A83232","SC":"8896A8"}
 TOT_FILL  = _fill("#F5F3FF")
 SCH_FILL  = _fill("#DBEAFE")
 ROW_EVEN  = _fill("#FAFBFC")
@@ -2377,7 +2501,7 @@ _write_resumen_anio_sheet(ws2cs, school_papers_cs, "0369A1")
 
 # ── Sheet 5: Resumen por Escuela (SJR) ───────────────────────────────────────
 ws3 = tb.create_sheet("Resumen por Escuela (SJR)")
-_write_resumen_escuela_sheet(ws3, by_year["ALL"]["schools"], "059669")
+_write_resumen_escuela_sheet(ws3, by_year["ALL"]["schools"], "1A7A5E")
 
 # ── Sheet 6: Resumen por Escuela (CS) ────────────────────────────────────────
 ws3cs = tb.create_sheet("Resumen por Escuela (CS)")
