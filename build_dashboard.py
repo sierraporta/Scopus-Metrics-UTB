@@ -42,7 +42,7 @@ FACULTY_XLSX     = BASE_DIR / "Base de Datos Scopus 2025.xlsx"
 SCIMAGO_CSV      = BASE_DIR / "scimagojr 2025.csv"
 CITESCORE_XLSX   = BASE_DIR / "CiteScore 2025.xlsx"
 OUT_DIR       = BASE_DIR   # outputs van a la misma carpeta del script (raíz del repo)
-START_YEAR    = 2022
+START_YEAR    = 2020
 TOP_AUTHORS   = 20
 TOP_SCHOOLS   = 18
 TOP_PAIRS     = 25
@@ -264,6 +264,22 @@ planta["ESCUELA"] = planta["author_id"].map(school_map).fillna("Sin Escuela")
 school_papers = planta[["EID","Year","ESCUELA","doc_type3","quartile","quartile_cs","sjr"]].drop_duplicates()
 author_papers = planta[["EID","Year","author_id","DOCENTE","ESCUELA","doc_type3","quartile","quartile_cs","sjr"]].drop_duplicates()
 
+# ── Citation / metadata lookups (used for Impacto section) ────────────────────
+_df_dedup = df.drop_duplicates("EID")
+eid_cited_by     = _df_dedup.set_index("EID")["Cited by"].apply(
+    lambda x: int(pd.to_numeric(x, errors="coerce") or 0)).to_dict()
+eid_source_title = _df_dedup.set_index("EID")["Source title"].fillna("").to_dict()
+eid_title_full   = _df_dedup.set_index("EID")["Title"].fillna("").to_dict()
+
+# Author name list per EID (UTB authors only)
+_auth_tmp = {}
+for _, _rr in author_papers.iterrows():
+    _eid = _rr["EID"]
+    _nm  = str(_rr.get("DOCENTE",""))
+    if _eid not in _auth_tmp: _auth_tmp[_eid] = []
+    if _nm not in _auth_tmp[_eid]: _auth_tmp[_eid].append(_nm)
+eid_utb_authors_impact = _auth_tmp
+
 # UTB unique papers for area expansion
 utb_eids = set(school_papers["EID"].unique())
 unique_utb = df[df["EID"].isin(utb_eids)][["EID","Year","doc_type3","ISSN","quartile"]
@@ -448,6 +464,73 @@ def areas_by_school_data(area_sub, sp_sub, n=10):
         }
     return {"top_areas": top_areas, "schools": schools, "data": data}
 
+def top_papers_data(sp_sub, n=15):
+    """Top N papers by citation count with metadata."""
+    rows = []
+    for _, r in sp_sub.drop_duplicates("EID").iterrows():
+        eid = r["EID"]
+        rows.append({
+            "title":       str(eid_title_full.get(eid,""))[:140],
+            "source":      str(eid_source_title.get(eid,""))[:70],
+            "year":        int(r["Year"]) if pd.notna(r.get("Year")) else 0,
+            "quartile":    r.get("quartile","No Q"),
+            "sjr":         float(r.get("sjr") or 0),
+            "cited_by":    int(eid_cited_by.get(eid,0)),
+            "authors_utb": "; ".join(eid_utb_authors_impact.get(eid,[]))[:120],
+        })
+    rows.sort(key=lambda x: x["cited_by"], reverse=True)
+    return [r for r in rows[:n] if r["cited_by"] > 0] or rows[:n]
+
+def top_journals_data(sp_sub, n=15):
+    """Top N journals by paper count, with per-quartile breakdown."""
+    rows = []
+    for _, r in sp_sub.drop_duplicates("EID").iterrows():
+        eid = r["EID"]
+        src = str(eid_source_title.get(eid,"")) or "Sin fuente"
+        rows.append({"source": src, "quartile": r.get("quartile","No Q"),
+                     "cited_by": int(eid_cited_by.get(eid,0))})
+    if not rows: return []
+    jdf = pd.DataFrame(rows)
+    grp = (jdf.groupby("source")
+           .agg(total=("source","count"), cited_by_sum=("cited_by","sum"))
+           .reset_index().sort_values("total", ascending=False).head(n))
+    result = []
+    for _, jr in grp.iterrows():
+        src = jr["source"]
+        sub = jdf[jdf["source"]==src]
+        row = {"name": src[:65], "total": int(jr["total"]),
+               "cited_by": int(jr["cited_by_sum"])}
+        for q in ["Q1","Q2","Q3","Q4","No Q"]:
+            row[q] = int((sub["quartile"]==q).sum())
+        result.append(row)
+    return result
+
+def citations_by_q_data(sp_sub):
+    """Total citations per quartile bucket."""
+    result = {q: 0 for q in ["Q1","Q2","Q3","Q4","No Q"]}
+    for _, r in sp_sub.drop_duplicates("EID").iterrows():
+        cb = int(eid_cited_by.get(r["EID"],0))
+        q  = r.get("quartile","No Q")
+        result[q] = result.get(q,0) + cb
+    result["total"] = sum(result.values())
+    return result
+
+def impact_kpis_data(sp_sub):
+    """KPIs: total citations, avg, top paper."""
+    cited = [(r["EID"], int(eid_cited_by.get(r["EID"],0)))
+             for _, r in sp_sub.drop_duplicates("EID").iterrows()]
+    cited.sort(key=lambda x: x[1], reverse=True)
+    total = sum(c for _,c in cited)
+    n     = len(cited)
+    top_eid, top_cb = cited[0] if cited else ("",0)
+    return {
+        "total_citations":  total,
+        "avg_citations":    round(total/n, 1) if n else 0,
+        "top_paper_title":  str(eid_title_full.get(top_eid,""))[:90],
+        "top_paper_cited":  top_cb,
+        "n_papers":         n,
+    }
+
 def authors_pivot_data(q_col="quartile"):
     """
     Pivot: one row per author.
@@ -593,6 +676,10 @@ for ys in year_sels:
         "pairs":            pairs_data(ap_sub),
         "areas":            areas_data(area_sub),
         "areas_by_school":  areas_by_school_data(area_sub, sp_sub),
+        "top_papers":       top_papers_data(sp_sub),
+        "top_journals":     top_journals_data(sp_sub),
+        "citations_by_q":   citations_by_q_data(sp_sub),
+        "impact_kpis":      impact_kpis_data(sp_sub),
     }
     # CiteScore slice (same functions, different quartile column)
     ap_cs = _use_cs(ap_sub)
@@ -606,6 +693,10 @@ for ys in year_sels:
         "pairs":            pairs_data(ap_cs),
         "areas":            areas_data(area_sub_cs),
         "areas_by_school":  areas_by_school_data(area_sub_cs, sp_sub),
+        "top_papers":       top_papers_data(sp_cs),
+        "top_journals":     top_journals_data(sp_cs),
+        "citations_by_q":   citations_by_q_data(sp_cs),
+        "impact_kpis":      impact_kpis_data(sp_cs),
     }
 
 # ─── FINAL PAYLOAD ────────────────────────────────────────────────────────────
@@ -691,7 +782,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
 .year-filter-label{font-size:11px;font-weight:700;text-transform:uppercase;
   letter-spacing:.8px;color:rgba(255,255,255,.6)}
 #yearFilter,#srcFilter{
-  appearance:none;background:#1E3A8A url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2393C5FD' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+  appearance:none;background:#2F4858 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2393C5FD' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
   border:1.5px solid rgba(147,197,253,.4);border-radius:8px;
   color:#fff;font-size:14px;font-weight:600;padding:8px 36px 8px 14px;
   cursor:pointer;min-width:110px;transition:border-color .15s}
@@ -703,11 +794,11 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
   box-shadow:0 6px 28px rgba(15,23,42,.10);border-top:10px solid var(--ac);
   transition:transform .16s,box-shadow .16s;animation:riseIn .5s ease both}
 .kpi-card:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(15,23,42,.15)}
-.kpi-card:nth-child(1){--ac:#2B5EA8;animation-delay:.04s}
-.kpi-card:nth-child(2){--ac:#1A7A5E;animation-delay:.08s}
-.kpi-card:nth-child(3){--ac:#1A7A5E;animation-delay:.12s}
-.kpi-card:nth-child(4){--ac:#4E548A;animation-delay:.16s}
-.kpi-card:nth-child(5){--ac:#8B4E15;animation-delay:.20s}
+.kpi-card:nth-child(1){--ac:#33658A;animation-delay:.04s}
+.kpi-card:nth-child(2){--ac:#2F4858;animation-delay:.08s}
+.kpi-card:nth-child(3){--ac:#2F4858;animation-delay:.12s}
+.kpi-card:nth-child(4){--ac:#33658A;animation-delay:.16s}
+.kpi-card:nth-child(5){--ac:#F26419;animation-delay:.20s}
 .kpi-card:nth-child(6){--ac:#0891B2;animation-delay:.24s}
 .kpi-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
   color:#94A3B8;margin-bottom:5px}
@@ -723,8 +814,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
 .nav-link{padding:7px 13px;font-size:12px;font-weight:600;color:#64748B;
   text-decoration:none;white-space:nowrap;border-radius:8px;margin:0 1px;
   transition:color .15s,background .15s;letter-spacing:.1px;border:none}
-.nav-link:hover{color:#1E4896;background:#EFF6FF}
-.nav-link.active{color:#1E4896;background:#DBEAFE;font-weight:700}
+.nav-link:hover{color:#2F4858;background:#E8F3FA}
+.nav-link.active{color:#2F4858;background:#C8E3F2;font-weight:700}
 /* ── SECTIONS ─────────────────────────────────────────────────── */
 .section{padding:52px 72px;max-width:1180px;margin:0 auto}
 .section-hd{margin-bottom:28px}
@@ -749,8 +840,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
 /* ── NOTE BOXES ───────────────────────────────────────────────── */
 .note{border-radius:9px;padding:13px 17px;font-size:13px;line-height:1.7;margin-bottom:18px}
-.note-y{background:#FEFCE8;border-left:10px solid #9A6011;color:#78350F}
-.note-b{background:#EFF6FF;border-left:10px solid #2B5EA8;color:#1E3A8A}
+.note-y{background:#FEFCE8;border-left:10px solid #F6AE2D;color:#78350F}
+.note-b{background:#E8F3FA;border-left:10px solid #33658A;color:#2F4858}
 .note-s{background:#F8FAFC;border-left:10px solid #64748B;color:#334155}
 .note ul{margin-left:16px;margin-top:6px}.note li{margin:4px 0}
 /* ── CREDITS ──────────────────────────────────────────────────── */
@@ -794,16 +885,16 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 .pivot-tbl tbody .c-fix-1,.pivot-tbl tbody .c-fix-2,.pivot-tbl tbody .c-fix-3{
   background:#fff;text-align:left;color:#0F172A}
 /* School group header */
-.school-hdr td{background:#EFF6FF!important;color:#1E4896;font-weight:700;
+.school-hdr td{background:#E8F3FA!important;color:#2F4858;font-weight:700;
   font-size:12px;letter-spacing:.3px;border-top:2px solid #BFDBFE!important}
 /* Cell colors */
-.q1v{color:#1A7A5E;font-weight:700}
-.q2v{color:#2B5EA8;font-weight:600}
-.q3v{color:#9A6011;font-weight:600}
-.q4v{color:#A83232;font-weight:600}
+.q1v{color:#2F4858;font-weight:700}
+.q2v{color:#33658A;font-weight:600}
+.q3v{color:#F6AE2D;font-weight:600}
+.q4v{color:#F26419;font-weight:600}
 .scv{color:#94A3B8;font-weight:500}
 .zerv{color:#E2E8F0}
-.tot-art{color:#4E548A;font-weight:700}
+.tot-art{color:#33658A;font-weight:700}
 .tot-doc{color:#0891B2;font-weight:600}
 /* Year group separator */
 .yr-sep{border-left:2px solid #E2E8F0!important}
@@ -827,8 +918,8 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 [data-theme="dark"] .section-eye{color:#64748B}
 [data-theme="dark"] .card-title{color:#E2E8F0}
 [data-theme="dark"] .card-note{background:#0F172A;color:#64748B}
-[data-theme="dark"] .note-y{background:#2D1D02;border-color:#9A6011;color:#FDE68A}
-[data-theme="dark"] .note-b{background:#0C1E3E;border-color:#2B5EA8;color:#BAE6FD}
+[data-theme="dark"] .note-y{background:#2D1D02;border-color:#F6AE2D;color:#FDE68A}
+[data-theme="dark"] .note-b{background:#0D1E2C;border-color:#33658A;color:#BAE6FD}
 [data-theme="dark"] .note-s{background:#1E293B;border-color:#475569;color:#94A3B8}
 [data-theme="dark"] hr.div{border-color:rgba(255,255,255,.08)}
 [data-theme="dark"] .pivot-wrap{border-color:rgba(255,255,255,.08)}
@@ -838,7 +929,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 [data-theme="dark"] .pivot-tbl tbody .c-fix-1,[data-theme="dark"] .pivot-tbl tbody .c-fix-2,[data-theme="dark"] .pivot-tbl tbody .c-fix-3{background:#0F172A}
 [data-theme="dark"] .pivot-tbl tbody td{color:#94A3B8}
 [data-theme="dark"] .pivot-tbl tbody tr:hover td{background:#1E293B}
-[data-theme="dark"] .school-hdr td{background:#0C1E3E!important;color:#93C5FD;border-color:#1E3A8A!important}
+[data-theme="dark"] .school-hdr td{background:#0D1E2C!important;color:#93C5FD;border-color:#2F4858!important}
 [data-theme="dark"] .pivot-filter{background-color:#1E293B;border-color:#334155;color:#E2E8F0}
 [data-theme="dark"] .zerv{color:#334155}
 /* ── THEME TOGGLE SWITCH ───────────────────────────────────────── */
@@ -848,15 +939,15 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   cursor:pointer;color:#64748B;display:flex;align-items:center;gap:9px;
   transition:border-color .2s,background .2s,box-shadow .2s;flex-shrink:0;
   font-family:inherit;align-self:center;font-size:13px;font-weight:600}
-.theme-btn:hover{border-color:#93C5FD;background:#EFF6FF;box-shadow:0 2px 10px rgba(37,99,235,.1)}
-.theme-track{display:inline-block;width:34px;height:19px;background:#CBD5E1;
+.theme-btn:hover{border-color:#93C5FD;background:#E8F3FA;box-shadow:0 2px 10px rgba(37,99,235,.1)}
+.theme-track{display:inline-block;width:34px;height:19px;background:#86BBD8;
   border-radius:10px;position:relative;transition:background .25s;flex-shrink:0}
 .theme-thumb{position:absolute;top:2.5px;left:2.5px;width:14px;height:14px;
   background:#fff;border-radius:50%;transition:transform .25s cubic-bezier(.4,0,.2,1);
   box-shadow:0 1px 4px rgba(0,0,0,.18)}
 [data-theme="dark"] .theme-btn{border-color:#334155;color:#94A3B8;background:#1E293B}
-[data-theme="dark"] .theme-btn:hover{border-color:#2B5EA8;background:#0C1E3E;box-shadow:0 2px 10px rgba(59,130,246,.15)}
-[data-theme="dark"] .theme-track{background:#2B5EA8}
+[data-theme="dark"] .theme-btn:hover{border-color:#33658A;background:#0D1E2C;box-shadow:0 2px 10px rgba(59,130,246,.15)}
+[data-theme="dark"] .theme-track{background:#33658A}
 [data-theme="dark"] .theme-thumb{transform:translateX(15px)}
 /* ── KPI ICON ─────────────────────────────────────────────────── */
 .kpi-icon{font-size:22px;margin-bottom:4px;line-height:1;display:block;
@@ -865,7 +956,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 /* ── BACK TO TOP ──────────────────────────────────────────────── */
 .back-top{
   position:fixed;bottom:28px;right:28px;width:44px;height:44px;
-  border-radius:50%;background:#1E4896;color:#fff;border:none;
+  border-radius:50%;background:#2F4858;color:#fff;border:none;
   font-size:18px;font-weight:800;cursor:pointer;
   box-shadow:0 4px 20px rgba(29,78,216,.35);
   opacity:0;transform:translateY(10px);
@@ -873,8 +964,8 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   z-index:999;display:flex;align-items:center;justify-content:center}
 .back-top.visible{opacity:1;transform:translateY(0)}
 .back-top:hover{background:#1E40AF;box-shadow:0 6px 28px rgba(29,78,216,.45)}
-[data-theme="dark"] .back-top{background:#2B5EA8;box-shadow:0 4px 20px rgba(59,130,246,.35)}
-[data-theme="dark"] .back-top:hover{background:#2B5EA8}
+[data-theme="dark"] .back-top{background:#33658A;box-shadow:0 4px 20px rgba(59,130,246,.35)}
+[data-theme="dark"] .back-top:hover{background:#33658A}
 /* ── ANIMATIONS ───────────────────────────────────────────────── */
 @keyframes riseIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 /* ── RESPONSIVE ───────────────────────────────────────────────── */
@@ -906,13 +997,13 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 .ch-tt .tt-row:last-child{border-bottom:none}
 .tt-q{flex-shrink:0;font-size:8px;font-weight:700;padding:2px 4px;
   border-radius:3px;color:#fff;margin-top:2px;line-height:1.3}
-.tt-q.Q1{background:#1A7A5E}.tt-q.Q2{background:#2B5EA8}
-.tt-q.Q3{background:#9A6011}.tt-q.Q4{background:#A83232}
+.tt-q.Q1{background:#2F4858}.tt-q.Q2{background:#33658A}
+.tt-q.Q3{background:#F6AE2D}.tt-q.Q4{background:#F26419}
 .tt-q.NoQ{background:#94A3B8}
 .tt-title{font-size:9.5px;color:#1e293b;line-height:1.4}
 .tt-jrnl{font-size:8.5px;color:#64748B;margin-top:1px}
 .tt-more{text-align:center;color:#94A3B8;font-size:8.5px;padding-top:5px}
-[data-theme="dark"] .ch-tt{background:#1E293B;border-color:#334155;color:#CBD5E1}
+[data-theme="dark"] .ch-tt{background:#1E293B;border-color:#334155;color:#86BBD8}
 [data-theme="dark"] .ch-tt .tt-hdr{color:#F1F5F9;border-color:#334155}
 [data-theme="dark"] .ch-tt .tt-row{border-color:#2D3F55}
 [data-theme="dark"] .tt-title{color:#F1F5F9}
@@ -1003,6 +1094,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     <a class="nav-link" href="#sec-autores">👤 Autores</a>
     <a class="nav-link" href="#sec-colab">🤝 Colaboración</a>
     <a class="nav-link" href="#sec-areas">🔬 Áreas</a>
+    <a class="nav-link" href="#sec-impact">⭐ Impacto</a>
     <a class="nav-link" href="#sec-tabla">📋 Tabla Autores</a>
     <a class="nav-link" href="#sec-metodo">📄 Metodología</a>
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Cambiar tema">
@@ -1030,7 +1122,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#2B5EA8"></span>
+      <span><span class="card-dot" style="background:#33658A"></span>
         <span class="card-title">Documentos por año — apilado por tipo</span></span>
       <span class="card-hd-right">
         <span class="card-note">Serie completa</span>
@@ -1042,7 +1134,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   <div class="grid-2">
     <div class="card">
       <div class="card-hd">
-        <span><span class="card-dot" style="background:#4E548A"></span>
+        <span><span class="card-dot" style="background:#33658A"></span>
           <span class="card-title">Composición por tipo</span></span>
         <span class="card-note" id="lbl-donut-type">ALL</span>
       </div>
@@ -1050,7 +1142,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     </div>
     <div class="card">
       <div class="card-hd">
-        <span><span class="card-dot" style="background:#1A7A5E"></span>
+        <span><span class="card-dot" style="background:#2F4858"></span>
           <span class="card-title">Artículos en Q1 y Q2</span></span>
         <span class="card-note" id="lbl-q1q2-mini">ALL</span>
       </div>
@@ -1081,7 +1173,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#1A7A5E"></span>
+      <span><span class="card-dot" style="background:#2F4858"></span>
         <span class="card-title">Evolución de cuartiles por año — docs clasificados</span></span>
       <span class="card-hd-right">
         <span class="card-note">Serie completa</span>
@@ -1093,7 +1185,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   <div class="grid-2">
     <div class="card">
       <div class="card-hd">
-        <span><span class="card-dot" style="background:#1A7A5E"></span>
+        <span><span class="card-dot" style="background:#2F4858"></span>
           <span class="card-title">Distribución de cuartiles</span></span>
         <span class="card-note" id="lbl-q-donut">ALL</span>
       </div>
@@ -1101,7 +1193,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     </div>
     <div class="card">
       <div class="card-hd">
-        <span><span class="card-dot" style="background:#4E548A"></span>
+        <span><span class="card-dot" style="background:#33658A"></span>
           <span class="card-title">% Artículos Q1 por escuela</span></span>
         <span class="card-hd-right">
           <span class="card-note" id="lbl-pct-q1">ALL</span>
@@ -1113,7 +1205,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#1A7A5E"></span>
+      <span><span class="card-dot" style="background:#2F4858"></span>
         <span class="card-title">Artículos por escuela — apilado por cuartil</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-sch-q">ALL</span>
@@ -1140,7 +1232,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   </div>
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#1A7A5E"></span>
+      <span><span class="card-dot" style="background:#2F4858"></span>
         <span class="card-title">Documentos por escuela — apilado por tipo</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-sch-type">ALL</span>
@@ -1168,7 +1260,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#8B4E15"></span>
+      <span><span class="card-dot" style="background:#F26419"></span>
         <span class="card-title">Top __TOP_AUTHORS__ autores — documentos por tipo</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-auth-type">ALL</span>
@@ -1179,7 +1271,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#1A7A5E"></span>
+      <span><span class="card-dot" style="background:#2F4858"></span>
         <span class="card-title">Top __TOP_AUTHORS__ autores — documentos por cuartil</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-auth-q1">ALL</span>
@@ -1240,7 +1332,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   <!-- Stacked bar: articles per area × quartile -->
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#1A7A5E"></span>
+      <span><span class="card-dot" style="background:#2F4858"></span>
         <span class="card-title">Artículos por área — apilado por cuartil</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-area-q">ALL</span>
@@ -1252,7 +1344,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   <!-- % Q1 per area (traffic-light) -->
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#4E548A"></span>
+      <span><span class="card-dot" style="background:#33658A"></span>
         <span class="card-title">% Artículos Q1 por área temática</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-area-pct">ALL</span>
@@ -1264,7 +1356,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   <!-- Heatmap: top 10 areas × school -->
   <div class="card">
     <div class="card-hd">
-      <span><span class="card-dot" style="background:#9A6011"></span>
+      <span><span class="card-dot" style="background:#F6AE2D"></span>
         <span class="card-title">Perfil temático por escuela — Top 10 áreas</span></span>
       <span class="card-hd-right">
         <span class="card-note" id="lbl-area-heatmap">ALL</span>
@@ -1282,9 +1374,61 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- SECCIÓN 7: TABLA PIVOT AUTORES                                -->
 <!-- ══════════════════════════════════════════════════════════════ -->
-<section class="section" id="sec-tabla">
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SECCIÓN 7: IMPACTO Y VISIBILIDAD                              -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="sec-impact">
   <div class="section-hd">
     <div class="section-eye">Sección 7</div>
+    <h2 class="section-title">Impacto y Visibilidad</h2>
+    <p class="section-sub">
+      Análisis de citas recibidas por los artículos UTB según Scopus. Las citas son acumuladas
+      desde la publicación hasta la fecha del último export. Al filtrar por año se muestra el
+      impacto de los artículos publicados en ese período. La clasificación de cuartil depende
+      del clasificador activo (Scimago JR o CiteScore).
+    </p>
+  </div>
+
+  <!-- KPIs de impacto -->
+  <div id="impact-kpis" style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px;"></div>
+
+  <!-- Top papers citados -->
+  <div class="card">
+    <div class="card-hd">
+      <span><span class="card-dot" style="background:#2F4858"></span>
+        <span class="card-title">Top 15 artículos más citados</span></span>
+      <span class="card-hd-right"><span class="card-note" id="lbl-top-papers">ALL</span></span>
+    </div>
+    <div class="chart-wrap" style="height:420px"><canvas id="c-top-papers"></canvas></div>
+  </div>
+
+  <!-- Top journals + donut en fila -->
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-top:16px;">
+    <div class="card" style="margin-top:0">
+      <div class="card-hd">
+        <span><span class="card-dot" style="background:#33658A"></span>
+          <span class="card-title">Top 15 revistas — artículos UTB</span></span>
+        <span class="card-hd-right"><span class="card-note" id="lbl-top-journals">ALL</span></span>
+      </div>
+      <div class="chart-wrap" style="height:380px"><canvas id="c-top-journals"></canvas></div>
+    </div>
+    <div class="card" style="margin-top:0">
+      <div class="card-hd">
+        <span><span class="card-dot" style="background:#F6AE2D"></span>
+          <span class="card-title">Citas por cuartil</span></span>
+        <span class="card-hd-right"><span class="card-note" id="lbl-cits-q">ALL</span></span>
+      </div>
+      <div class="chart-wrap" style="height:380px"><canvas id="c-cits-q"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SECCIÓN 8: TABLA PIVOT AUTORES                                -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="sec-tabla">
+  <div class="section-hd">
+    <div class="section-eye">Sección 8</div>
     <h2 class="section-title">Tabla Pivot — Artículos por Autor y Cuartil</h2>
     <p class="section-sub">
       Vista de desempeño individual por autor: muestra cuántos artículos publicó cada docente
@@ -1322,7 +1466,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 <!-- ══════════════════════════════════════════════════════════════ -->
 <section class="section" id="sec-metodo">
   <div class="section-hd">
-    <div class="section-eye">Sección 8</div>
+    <div class="section-eye">Sección 9</div>
     <h2 class="section-title">Metodología y Notas</h2>
   </div>
 
@@ -1369,7 +1513,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   </div>
 
   <a class="card" href="tables.xlsx" style="display:flex;align-items:center;gap:18px;
-    text-decoration:none;color:inherit;border-left:4px solid #1A7A5E">
+    text-decoration:none;color:inherit;border-left:4px solid #2F4858">
     <span style="font-size:32px">📊</span>
     <div>
       <div style="font-weight:700;color:#0F172A;margin-bottom:3px">Tablas de datos (Excel)</div>
@@ -1380,7 +1524,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   </a>
 
   <a class="card" href="autores_pivot_cuartiles.xlsx" style="display:flex;align-items:center;gap:18px;
-    text-decoration:none;color:inherit;border-left:4px solid #4E548A">
+    text-decoration:none;color:inherit;border-left:4px solid #33658A">
     <span style="font-size:32px">🗂️</span>
     <div>
       <div style="font-weight:700;color:#0F172A;margin-bottom:3px">Tabla pivot autores — cuartiles por año (Excel)</div>
@@ -1412,8 +1556,8 @@ const D = __DATA_JSON__;
 
 // ── PALETTE ─────────────────────────────────────────────────────
 const C = {
-  Article:'#2B5EA8', Conference:'#8B4E15', Review:'#1A7A5E', Other:'#9CA3AF',
-  Q1:'#1A7A5E', Q2:'#2B5EA8', Q3:'#9A6011', Q4:'#A83232', 'No Q':'#CBD5E1',
+  Article:'#33658A', Conference:'#F26419', Review:'#2F4858', Other:'#86BBD8',
+  Q1:'#2F4858', Q2:'#33658A', Q3:'#F6AE2D', Q4:'#F26419', 'No Q':'#86BBD8',
 };
 const TYPE_LABELS = ['Article','Conference','Review','Other'];
 const Q_LABELS    = ['Q1','Q2','Q3','Q4','No Q'];
@@ -1701,7 +1845,7 @@ function drawPctQ1(){
     data:{labels, datasets:[{
       label:'% Q1', data:vals,
       backgroundColor:schools.map(s=>
-        s.pct_q1>=60?'#1A7A5E':s.pct_q1>=40?'#2B5EA8':s.pct_q1>=20?'#9A6011':'#A83232'),
+        s.pct_q1>=60?'#2F4858':s.pct_q1>=40?'#33658A':s.pct_q1>=20?'#F6AE2D':'#F26419'),
       borderRadius:4, borderSkipped:false,
     }]},
     options:{
@@ -1777,15 +1921,15 @@ function drawAuthQ1(){
   mkChart('c-auth-q1',{type:'bar',
     data:{labels, datasets:[
       {label:'Q1', data:authors.map(a=>a.Q1||0).reverse(),
-       backgroundColor:'#1A7A5E', borderRadius:0, borderSkipped:false},
+       backgroundColor:'#2F4858', borderRadius:0, borderSkipped:false},
       {label:'Q2', data:authors.map(a=>a.Q2||0).reverse(),
-       backgroundColor:'#4E548A', borderRadius:0, borderSkipped:false},
+       backgroundColor:'#33658A', borderRadius:0, borderSkipped:false},
       {label:'Q3', data:authors.map(a=>a.Q3||0).reverse(),
-       backgroundColor:'#9A6011', borderRadius:0, borderSkipped:false},
+       backgroundColor:'#F6AE2D', borderRadius:0, borderSkipped:false},
       {label:'Q4', data:authors.map(a=>a.Q4||0).reverse(),
-       backgroundColor:'#A83232', borderRadius:0, borderSkipped:false},
+       backgroundColor:'#F26419', borderRadius:0, borderSkipped:false},
       {label:'SC',  data:authors.map(a=>a['No Q']||0).reverse(),
-       backgroundColor:'#CBD5E1', borderRadius:4, borderSkipped:false},
+       backgroundColor:'#86BBD8', borderRadius:4, borderSkipped:false},
     ]},
     options:{
       indexAxis:'y', responsive:true, maintainAspectRatio:false,
@@ -1878,7 +2022,7 @@ function drawAreaPct(){
     data:{labels, datasets:[{
       label:'% Q1', data:vals,
       backgroundColor: vals.map(v=>
-        v>=60?'#1A7A5E':v>=40?'#2B5EA8':v>=20?'#9A6011':'#A83232'),
+        v>=60?'#2F4858':v>=40?'#33658A':v>=20?'#F6AE2D':'#F26419'),
       borderRadius:4, borderSkipped:false,
     }]},
     options:{
@@ -1912,10 +2056,10 @@ function _heatColor(pct, maxPct){
   // white → indigo: interpolate RGB
   if(!maxPct) return '#F8FAFC';
   const t = Math.min(pct / maxPct, 1);
-  // from #F8FAFC (248,250,252) → #1E3A8A (30,58,138)
-  const r = Math.round(248 + (30  - 248) * t);
-  const g = Math.round(250 + (58  - 250) * t);
-  const b = Math.round(252 + (138 - 252) * t);
+  // from #F8FAFC (248,250,252) → #2F4858 (47,72,88)
+  const r = Math.round(248 + (47  - 248) * t);
+  const g = Math.round(250 + (72  - 250) * t);
+  const b = Math.round(252 + (88  - 252) * t);
   return `rgb(${r},${g},${b})`;
 }
 function drawAreaHeatmap(){
@@ -1952,7 +2096,7 @@ function drawAreaHeatmap(){
       <div style="writing-mode:vertical-rl;transform:rotate(180deg);height:90px;display:flex;align-items:flex-start;font-size:11px;line-height:1.2;">${areaLabel(a)}</div>
     </th>`;
   });
-  html += `<th style="text-align:center;padding:4px 6px;font-weight:700;color:#1E3A8A;border-bottom:2px solid #E2E8F0;border-left:2px solid #E2E8F0;min-width:52px;">Total<br>arts.</th>`;
+  html += `<th style="text-align:center;padding:4px 6px;font-weight:700;color:#2F4858;border-bottom:2px solid #E2E8F0;border-left:2px solid #E2E8F0;min-width:52px;">Total<br>arts.</th>`;
   html += `</tr></thead><tbody>`;
 
   // Data rows
@@ -1972,7 +2116,7 @@ function drawAreaHeatmap(){
     });
     // Total articles column
     const tot = d.total || 0;
-    html += `<td style="text-align:center;padding:7px 6px;font-weight:700;color:#1E3A8A;border-bottom:1px solid #E2E8F0;border-left:2px solid #E2E8F0;">${tot}</td>`;
+    html += `<td style="text-align:center;padding:7px 6px;font-weight:700;color:#2F4858;border-bottom:1px solid #E2E8F0;border-left:2px solid #E2E8F0;">${tot}</td>`;
     html += `</tr>`;
   });
 
@@ -1980,12 +2124,159 @@ function drawAreaHeatmap(){
   // Colour scale legend
   html += `<div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:#64748B;">
     <span>0%</span>
-    <div style="width:120px;height:10px;border-radius:4px;background:linear-gradient(to right,#F8FAFC,#1E3A8A);border:1px solid #E2E8F0;"></div>
+    <div style="width:120px;height:10px;border-radius:4px;background:linear-gradient(to right,#F8FAFC,#2F4858);border:1px solid #E2E8F0;"></div>
     <span>${maxVal.toFixed(1)}%</span>
     <span style="margin-left:8px;">(máximo por celda)</span>
   </div>`;
 
   wrap.innerHTML = html;
+}
+
+// ── IMPACTO Y VISIBILIDAD ────────────────────────────────────────
+function renderImpactKpis(){
+  const ik = SBY()[year].impact_kpis || {};
+  const wrap = document.getElementById('impact-kpis');
+  if(!wrap) return;
+  const fmt = n => n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n);
+  const title = (ik.top_paper_title||'—').slice(0,60) + (ik.top_paper_title && ik.top_paper_title.length>60?'…':'');
+  wrap.innerHTML = `
+    <div style="flex:1;min-width:140px;background:#F0FDF9;border:1px solid #A7F3D0;border-radius:10px;padding:14px 18px;">
+      <div style="font-size:11px;color:#065F46;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Total citas</div>
+      <div style="font-size:28px;font-weight:800;color:#2F4858;line-height:1.1;">${fmt(ik.total_citations||0)}</div>
+      <div style="font-size:11px;color:#6B7280;">${ik.n_papers||0} artículos · ${year}</div>
+    </div>
+    <div style="flex:1;min-width:140px;background:#E8F3FA;border:1px solid #BFDBFE;border-radius:10px;padding:14px 18px;">
+      <div style="font-size:11px;color:#2F4858;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Promedio / artículo</div>
+      <div style="font-size:28px;font-weight:800;color:#33658A;line-height:1.1;">${ik.avg_citations||0}</div>
+      <div style="font-size:11px;color:#6B7280;">citas por paper</div>
+    </div>
+    <div style="flex:2;min-width:220px;background:#FEFCE8;border:1px solid #FDE68A;border-radius:10px;padding:14px 18px;">
+      <div style="font-size:11px;color:#78350F;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Artículo más citado</div>
+      <div style="font-size:16px;font-weight:700;color:#1E293B;line-height:1.3;margin:4px 0 2px;">${title}</div>
+      <div style="font-size:12px;color:#F6AE2D;font-weight:700;">${ik.top_paper_cited||0} citas</div>
+    </div>`;
+}
+
+function drawTopPapers(){
+  const papers = SBY()[year].top_papers || [];
+  label('lbl-top-papers', year);
+  if(!papers.length) return;
+  const shown  = papers.slice(0,15);
+  const labels = shown.map(p => p.title.length>52 ? p.title.slice(0,50)+'…' : p.title).reverse();
+  const vals   = shown.map(p => p.cited_by).reverse();
+  const bgs    = shown.map(p => C[p.quartile]||C['No Q']).reverse();
+  mkChart('c-top-papers',{
+    type:'bar',
+    data:{labels, datasets:[{
+      label:'Citas', data:vals,
+      backgroundColor: bgs, borderRadius:4, borderSkipped:false,
+    }]},
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      animation:{duration:420},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          enabled: false,
+          external: function(context){
+            const {chart, tooltip} = context;
+            const el = _getTtEl(chart.canvas.id);
+            if(tooltip.opacity===0){ el.classList.remove('tt-vis'); return; }
+            const dp = tooltip.dataPoints && tooltip.dataPoints[0];
+            if(!dp){ el.classList.remove('tt-vis'); return; }
+            const idx = shown.length - 1 - dp.dataIndex;
+            const p = shown[idx];
+            if(!p){ el.classList.remove('tt-vis'); return; }
+            el.innerHTML = `
+              <div class="tt-hdr" style="display:flex;align-items:center;gap:8px;">
+                ${qBadge(p.quartile)}
+                <span>${p.cited_by} cita${p.cited_by!==1?'s':''} recibidas</span>
+              </div>
+              <div class="tt-row" style="display:flex;flex-direction:column;gap:4px;padding-top:4px;">
+                <div class="tt-title" style="font-size:13px;line-height:1.4;white-space:normal;max-width:500px;">${p.title}</div>
+                <div class="tt-jrnl"><em>${p.source}</em> &nbsp;·&nbsp; ${p.year}</div>
+                ${p.authors_utb ? `<div class="tt-jrnl">👤 Autores UTB: ${p.authors_utb}</div>` : ''}
+              </div>`;
+            el.classList.add('tt-vis');
+            const rect = chart.canvas.getBoundingClientRect();
+            const cx = rect.left + tooltip.caretX + 16;
+            const cy = rect.top  + tooltip.caretY - 24;
+            const ttW = 540;
+            el.style.top  = Math.max(4, cy) + 'px';
+            el.style.left = (cx + ttW > window.innerWidth - 8
+                             ? rect.left + tooltip.caretX - ttW - 16
+                             : cx) + 'px';
+          }
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,0.05)'}, ticks:{font:{size:11}},
+           title:{display:true,text:'Citas recibidas',font:{size:11}}},
+        y:{grid:{display:false}, ticks:{font:{size:11}}}
+      }
+    }
+  });
+}
+
+function drawTopJournals(){
+  const journals = SBY()[year].top_journals || [];
+  label('lbl-top-journals', year);
+  if(!journals.length) return;
+  const shown  = journals.slice(0,15);
+  const labels = shown.map(j => j.name.length>40 ? j.name.slice(0,38)+'…' : j.name).reverse();
+  const cfg = hBar(labels,
+    ['Q1','Q2','Q3','Q4','No Q'].map(q=>({
+      label:q,
+      data: shown.map(j=>j[q]||0).reverse(),
+      backgroundColor: C[q], borderRadius:2, borderSkipped:false,
+    })),
+    {stacked:true, legend:true}
+  );
+  cfg.options.plugins.tooltip = {callbacks:{
+    title: ctx => {
+      const j = shown[shown.length-1-ctx[0].dataIndex];
+      return j ? j.name : '';
+    },
+    label: ctx => ` ${ctx.dataset.label}: ${ctx.raw} artículos`,
+    afterBody: ctx => {
+      const j = shown[shown.length-1-ctx[0].dataIndex];
+      return j ? [`Total: ${j.total} · Citas: ${j.cited_by}`] : [];
+    }
+  }};
+  mkChart('c-top-journals', cfg);
+}
+
+function drawCitsByQ(){
+  const cbq = SBY()[year].citations_by_q || {};
+  label('lbl-cits-q', year);
+  const qs = ['Q1','Q2','Q3','Q4','No Q'];
+  const vals = qs.map(q => cbq[q]||0);
+  const total = cbq.total || vals.reduce((a,b)=>a+b,0);
+  mkChart('c-cits-q',{
+    type:'doughnut',
+    data:{
+      labels: qs,
+      datasets:[{
+        data: vals,
+        backgroundColor: qs.map(q=>C[q]),
+        borderWidth: 2, borderColor:'#FFFFFF', hoverOffset:6,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation:{duration:420},
+      cutout:'62%',
+      plugins:{
+        legend:{position:'bottom', labels:{font:{size:11},boxWidth:14,padding:10}},
+        tooltip:{callbacks:{
+          label: ctx => {
+            const v = ctx.raw; const pct = total ? (v/total*100).toFixed(1) : 0;
+            return ` ${ctx.label}: ${v} citas (${pct}%)`;
+          }
+        }}
+      }
+    }
+  });
 }
 
 // ── PIVOT TABLE ─────────────────────────────────────────────────
@@ -2005,7 +2296,7 @@ function buildPivotHeader(){
     const cls = i===0?'yr-sep':'';
     r1 += `<th colspan="7" style="text-align:center;background:#F0F4F9;${i>0?'border-left:2px solid #E2E8F0':''}">${y}</th>`;
   });
-  r1 += `<th colspan="2" style="background:#EFF6FF;border-left:2px solid #C7D2FE">Total</th>`;
+  r1 += `<th colspan="2" style="background:#E8F3FA;border-left:2px solid #C7D2FE">Total</th>`;
   r1 += '</tr>';
   // Row 2: sub-headers
   let r2 = '<tr>';
@@ -2017,8 +2308,8 @@ function buildPivotHeader(){
     });
     r2 += `<th style="">Arts</th><th>Docs</th>`;
   });
-  r2 += `<th style="background:#EFF6FF;border-left:2px solid #C7D2FE">Arts</th>`;
-  r2 += `<th style="background:#EFF6FF">Docs</th>`;
+  r2 += `<th style="background:#E8F3FA;border-left:2px solid #C7D2FE">Arts</th>`;
+  r2 += `<th style="background:#E8F3FA">Docs</th>`;
   r2 += '</tr>';
   head.innerHTML = r1 + r2;
 }
@@ -2104,6 +2395,10 @@ function renderAll(){
   drawAreaQ();
   drawAreaPct();
   drawAreaHeatmap();
+  renderImpactKpis();
+  drawTopPapers();
+  drawTopJournals();
+  drawCitsByQ();
 }
 
 // ── YEAR FILTER SETUP ────────────────────────────────────────────
@@ -2204,7 +2499,7 @@ def _align(h="center", v="center", wrap=False):
     return Alignment(horizontal=h, vertical=v, wrap_text=wrap)
 def _border_thin(sides="all"):
     thin = Side(style="thin", color="E2E8F0")
-    thick = Side(style="medium", color="8896A8")
+    thick = Side(style="medium", color="86BBD8")
     b = {"left": thin, "right": thin, "top": thin, "bottom": thin}
     if sides == "left_thick":  b["left"]  = thick
     if sides == "top_thick":   b["top"]   = thick
@@ -2212,11 +2507,11 @@ def _border_thin(sides="all"):
 
 # Color palettes
 HDR_FILL  = _fill("#F0F4F9")
-YR_FILLS  = [_fill("#EFF6FF"), _fill("#F0FDF4"), _fill("#FEF9C3"),
+YR_FILLS  = [_fill("#E8F3FA"), _fill("#F0FDF4"), _fill("#FEF9C3"),
              _fill("#FFF1F2"), _fill("#F5F3FF")]
-Q_COLORS  = {"Q1":"1A7A5E","Q2":"2B5EA8","Q3":"9A6011","Q4":"A83232","SC":"8896A8"}
+Q_COLORS  = {"Q1":"2F4858","Q2":"33658A","Q3":"F6AE2D","Q4":"F26419","SC":"86BBD8"}
 TOT_FILL  = _fill("#F5F3FF")
-SCH_FILL  = _fill("#DBEAFE")
+SCH_FILL  = _fill("#C8E3F2")
 ROW_EVEN  = _fill("#FAFBFC")
 
 FIXED_COLS = 3  # Docente, Escuela, Scopus ID
@@ -2282,7 +2577,7 @@ def _write_pivot_sheet(ws, pivot_src):
             ws.merge_cells(start_row=sr, start_column=1, end_row=sr, end_column=TOTAL_COLS)
             c = ws.cell(row=sr, column=1)
             c.fill      = SCH_FILL
-            c.font      = _font(bold=True, color="1D4ED8", size=11)
+            c.font      = _font(bold=True, color="2F4858", size=11)
             c.alignment = _align(h="left")
             c.border    = _border_thin("top_thick")
 
@@ -2322,7 +2617,7 @@ def _write_pivot_sheet(ws, pivot_src):
                     cell.font = _font(bold=(sub_idx<4), color=Q_COLORS[q])
                 elif v == 0:
                     cell.value = "—"
-                    cell.font  = _font(color="CBD5E1")
+                    cell.font  = _font(color="86BBD8")
                 elif sub_idx == 5:
                     cell.font = _font(bold=True, color="4F46E5")
                 else:
@@ -2493,24 +2788,24 @@ _write_articulos_sheet(ws1cs, school_papers, "quartile_cs", "CiteScore", "1E3A5F
 
 # ── Sheet 3: Resumen por año (SJR) ───────────────────────────────────────────
 ws2 = tb.create_sheet("Resumen por año (SJR)")
-_write_resumen_anio_sheet(ws2, school_papers, "1D4ED8")
+_write_resumen_anio_sheet(ws2, school_papers, "2F4858")
 
 # ── Sheet 4: Resumen por año (CS) ────────────────────────────────────────────
 ws2cs = tb.create_sheet("Resumen por año (CS)")
-_write_resumen_anio_sheet(ws2cs, school_papers_cs, "0369A1")
+_write_resumen_anio_sheet(ws2cs, school_papers_cs, "33658A")
 
 # ── Sheet 5: Resumen por Escuela (SJR) ───────────────────────────────────────
 ws3 = tb.create_sheet("Resumen por Escuela (SJR)")
-_write_resumen_escuela_sheet(ws3, by_year["ALL"]["schools"], "1A7A5E")
+_write_resumen_escuela_sheet(ws3, by_year["ALL"]["schools"], "2F4858")
 
 # ── Sheet 6: Resumen por Escuela (CS) ────────────────────────────────────────
 ws3cs = tb.create_sheet("Resumen por Escuela (CS)")
-_write_resumen_escuela_sheet(ws3cs, by_year_cs["ALL"]["schools"], "0D9488")
+_write_resumen_escuela_sheet(ws3cs, by_year_cs["ALL"]["schools"], "2F4858")
 
 # ── Sheet 7: Docentes activos ─────────────────────────────────────────────────
 ws4 = tb.create_sheet("Docentes activos")
 _hdr(ws4, ["Docente","Escuela","Scopus ID","Total docs","Artículos","Q1","Q2","Q3","Q4","No Q","% Q1"],
-     "6366F1", height=26)
+     "33658A", height=26)
 for ci, w in enumerate([36,30,16,10,10,8,8,8,8,8,8],1):
     ws4.column_dimensions[get_column_letter(ci)].width = w
 
