@@ -811,7 +811,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
   box-shadow:0 2px 12px rgba(15,23,42,.06)}
 .nav-inner{max-width:1180px;margin:0 auto;padding:0 60px;
   display:flex;gap:2px;overflow-x:auto;align-items:center;min-height:52px}
-.nav-link{padding:7px 13px;font-size:12px;font-weight:600;color:#64748B;
+.nav-link{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;font-size:12px;font-weight:600;color:#64748B;
   text-decoration:none;white-space:nowrap;border-radius:8px;margin:0 1px;
   transition:color .15s,background .15s;letter-spacing:.1px;border:none}
 .nav-link:hover{color:#2F4858;background:#E8F3FA}
@@ -950,7 +950,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 [data-theme="dark"] .theme-track{background:#33658A}
 [data-theme="dark"] .theme-thumb{transform:translateX(15px)}
 /* ── KPI ICON ─────────────────────────────────────────────────── */
-.kpi-icon{font-size:22px;margin-bottom:4px;line-height:1;display:block;
+.kpi-icon{font-size:22px;margin-bottom:4px;line-height:1;display:flex;justify-content:center;
   filter:grayscale(0);transition:transform .2s}
 .kpi-card:hover .kpi-icon{transform:scale(1.18)}
 /* ── BACK TO TOP ──────────────────────────────────────────────── */
@@ -1017,7 +1017,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   <div class="hero-glow"></div><div class="hero-glow2"></div>
   <div class="hero-inner">
     <div class="hero-text">
-      <div class="hero-badge">&#128202; Scopus · Scimago JR 2025 · CiteScore 2025</div>
+      <div class="hero-badge"><svg width='15' height='15' viewBox='0 0 16 16' fill='currentColor' style='vertical-align:-2px' aria-hidden='true'><rect x='1' y='9' width='3' height='6' rx='0.5'/><rect x='6.5' y='5' width='3' height='10' rx='0.5'/><rect x='12' y='1' width='3' height='14' rx='0.5'/></svg> Scopus · Scimago JR 2025 · CiteScore 2025</div>
       <h1 class="hero-title">UTB Scopus Dashboard <span>&#8805; __START_YEAR__</span></h1>
       <p class="hero-desc">
         Caracterización bibliométrica de la producción científica de docentes de planta de la
@@ -1047,37 +1047,37 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 <div class="kpi-strip">
   <div class="kpi-grid">
     <div class="kpi-card">
-      <span class="kpi-icon">📄</span>
+      <span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='2' y='1' width='12' height='14' rx='1'/><rect x='4' y='5' width='8' height='1.5' rx='0.5' fill='white'/><rect x='4' y='8' width='8' height='1.5' rx='0.5' fill='white'/><rect x='4' y='11' width='5' height='1.5' rx='0.5' fill='white'/></svg></span>
       <div class="kpi-lbl">Documentos únicos</div>
       <div class="kpi-val" id="k-docs">—</div>
       <div class="kpi-sub">desde __START_YEAR__</div>
     </div>
     <div class="kpi-card">
-      <span class="kpi-icon">📰</span>
+      <span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='1' y='1' width='14' height='14' rx='1.5'/><rect x='3' y='3' width='5' height='5' rx='0.5' fill='white'/><rect x='9.5' y='3' width='4' height='1.5' rx='0.5' fill='white'/><rect x='9.5' y='6' width='2.5' height='1.5' rx='0.5' fill='white'/><rect x='3' y='10' width='10' height='1.5' rx='0.5' fill='white'/><rect x='3' y='12.5' width='7' height='1.5' rx='0.5' fill='white'/></svg></span>
       <div class="kpi-lbl">Artículos</div>
       <div class="kpi-val" id="k-arts">—</div>
       <div class="kpi-sub">en revistas indexadas</div>
     </div>
     <div class="kpi-card">
-      <span class="kpi-icon">🥇</span>
+      <span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M8 1l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4L2.2 5.2l4-.6z'/></svg></span>
       <div class="kpi-lbl">% Q1</div>
       <div class="kpi-val" id="k-q1">—</div>
       <div class="kpi-sub">de artículos con cuartil</div>
     </div>
     <div class="kpi-card">
-      <span class="kpi-icon">🏆</span>
+      <span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M8 1 15 4v5c0 4-3.1 6.4-7 7-3.9-.6-7-3-7-7V4z'/><path d='M5 8l2 2 4-4' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg></span>
       <div class="kpi-lbl">% Q1+Q2</div>
       <div class="kpi-val" id="k-q1q2">—</div>
       <div class="kpi-sub">de artículos con cuartil</div>
     </div>
     <div class="kpi-card">
-      <span class="kpi-icon">👤</span>
+      <span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><circle cx='8' cy='5' r='3.5'/><path d='M1.5 15.5c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5z'/></svg></span>
       <div class="kpi-lbl">Docentes activos</div>
       <div class="kpi-val" id="k-auth">—</div>
       <div class="kpi-sub">con publicaciones</div>
     </div>
     <div class="kpi-card">
-      <span class="kpi-icon">🏫</span>
+      <span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M8 1 1 7h2v8h4v-4h2v4h4V7h2L8 1z'/></svg></span>
       <div class="kpi-lbl">Escuelas</div>
       <div class="kpi-val" id="k-sch">—</div>
       <div class="kpi-sub">con producción</div>
@@ -1088,15 +1088,15 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 <!-- NAV -->
 <nav class="nav-bar" id="navBar">
   <div class="nav-inner">
-    <a class="nav-link active" href="#sec-prod">📈 Producción</a>
-    <a class="nav-link" href="#sec-calidad" id="nav-calidad">🏆 Calidad</a>
-    <a class="nav-link" href="#sec-escuelas">🏫 Escuelas</a>
-    <a class="nav-link" href="#sec-autores">👤 Autores</a>
-    <a class="nav-link" href="#sec-colab">🤝 Colaboración</a>
-    <a class="nav-link" href="#sec-areas">🔬 Áreas</a>
-    <a class="nav-link" href="#sec-impact">⭐ Impacto</a>
-    <a class="nav-link" href="#sec-tabla">📋 Tabla Autores</a>
-    <a class="nav-link" href="#sec-metodo">📄 Metodología</a>
+    <a class="nav-link active" href="#sec-prod"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='1' y='11' width='3' height='4' rx='0.5'/><rect x='6.5' y='7' width='3' height='8' rx='0.5'/><rect x='12' y='3' width='3' height='12' rx='0.5'/></svg> Producción</a>
+    <a class="nav-link" href="#sec-calidad" id="nav-calidad"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M8 1 15 4v5c0 4-3.1 6.4-7 7-3.9-.6-7-3-7-7V4z'/></svg> Calidad</a>
+    <a class="nav-link" href="#sec-escuelas"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M8 1 1 7h2v8h4v-4h2v4h4V7h2L8 1z'/></svg> Escuelas</a>
+    <a class="nav-link" href="#sec-autores"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><circle cx='8' cy='5' r='3.5'/><path d='M1.5 15.5c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5z'/></svg> Autores</a>
+    <a class="nav-link" href="#sec-colab"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><circle cx='5' cy='5.5' r='2.5'/><circle cx='11' cy='5.5' r='2.5'/><path d='M0 14c0-2.8 2.2-5 5-5a5.1 5.1 0 0 1 2.7.8A5.1 5.1 0 0 1 11 9c2.8 0 5 2.2 5 5H0z'/></svg> Colaboración</a>
+    <a class="nav-link" href="#sec-areas"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='1' y='1' width='6' height='6' rx='1'/><rect x='9' y='1' width='6' height='6' rx='1'/><rect x='1' y='9' width='6' height='6' rx='1'/><rect x='9' y='9' width='6' height='6' rx='1'/></svg> Áreas</a>
+    <a class="nav-link" href="#sec-impact"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M9 1 3 9h5l-1 6 7-9H9z'/></svg> Impacto</a>
+    <a class="nav-link" href="#sec-tabla"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='1' y='2' width='14' height='2' rx='1'/><rect x='1' y='7' width='14' height='2' rx='1'/><rect x='1' y='12' width='10' height='2' rx='1'/></svg> Tabla Autores</a>
+    <a class="nav-link" href="#sec-metodo"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='2' y='1' width='12' height='14' rx='1'/><rect x='4' y='5' width='8' height='1.5' rx='0.5' fill='white'/><rect x='4' y='8' width='8' height='1.5' rx='0.5' fill='white'/><rect x='4' y='11' width='5' height='1.5' rx='0.5' fill='white'/></svg> Metodología</a>
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Cambiar tema">
       <span class="theme-track"><span class="theme-thumb"></span></span>
       <span id="themeLbl">🌙 Oscuro</span>
@@ -1514,7 +1514,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 
   <a class="card" href="tables.xlsx" style="display:flex;align-items:center;gap:18px;
     text-decoration:none;color:inherit;border-left:4px solid #2F4858">
-    <span style="font-size:32px">📊</span>
+    <svg width='36' height='36' viewBox='0 0 16 16' fill='currentColor' style='opacity:.25;flex-shrink:0' aria-hidden='true'><rect x='1' y='8' width='3' height='7' rx='0.5'/><rect x='6.5' y='4' width='3' height='11' rx='0.5'/><rect x='12' y='1' width='3' height='14' rx='0.5'/></svg>
     <div>
       <div style="font-weight:700;color:#0F172A;margin-bottom:3px">Tablas de datos (Excel)</div>
       <div style="font-size:13px;color:#64748B">
@@ -1590,7 +1590,7 @@ function setSource(s){
   const srcFull  = isSci ? 'Scimago JR 2025' : 'CiteScore 2025';
   // Nav label
   const navLbl = document.getElementById('nav-calidad');
-  if(navLbl) navLbl.textContent = '🏆 Calidad (' + srcShort + ')';
+  if(navLbl) navLbl.textContent = 'Calidad (' + srcShort + ')';
   // Footer
   const srcLine = document.getElementById('footer-src');
   if(srcLine) srcLine.textContent = srcFull;
@@ -2195,7 +2195,7 @@ function drawTopPapers(){
               <div class="tt-row" style="display:flex;flex-direction:column;gap:4px;padding-top:4px;">
                 <div class="tt-title" style="font-size:13px;line-height:1.4;white-space:normal;max-width:500px;">${p.title}</div>
                 <div class="tt-jrnl"><em>${p.source}</em> &nbsp;·&nbsp; ${p.year}</div>
-                ${p.authors_utb ? `<div class="tt-jrnl">👤 Autores UTB: ${p.authors_utb}</div>` : ''}
+                ${p.authors_utb ? `<div class="tt-jrnl">Autores UTB: ${p.authors_utb}</div>` : ''}
               </div>`;
             el.classList.add('tt-vis');
             const rect = chart.canvas.getBoundingClientRect();
@@ -2329,7 +2329,7 @@ function renderPivot(){
     if(r.school !== lastSchool){
       lastSchool = r.school;
       const totalCols = P.years.length * 7 + 2;
-      html += `<tr class="school-hdr"><td class="c-fix-1" colspan="3" style="left:0;position:sticky;z-index:4">🏫 ${r.school}</td>`;
+      html += `<tr class="school-hdr"><td class="c-fix-1" colspan="3" style="left:0;position:sticky;z-index:4">${r.school}</td>`;
       for(let i=0; i<totalCols; i++) html += '<td></td>';
       html += '</tr>';
     }
@@ -2571,7 +2571,7 @@ def _write_pivot_sheet(ws, pivot_src):
     for r in pivot_src:
         if r["school"] != current_school:
             current_school = r["school"]
-            sep_row = [f"  🏫  {current_school}"] + [""] * (TOTAL_COLS - 1)
+            sep_row = [f" {current_school}"] + [""] * (TOTAL_COLS - 1)
             ws.append(sep_row)
             sr = ws.max_row
             ws.merge_cells(start_row=sr, start_column=1, end_row=sr, end_column=TOTAL_COLS)
