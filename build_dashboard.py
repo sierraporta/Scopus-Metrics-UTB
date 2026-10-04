@@ -758,42 +758,49 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
      background:#F0F4F9;color:#1E293B;-webkit-font-smoothing:antialiased}
 /* ── HERO ─────────────────────────────────────────────────────── */
 .hero{
-  background:linear-gradient(135deg,#050E1F 0%,#0D2158 45%,#1A46CC 100%);
+  background:linear-gradient(140deg,#0B1A25 0%,#1C3448 38%,#2F4858 68%,#1E3040 100%);
   padding:52px 72px 76px;position:relative;overflow:hidden;color:#fff}
-.hero::before{content:'';position:absolute;inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.025'%3E%3Ccircle cx='20' cy='20' r='1.5'/%3E%3C/g%3E%3C/svg%3E")}
-.hero-glow{position:absolute;top:-120px;right:-60px;width:520px;height:520px;
-  border-radius:50%;background:radial-gradient(circle,rgba(100,130,255,.28) 0%,transparent 65%);pointer-events:none}
-.hero-glow2{position:absolute;bottom:-80px;left:18%;width:320px;height:320px;
-  border-radius:50%;background:radial-gradient(circle,rgba(20,180,220,.18) 0%,transparent 65%);pointer-events:none}
+.hero::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.018'%3E%3Ccircle cx='20' cy='20' r='1.5'/%3E%3C/g%3E%3C/svg%3E")}
+.hero::after{content:'';position:absolute;bottom:-80px;right:0;pointer-events:none;
+  width:640px;height:420px;
+  background:radial-gradient(ellipse at right bottom,rgba(242,100,25,.18) 0%,rgba(246,174,45,.10) 38%,transparent 68%)}
+.hero-deco{position:absolute;right:0;top:0;bottom:0;width:58%;
+  pointer-events:none;z-index:1;overflow:hidden}
+.hero-deco svg{width:100%;height:100%;display:block}
 .hero-inner{position:relative;z-index:2;max-width:1180px;margin:0 auto;
   display:flex;align-items:flex-start;justify-content:space-between;gap:32px;flex-wrap:wrap}
 .hero-text{flex:1;min-width:280px}
-.hero-badge{display:inline-flex;align-items:center;gap:6px;
-  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
-  border-radius:999px;padding:4px 14px;font-size:11.5px;font-weight:600;
-  letter-spacing:.3px;margin-bottom:18px;backdrop-filter:blur(6px)}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;
+  background:#F6AE2D;color:#1A2A35;
+  border-radius:999px;padding:5px 16px;font-size:11.5px;font-weight:700;
+  letter-spacing:.4px;margin-bottom:18px}
 .hero-title{font-size:36px;font-weight:800;letter-spacing:-1px;line-height:1.1;margin-bottom:14px}
-.hero-title span{color:#93C5FD}
-.hero-desc{font-size:13.5px;line-height:1.8;color:rgba(255,255,255,.75);max-width:680px}
+.hero-title span{color:#F6AE2D}
+.hero-desc{font-size:13.5px;line-height:1.8;color:rgba(255,255,255,.75);max-width:620px}
 .hero-desc strong{color:rgba(255,255,255,.95)}
 /* Year / source filter in hero */
 .year-filter-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;padding-top:4px}
 .year-filter-label{font-size:11px;font-weight:700;text-transform:uppercase;
   letter-spacing:.8px;color:rgba(255,255,255,.6)}
 #yearFilter,#srcFilter{
-  appearance:none;background:#2F4858 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2393C5FD' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
-  border:1.5px solid rgba(147,197,253,.4);border-radius:8px;
+  appearance:none;background:#2F4858 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386BBD8' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+  border:1.5px solid rgba(134,187,216,.4);border-radius:8px;
   color:#fff;font-size:14px;font-weight:600;padding:8px 36px 8px 14px;
   cursor:pointer;min-width:110px;transition:border-color .15s}
-#yearFilter:hover,#srcFilter:hover{border-color:rgba(147,197,253,.75)}
+#yearFilter:hover,#srcFilter:hover{border-color:rgba(134,187,216,.75)}
 /* ── KPI STRIP ────────────────────────────────────────────────── */
 .kpi-strip{margin-bottom:24px;max-width:1180px;margin:-32px auto 0;padding:0 72px;position:relative;z-index:10}
 .kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:13px}
-.kpi-card{background:#fff;border-radius:13px;padding:17px 18px 14px;
-  box-shadow:0 6px 28px rgba(15,23,42,.10);border-top:10px solid var(--ac);
+.kpi-card{background:#fff;border-radius:13px;overflow:hidden;
+  box-shadow:0 6px 28px rgba(15,23,42,.10);
   transition:transform .16s,box-shadow .16s;animation:riseIn .5s ease both}
 .kpi-card:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(15,23,42,.15)}
+.kpi-stripe{background:var(--ac);color:#fff;padding:10px 16px;
+  display:flex;align-items:center;gap:8px;}
+.kpi-stripe-lbl{font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.7px;color:rgba(255,255,255,.9);line-height:1.3;white-space:normal;}
+.kpi-body{padding:14px 18px 12px;}
 .kpi-card:nth-child(1){--ac:#33658A;animation-delay:.04s}
 .kpi-card:nth-child(2){--ac:#2F4858;animation-delay:.08s}
 .kpi-card:nth-child(3){--ac:#2F4858;animation-delay:.12s}
@@ -802,25 +809,28 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
 .kpi-card:nth-child(6){--ac:#0891B2;animation-delay:.24s}
 .kpi-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
   color:#94A3B8;margin-bottom:5px}
-.kpi-val{font-size:28px;font-weight:800;line-height:1;color:#0F172A}
-.kpi-val.sm{font-size:21px}
-.kpi-sub{font-size:10.5px;color:#94A3B8;margin-top:4px}
+.kpi-val{font-size:38px;font-weight:800;line-height:1;color:#0F172A}
+.kpi-val.sm{font-size:26px}
+.kpi-sub{font-size:10.5px;color:#94A3B8;margin-top:5px}
 /* ── NAV BAR ──────────────────────────────────────────────────── */
 .nav-bar{margin-top:24px;position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);
   backdrop-filter:blur(10px);border-bottom:1px solid #E2E8F0;
   box-shadow:0 2px 12px rgba(15,23,42,.06)}
 .nav-inner{max-width:1180px;margin:0 auto;padding:0 60px;
   display:flex;gap:2px;overflow-x:auto;align-items:center;min-height:52px}
-.nav-link{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;font-size:12px;font-weight:600;color:#64748B;
-  text-decoration:none;white-space:nowrap;border-radius:8px;margin:0 1px;
-  transition:color .15s,background .15s;letter-spacing:.1px;border:none}
-.nav-link:hover{color:#2F4858;background:#E8F3FA}
-.nav-link.active{color:#2F4858;background:#C8E3F2;font-weight:700}
+.nav-link{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;font-size:12px;font-weight:600;
+  color:#fff;text-decoration:none;white-space:nowrap;border-radius:20px;margin:0 2px;
+  transition:opacity .15s,box-shadow .15s,transform .1s;letter-spacing:.1px;border:none;
+  background:var(--nav-clr,#33658A);opacity:.68;}
+.nav-link:hover{opacity:1;box-shadow:0 3px 12px rgba(0,0,0,.22);transform:translateY(-1px)}
+.nav-link.active{opacity:1;box-shadow:0 3px 14px rgba(0,0,0,.25)}
 /* ── SECTIONS ─────────────────────────────────────────────────── */
 .section{padding:52px 72px;max-width:1180px;margin:0 auto}
 .section-hd{margin-bottom:28px}
-.section-eye{font-size:10.5px;font-weight:700;text-transform:uppercase;
-  letter-spacing:1px;color:#94A3B8;margin-bottom:6px}
+.section-eye{display:inline-flex;align-items:center;gap:5px;
+  background:var(--sec-clr,#33658A);color:#fff;
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;
+  padding:3px 11px;border-radius:999px;margin-bottom:10px;}
 .section-title{font-size:22px;font-weight:800;color:#0F172A;letter-spacing:-.4px}
 .section-sub{font-size:13.5px;color:#64748B;margin-top:6px;line-height:1.6}
 /* ── CHART CARDS ──────────────────────────────────────────────── */
@@ -854,6 +864,27 @@ footer{background:#0F172A;color:rgba(255,255,255,.45);padding:28px 72px;
 footer strong{color:rgba(255,255,255,.75)}
 /* ── DIVIDER ──────────────────────────────────────────────────── */
 hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
+/* ── IMPACT KPI CARDS ─────────────────────────────────────────── */
+.ik-card{background:#fff}
+.ik-body{padding:14px 18px 12px}
+.ik-val{font-size:42px;font-weight:800;color:#0F172A;line-height:1;letter-spacing:-1px}
+.ik-sub{font-size:10.5px;color:#94A3B8;margin-top:6px}
+.ik-cite{font-size:28px;font-weight:800;line-height:1;margin-top:6px}
+[data-theme="dark"] .ik-card{background:#1E293B!important;border-color:rgba(255,255,255,.08)!important}
+[data-theme="dark"] .ik-val{color:#F1F5F9!important}
+[data-theme="dark"] .ik-sub{color:#64748B!important}
+[data-theme="dark"] .ik-cite{opacity:.9}
+/* ── SECTION DIVIDER ──────────────────────────────────────────────── */
+.sec-divider{display:flex;align-items:center;padding:0 72px;max-width:1180px;margin:0 auto;gap:0}
+.sec-divider::before,.sec-divider::after{content:'';flex:1;height:1px;
+  background:linear-gradient(to var(--dir,right),transparent,#D1D8E0)}
+.sec-divider::after{--dir:left}
+.sec-divider-gems{display:flex;gap:6px;padding:0 14px;align-items:center}
+.sec-divider-gems span{width:6px;height:6px;border-radius:1px;
+  transform:rotate(45deg);display:inline-block}
+.sec-divider-gems span:nth-child(1){background:#F6AE2D;opacity:.5}
+.sec-divider-gems span:nth-child(2){background:#F26419;opacity:.7}
+.sec-divider-gems span:nth-child(3){background:#F6AE2D;opacity:.5}
 /* ── PIVOT TABLE ──────────────────────────────────────────────── */
 .pivot-controls{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
 .pivot-controls label{font-size:12px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.5px}
@@ -907,15 +938,18 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   box-shadow:0 3px 20px rgba(0,0,0,.4)}
 [data-theme="dark"] .card:hover{box-shadow:0 10px 40px rgba(0,0,0,.55)}
 [data-theme="dark"] .nav-bar{background:rgba(15,23,42,.96);border-color:rgba(255,255,255,.08)}
-[data-theme="dark"] .nav-link{color:#94A3B8}
-[data-theme="dark"] .nav-link:hover{color:#93C5FD;background:rgba(147,197,253,.08)}
-[data-theme="dark"] .nav-link.active{color:#93C5FD;background:rgba(147,197,253,.15);font-weight:700}
+[data-theme="dark"] .nav-link{color:#fff;opacity:.6}
+[data-theme="dark"] .nav-link:hover{opacity:1;color:#fff}
+[data-theme="dark"] .nav-link.active{opacity:1;color:#fff}
 [data-theme="dark"] .kpi-card{background:#1E293B;box-shadow:0 6px 28px rgba(0,0,0,.35)}
+[data-theme="dark"] .kpi-body{background:#1E293B}
+[data-theme="dark"] .kpi-stripe-lbl{color:rgba(255,255,255,.9)}
 [data-theme="dark"] .kpi-val{color:#F1F5F9}
-[data-theme="dark"] .kpi-sub,[data-theme="dark"] .kpi-lbl{color:#64748B}
+[data-theme="dark"] .kpi-sub{color:#94A3B8}
+[data-theme="dark"] .kpi-lbl{color:#94A3B8}
 [data-theme="dark"] .section-title{color:#F1F5F9}
 [data-theme="dark"] .section-sub{color:#94A3B8}
-[data-theme="dark"] .section-eye{color:#64748B}
+[data-theme="dark"] .section-eye:not([style*="color:#2F4858"]){color:#fff}
 [data-theme="dark"] .card-title{color:#E2E8F0}
 [data-theme="dark"] .card-note{background:#0F172A;color:#64748B}
 [data-theme="dark"] .note-y{background:#2D1D02;border-color:#F6AE2D;color:#FDE68A}
@@ -950,9 +984,8 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 [data-theme="dark"] .theme-track{background:#33658A}
 [data-theme="dark"] .theme-thumb{transform:translateX(15px)}
 /* ── KPI ICON ─────────────────────────────────────────────────── */
-.kpi-icon{font-size:22px;margin-bottom:4px;line-height:1;display:flex;justify-content:center;
-  filter:grayscale(0);transition:transform .2s}
-.kpi-card:hover .kpi-icon{transform:scale(1.18)}
+.kpi-icon{display:flex;align-items:center;opacity:.92;transition:transform .2s}
+.kpi-card:hover .kpi-icon{transform:scale(1.12)}
 /* ── BACK TO TOP ──────────────────────────────────────────────── */
 .back-top{
   position:fixed;bottom:28px;right:28px;width:44px;height:44px;
@@ -1014,7 +1047,85 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 
 <!-- HERO -->
 <header class="hero">
-  <div class="hero-glow"></div><div class="hero-glow2"></div>
+  <div class="hero-deco" aria-hidden="true">
+  <svg viewBox='0 0 620 380' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='xMidYMid slice'>
+    <defs>
+      <radialGradient id='hg1' cx='78%' cy='60%' r='40%'>
+        <stop offset='0%' stop-color='#F6AE2D' stop-opacity='0.20'/>
+        <stop offset='100%' stop-color='#F6AE2D' stop-opacity='0'/>
+      </radialGradient>
+      <radialGradient id='hg2' cx='80%' cy='65%' r='24%'>
+        <stop offset='0%' stop-color='#F26419' stop-opacity='0.15'/>
+        <stop offset='100%' stop-color='#F26419' stop-opacity='0'/>
+      </radialGradient>
+    </defs>
+    <rect x='0' y='0' width='620' height='380' fill='url(#hg1)'/>
+    <rect x='0' y='0' width='620' height='380' fill='url(#hg2)'/>
+    <!-- Globe/knowledge arcs (honey bronze) -->
+    <circle cx='490' cy='220' r='222' fill='none' stroke='#F6AE2D' stroke-width='1.2' opacity='0.12'/>
+    <circle cx='490' cy='220' r='172' fill='none' stroke='#F6AE2D' stroke-width='0.8' opacity='0.10'/>
+    <circle cx='490' cy='220' r='122' fill='none' stroke='#F6AE2D' stroke-width='0.7' opacity='0.11'/>
+    <circle cx='490' cy='220' r='74' fill='#F6AE2D' opacity='0.08'/>
+    <circle cx='490' cy='220' r='38' fill='#F6AE2D' opacity='0.14'/>
+    <!-- Globe latitude/longitude grid (sky blue) -->
+    <ellipse cx='490' cy='220' rx='122' ry='30' fill='none' stroke='#86BBD8' stroke-width='0.6' opacity='0.20'/>
+    <ellipse cx='490' cy='220' rx='122' ry='72' fill='none' stroke='#86BBD8' stroke-width='0.5' opacity='0.15'/>
+    <ellipse cx='490' cy='220' rx='122' ry='110' fill='none' stroke='#86BBD8' stroke-width='0.4' opacity='0.10'/>
+    <line x1='490' y1='98' x2='490' y2='342' stroke='#86BBD8' stroke-width='0.6' opacity='0.16'/>
+    <line x1='368' y1='220' x2='612' y2='220' stroke='#86BBD8' stroke-width='0.6' opacity='0.16'/>
+    <!-- Bar chart silhouette (bottom-left accent) -->
+    <rect x='28' y='272' width='18' height='88' fill='#F26419' opacity='0.28' rx='2'/>
+    <rect x='53' y='244' width='18' height='116' fill='#F26419' opacity='0.35' rx='2'/>
+    <rect x='78' y='210' width='18' height='150' fill='#F26419' opacity='0.41' rx='2'/>
+    <rect x='103' y='180' width='18' height='180' fill='#F6AE2D' opacity='0.33' rx='2'/>
+    <rect x='128' y='217' width='18' height='143' fill='#F26419' opacity='0.28' rx='2'/>
+    <rect x='153' y='254' width='18' height='106' fill='#F26419' opacity='0.23' rx='2'/>
+    <!-- Citation network — hub node -->
+    <circle cx='280' cy='118' r='9' fill='#86BBD8' opacity='0.72'/>
+    <circle cx='280' cy='118' r='18' fill='none' stroke='#86BBD8' stroke-width='1' opacity='0.28'/>
+    <!-- Satellite nodes -->
+    <circle cx='222' cy='76'  r='5.5' fill='#86BBD8' opacity='0.58'/>
+    <circle cx='336' cy='72'  r='5'   fill='#86BBD8' opacity='0.52'/>
+    <circle cx='364' cy='132' r='4.5' fill='#86BBD8' opacity='0.48'/>
+    <circle cx='320' cy='178' r='5'   fill='#86BBD8' opacity='0.52'/>
+    <circle cx='228' cy='170' r='4'   fill='#86BBD8' opacity='0.48'/>
+    <circle cx='186' cy='118' r='4'   fill='#86BBD8' opacity='0.44'/>
+    <!-- Peripheral nodes -->
+    <circle cx='195' cy='52'  r='3'   fill='#F6AE2D' opacity='0.50'/>
+    <circle cx='383' cy='62'  r='3'   fill='#F26419' opacity='0.45'/>
+    <circle cx='407' cy='160' r='3.5' fill='#86BBD8' opacity='0.38'/>
+    <circle cx='347' cy='210' r='3'   fill='#F6AE2D' opacity='0.44'/>
+    <circle cx='170' cy='182' r='3'   fill='#86BBD8' opacity='0.38'/>
+    <circle cx='148' cy='96'  r='2.5' fill='#86BBD8' opacity='0.34'/>
+    <!-- Hub edges -->
+    <line x1='280' y1='118' x2='222' y2='76'  stroke='#86BBD8' stroke-width='0.9' opacity='0.26'/>
+    <line x1='280' y1='118' x2='336' y2='72'  stroke='#86BBD8' stroke-width='0.9' opacity='0.26'/>
+    <line x1='280' y1='118' x2='364' y2='132' stroke='#86BBD8' stroke-width='0.9' opacity='0.26'/>
+    <line x1='280' y1='118' x2='320' y2='178' stroke='#86BBD8' stroke-width='0.9' opacity='0.26'/>
+    <line x1='280' y1='118' x2='228' y2='170' stroke='#86BBD8' stroke-width='0.9' opacity='0.26'/>
+    <line x1='280' y1='118' x2='186' y2='118' stroke='#86BBD8' stroke-width='0.9' opacity='0.26'/>
+    <!-- Peripheral edges -->
+    <line x1='222' y1='76'  x2='195' y2='52'  stroke='#86BBD8' stroke-width='0.6' opacity='0.18'/>
+    <line x1='222' y1='76'  x2='148' y2='96'  stroke='#86BBD8' stroke-width='0.6' opacity='0.18'/>
+    <line x1='336' y1='72'  x2='383' y2='62'  stroke='#86BBD8' stroke-width='0.6' opacity='0.18'/>
+    <line x1='364' y1='132' x2='407' y2='160' stroke='#86BBD8' stroke-width='0.6' opacity='0.18'/>
+    <line x1='320' y1='178' x2='347' y2='210' stroke='#86BBD8' stroke-width='0.6' opacity='0.18'/>
+    <line x1='228' y1='170' x2='170' y2='182' stroke='#86BBD8' stroke-width='0.6' opacity='0.18'/>
+    <line x1='186' y1='118' x2='148' y2='96'  stroke='#86BBD8' stroke-width='0.6' opacity='0.18'/>
+    <!-- Rising trend line (dashed honey bronze) -->
+    <polyline points='28,342 94,306 168,264 252,220 358,180 464,146 570,112'
+      fill='none' stroke='#F6AE2D' stroke-width='1.5' opacity='0.20' stroke-dasharray='5,8'/>
+    <!-- Scatter publication dots -->
+    <circle cx='64'  cy='180' r='2'   fill='#86BBD8' opacity='0.22'/>
+    <circle cx='100' cy='154' r='1.5' fill='#86BBD8' opacity='0.18'/>
+    <circle cx='132' cy='134' r='2'   fill='#86BBD8' opacity='0.18'/>
+    <circle cx='430' cy='86'  r='2'   fill='#F6AE2D' opacity='0.24'/>
+    <circle cx='460' cy='56'  r='1.5' fill='#86BBD8' opacity='0.18'/>
+    <circle cx='538' cy='90'  r='2'   fill='#F26419' opacity='0.20'/>
+    <circle cx='570' cy='58'  r='1.5' fill='#86BBD8' opacity='0.18'/>
+    <circle cx='594' cy='150' r='2'   fill='#86BBD8' opacity='0.18'/>
+  </svg>
+  </div>
   <div class="hero-inner">
     <div class="hero-text">
       <div class="hero-badge"><svg width='15' height='15' viewBox='0 0 16 16' fill='currentColor' style='vertical-align:-2px' aria-hidden='true'><rect x='1' y='9' width='3' height='6' rx='0.5'/><rect x='6.5' y='5' width='3' height='10' rx='0.5'/><rect x='12' y='1' width='3' height='14' rx='0.5'/></svg> Scopus · Scimago JR 2025 · CiteScore 2025</div>
@@ -1046,41 +1157,47 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 <!-- KPI STRIP -->
 <div class="kpi-strip">
   <div class="kpi-grid">
-    <div class="kpi-card">
-      <span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='2' y='1' width='12' height='14' rx='1'/><rect x='4' y='5' width='8' height='1.5' rx='0.5' fill='white'/><rect x='4' y='8' width='8' height='1.5' rx='0.5' fill='white'/><rect x='4' y='11' width='5' height='1.5' rx='0.5' fill='white'/></svg></span>
-      <div class="kpi-lbl">Documentos únicos</div>
-      <div class="kpi-val" id="k-docs">—</div>
-      <div class="kpi-sub">desde __START_YEAR__</div>
+<div class="kpi-card">
+      <div class="kpi-stripe"><span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='2' y='1' width='12' height='14' rx='1'/><rect x='4' y='5' width='8' height='1.5' rx='0.5' fill='white'/><rect x='4' y='8' width='8' height='1.5' rx='0.5' fill='white'/><rect x='4' y='11' width='5' height='1.5' rx='0.5' fill='white'/></svg></span><span class="kpi-stripe-lbl">Docs únicos</span></div>
+      <div class="kpi-body">
+        <div class="kpi-val" id="k-docs">—</div>
+        <div class="kpi-sub">desde __START_YEAR__</div>
+      </div>
     </div>
-    <div class="kpi-card">
-      <span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='1' y='1' width='14' height='14' rx='1.5'/><rect x='3' y='3' width='5' height='5' rx='0.5' fill='white'/><rect x='9.5' y='3' width='4' height='1.5' rx='0.5' fill='white'/><rect x='9.5' y='6' width='2.5' height='1.5' rx='0.5' fill='white'/><rect x='3' y='10' width='10' height='1.5' rx='0.5' fill='white'/><rect x='3' y='12.5' width='7' height='1.5' rx='0.5' fill='white'/></svg></span>
-      <div class="kpi-lbl">Artículos</div>
-      <div class="kpi-val" id="k-arts">—</div>
-      <div class="kpi-sub">en revistas indexadas</div>
+<div class="kpi-card">
+      <div class="kpi-stripe"><span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='1' y='1' width='14' height='14' rx='1.5'/><rect x='3' y='3' width='5' height='5' rx='0.5' fill='white'/><rect x='9.5' y='3' width='4' height='1.5' rx='0.5' fill='white'/><rect x='9.5' y='6' width='2.5' height='1.5' rx='0.5' fill='white'/><rect x='3' y='10' width='10' height='1.5' rx='0.5' fill='white'/><rect x='3' y='12.5' width='7' height='1.5' rx='0.5' fill='white'/></svg></span><span class="kpi-stripe-lbl">Artículos</span></div>
+      <div class="kpi-body">
+        <div class="kpi-val" id="k-arts">—</div>
+        <div class="kpi-sub">en revistas indexadas</div>
+      </div>
     </div>
-    <div class="kpi-card">
-      <span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M8 1l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4L2.2 5.2l4-.6z'/></svg></span>
-      <div class="kpi-lbl">% Q1</div>
-      <div class="kpi-val" id="k-q1">—</div>
-      <div class="kpi-sub">de artículos con cuartil</div>
+<div class="kpi-card">
+      <div class="kpi-stripe"><span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M8 1l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4L2.2 5.2l4-.6z'/></svg></span><span class="kpi-stripe-lbl">% Cuartil Q1</span></div>
+      <div class="kpi-body">
+        <div class="kpi-val" id="k-q1">—</div>
+        <div class="kpi-sub">de artículos con cuartil</div>
+      </div>
     </div>
-    <div class="kpi-card">
-      <span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M8 1 15 4v5c0 4-3.1 6.4-7 7-3.9-.6-7-3-7-7V4z'/><path d='M5 8l2 2 4-4' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg></span>
-      <div class="kpi-lbl">% Q1+Q2</div>
-      <div class="kpi-val" id="k-q1q2">—</div>
-      <div class="kpi-sub">de artículos con cuartil</div>
+<div class="kpi-card">
+      <div class="kpi-stripe"><span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M8 1 15 4v5c0 4-3.1 6.4-7 7-3.9-.6-7-3-7-7V4z'/><path d='M5 8l2 2 4-4' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg></span><span class="kpi-stripe-lbl">% Q1 + Q2</span></div>
+      <div class="kpi-body">
+        <div class="kpi-val" id="k-q1q2">—</div>
+        <div class="kpi-sub">de artículos con cuartil</div>
+      </div>
     </div>
-    <div class="kpi-card">
-      <span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><circle cx='8' cy='5' r='3.5'/><path d='M1.5 15.5c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5z'/></svg></span>
-      <div class="kpi-lbl">Docentes activos</div>
-      <div class="kpi-val" id="k-auth">—</div>
-      <div class="kpi-sub">con publicaciones</div>
+<div class="kpi-card">
+      <div class="kpi-stripe"><span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><circle cx='8' cy='5' r='3.5'/><path d='M1.5 15.5c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5z'/></svg></span><span class="kpi-stripe-lbl">Docentes</span></div>
+      <div class="kpi-body">
+        <div class="kpi-val" id="k-auth">—</div>
+        <div class="kpi-sub">con publicaciones</div>
+      </div>
     </div>
-    <div class="kpi-card">
-      <span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M8 1 1 7h2v8h4v-4h2v4h4V7h2L8 1z'/></svg></span>
-      <div class="kpi-lbl">Escuelas</div>
-      <div class="kpi-val" id="k-sch">—</div>
-      <div class="kpi-sub">con producción</div>
+<div class="kpi-card">
+      <div class="kpi-stripe"><span class="kpi-icon"><svg width='22' height='22' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M8 1 1 7h2v8h4v-4h2v4h4V7h2L8 1z'/></svg></span><span class="kpi-stripe-lbl">Escuelas</span></div>
+      <div class="kpi-body">
+        <div class="kpi-val" id="k-sch">—</div>
+        <div class="kpi-sub">con producción</div>
+      </div>
     </div>
   </div>
 </div>
@@ -1088,15 +1205,15 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 <!-- NAV -->
 <nav class="nav-bar" id="navBar">
   <div class="nav-inner">
-    <a class="nav-link active" href="#sec-prod"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='1' y='11' width='3' height='4' rx='0.5'/><rect x='6.5' y='7' width='3' height='8' rx='0.5'/><rect x='12' y='3' width='3' height='12' rx='0.5'/></svg> Producción</a>
-    <a class="nav-link" href="#sec-calidad" id="nav-calidad"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M8 1 15 4v5c0 4-3.1 6.4-7 7-3.9-.6-7-3-7-7V4z'/></svg> Calidad</a>
-    <a class="nav-link" href="#sec-escuelas"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M8 1 1 7h2v8h4v-4h2v4h4V7h2L8 1z'/></svg> Escuelas</a>
-    <a class="nav-link" href="#sec-autores"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><circle cx='8' cy='5' r='3.5'/><path d='M1.5 15.5c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5z'/></svg> Autores</a>
-    <a class="nav-link" href="#sec-colab"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><circle cx='5' cy='5.5' r='2.5'/><circle cx='11' cy='5.5' r='2.5'/><path d='M0 14c0-2.8 2.2-5 5-5a5.1 5.1 0 0 1 2.7.8A5.1 5.1 0 0 1 11 9c2.8 0 5 2.2 5 5H0z'/></svg> Colaboración</a>
-    <a class="nav-link" href="#sec-areas"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='1' y='1' width='6' height='6' rx='1'/><rect x='9' y='1' width='6' height='6' rx='1'/><rect x='1' y='9' width='6' height='6' rx='1'/><rect x='9' y='9' width='6' height='6' rx='1'/></svg> Áreas</a>
-    <a class="nav-link" href="#sec-impact"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M9 1 3 9h5l-1 6 7-9H9z'/></svg> Impacto</a>
-    <a class="nav-link" href="#sec-tabla"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='1' y='2' width='14' height='2' rx='1'/><rect x='1' y='7' width='14' height='2' rx='1'/><rect x='1' y='12' width='10' height='2' rx='1'/></svg> Tabla Autores</a>
-    <a class="nav-link" href="#sec-metodo"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='2' y='1' width='12' height='14' rx='1'/><rect x='4' y='5' width='8' height='1.5' rx='0.5' fill='white'/><rect x='4' y='8' width='8' height='1.5' rx='0.5' fill='white'/><rect x='4' y='11' width='5' height='1.5' rx='0.5' fill='white'/></svg> Metodología</a>
+    <a class="nav-link active" href="#sec-prod" style="--nav-clr:#33658A"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='1' y='11' width='3' height='4' rx='0.5'/><rect x='6.5' y='7' width='3' height='8' rx='0.5'/><rect x='12' y='3' width='3' height='12' rx='0.5'/></svg> Producción</a>
+    <a class="nav-link" href="#sec-calidad" style="--nav-clr:#2F4858" id="nav-calidad"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M8 1 15 4v5c0 4-3.1 6.4-7 7-3.9-.6-7-3-7-7V4z'/></svg> Calidad</a>
+    <a class="nav-link" href="#sec-escuelas" style="--nav-clr:#F26419"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M8 1 1 7h2v8h4v-4h2v4h4V7h2L8 1z'/></svg> Escuelas</a>
+    <a class="nav-link" href="#sec-autores" style="--nav-clr:#33658A"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><circle cx='8' cy='5' r='3.5'/><path d='M1.5 15.5c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5z'/></svg> Autores</a>
+    <a class="nav-link" href="#sec-colab" style="--nav-clr:#2F4858"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><circle cx='5' cy='5.5' r='2.5'/><circle cx='11' cy='5.5' r='2.5'/><path d='M0 14c0-2.8 2.2-5 5-5a5.1 5.1 0 0 1 2.7.8A5.1 5.1 0 0 1 11 9c2.8 0 5 2.2 5 5H0z'/></svg> Colaboración</a>
+    <a class="nav-link" href="#sec-areas" style="--nav-clr:#F6AE2D"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='1' y='1' width='6' height='6' rx='1'/><rect x='9' y='1' width='6' height='6' rx='1'/><rect x='1' y='9' width='6' height='6' rx='1'/><rect x='9' y='9' width='6' height='6' rx='1'/></svg> Áreas</a>
+    <a class="nav-link" href="#sec-impact" style="--nav-clr:#F26419"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><path d='M9 1 3 9h5l-1 6 7-9H9z'/></svg> Impacto</a>
+    <a class="nav-link" href="#sec-tabla" style="--nav-clr:#2F4858"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='1' y='2' width='14' height='2' rx='1'/><rect x='1' y='7' width='14' height='2' rx='1'/><rect x='1' y='12' width='10' height='2' rx='1'/></svg> Tabla Autores</a>
+    <a class="nav-link" href="#sec-metodo" style="--nav-clr:#86BBD8"><svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'><rect x='2' y='1' width='12' height='14' rx='1'/><rect x='4' y='5' width='8' height='1.5' rx='0.5' fill='white'/><rect x='4' y='8' width='8' height='1.5' rx='0.5' fill='white'/><rect x='4' y='11' width='5' height='1.5' rx='0.5' fill='white'/></svg> Metodología</a>
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Cambiar tema">
       <span class="theme-track"><span class="theme-thumb"></span></span>
       <span id="themeLbl">🌙 Oscuro</span>
@@ -1109,7 +1226,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 <!-- ══════════════════════════════════════════════════════════════ -->
 <section class="section" id="sec-prod">
   <div class="section-hd">
-    <div class="section-eye">Sección 1</div>
+    <div class="section-eye" style="--sec-clr:#33658A">Producción científica</div>
     <h2 class="section-title">Producción General</h2>
     <p class="section-sub">
       Seguimiento de la producción científica de los docentes de planta registrados en Scopus,
@@ -1156,7 +1273,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 <!-- ══════════════════════════════════════════════════════════════ -->
 <section class="section" id="sec-calidad">
   <div class="section-hd">
-    <div class="section-eye">Sección 2</div>
+    <div class="section-eye" style="--sec-clr:#2F4858">Calidad de revistas</div>
     <h2 class="section-title">Calidad de Publicaciones — <span id="src-lbl-quality">Scimago JR</span></h2>
     <p class="section-sub" id="src-desc-quality">
       El clasificador activo asigna cuartiles Q1–Q4 a las revistas según su impacto relativo
@@ -1216,11 +1333,13 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 </section>
 
 <!-- ══════════════════════════════════════════════════════════════ -->
+
+<div class="sec-divider" aria-hidden="true"><div class="sec-divider-gems"><span></span><span></span><span></span></div></div>
 <!-- SECCIÓN 3: ESCUELAS                                           -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 <section class="section" id="sec-escuelas">
   <div class="section-hd">
-    <div class="section-eye">Sección 3</div>
+    <div class="section-eye" style="--sec-clr:#F26419">Escuelas y facultades</div>
     <h2 class="section-title">Producción por Escuela</h2>
     <p class="section-sub">
       Comparativo de la producción científica entre las Escuelas de la universidad,
@@ -1243,11 +1362,13 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 </section>
 
 <!-- ══════════════════════════════════════════════════════════════ -->
+
+<div class="sec-divider" aria-hidden="true"><div class="sec-divider-gems"><span></span><span></span><span></span></div></div>
 <!-- SECCIÓN 4: AUTORES                                            -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 <section class="section" id="sec-autores">
   <div class="section-hd">
-    <div class="section-eye">Sección 4</div>
+    <div class="section-eye" style="--sec-clr:#33658A">Docentes investigadores</div>
     <h2 class="section-title">Top Autores</h2>
     <p class="section-sub">
       Identificación de los __TOP_AUTHORS__ docentes con mayor volumen de publicaciones,
@@ -1282,11 +1403,13 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 </section>
 
 <!-- ══════════════════════════════════════════════════════════════ -->
+
+<div class="sec-divider" aria-hidden="true"><div class="sec-divider-gems"><span></span><span></span><span></span></div></div>
 <!-- SECCIÓN 5: COLABORACIÓN                                       -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 <section class="section" id="sec-colab">
   <div class="section-hd">
-    <div class="section-eye">Sección 5</div>
+    <div class="section-eye" style="--sec-clr:#2F4858">Redes de colaboración</div>
     <h2 class="section-title">Redes de Colaboración</h2>
     <p class="section-sub">
       Mapeo de las alianzas de coautoría más frecuentes entre docentes de planta,
@@ -1310,11 +1433,13 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 </section>
 
 <!-- ══════════════════════════════════════════════════════════════ -->
+
+<div class="sec-divider" aria-hidden="true"><div class="sec-divider-gems"><span></span><span></span><span></span></div></div>
 <!-- SECCIÓN 6: ÁREAS SCIMAGO                                      -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 <section class="section" id="sec-areas">
   <div class="section-hd">
-    <div class="section-eye">Sección 6</div>
+    <div class="section-eye" style="--sec-clr:#F6AE2D">Áreas temáticas</div>
     <h2 class="section-title">Áreas Temáticas — <span id="src-lbl-areas">Scimago JR</span></h2>
     <p class="section-sub" id="src-desc-areas">
       Distribución de los artículos por área temática según el clasificador activo.
@@ -1375,11 +1500,13 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 <!-- SECCIÓN 7: TABLA PIVOT AUTORES                                -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- ══════════════════════════════════════════════════════════════ -->
+
+<div class="sec-divider" aria-hidden="true"><div class="sec-divider-gems"><span></span><span></span><span></span></div></div>
 <!-- SECCIÓN 7: IMPACTO Y VISIBILIDAD                              -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 <section class="section" id="sec-impact">
   <div class="section-hd">
-    <div class="section-eye">Sección 7</div>
+    <div class="section-eye" style="--sec-clr:#F26419">Impacto y citas</div>
     <h2 class="section-title">Impacto y Visibilidad</h2>
     <p class="section-sub">
       Análisis de citas recibidas por los artículos UTB según Scopus. Las citas son acumuladas
@@ -1424,11 +1551,13 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 </section>
 
 <!-- ══════════════════════════════════════════════════════════════ -->
+
+<div class="sec-divider" aria-hidden="true"><div class="sec-divider-gems"><span></span><span></span><span></span></div></div>
 <!-- SECCIÓN 8: TABLA PIVOT AUTORES                                -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 <section class="section" id="sec-tabla">
   <div class="section-hd">
-    <div class="section-eye">Sección 8</div>
+    <div class="section-eye" style="--sec-clr:#2F4858">Datos detallados</div>
     <h2 class="section-title">Tabla Pivot — Artículos por Autor y Cuartil</h2>
     <p class="section-sub">
       Vista de desempeño individual por autor: muestra cuántos artículos publicó cada docente
@@ -1466,7 +1595,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 <!-- ══════════════════════════════════════════════════════════════ -->
 <section class="section" id="sec-metodo">
   <div class="section-hd">
-    <div class="section-eye">Sección 9</div>
+    <div class="section-eye" style="--sec-clr:#86BBD8;color:#2F4858!important">Metodología</div>
     <h2 class="section-title">Metodología y Notas</h2>
   </div>
 
@@ -2138,23 +2267,29 @@ function renderImpactKpis(){
   const wrap = document.getElementById('impact-kpis');
   if(!wrap) return;
   const fmt = n => n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n);
-  const title = (ik.top_paper_title||'—').slice(0,60) + (ik.top_paper_title && ik.top_paper_title.length>60?'…':'');
-  wrap.innerHTML = `
-    <div style="flex:1;min-width:140px;background:#F0FDF9;border:1px solid #A7F3D0;border-radius:10px;padding:14px 18px;">
-      <div style="font-size:11px;color:#065F46;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Total citas</div>
-      <div style="font-size:28px;font-weight:800;color:#2F4858;line-height:1.1;">${fmt(ik.total_citations||0)}</div>
-      <div style="font-size:11px;color:#6B7280;">${ik.n_papers||0} artículos · ${year}</div>
-    </div>
-    <div style="flex:1;min-width:140px;background:#E8F3FA;border:1px solid #BFDBFE;border-radius:10px;padding:14px 18px;">
-      <div style="font-size:11px;color:#2F4858;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Promedio / artículo</div>
-      <div style="font-size:28px;font-weight:800;color:#33658A;line-height:1.1;">${ik.avg_citations||0}</div>
-      <div style="font-size:11px;color:#6B7280;">citas por paper</div>
-    </div>
-    <div style="flex:2;min-width:220px;background:#FEFCE8;border:1px solid #FDE68A;border-radius:10px;padding:14px 18px;">
-      <div style="font-size:11px;color:#78350F;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Artículo más citado</div>
-      <div style="font-size:16px;font-weight:700;color:#1E293B;line-height:1.3;margin:4px 0 2px;">${title}</div>
-      <div style="font-size:12px;color:#F6AE2D;font-weight:700;">${ik.top_paper_cited||0} citas</div>
-    </div>`;
+  const title = (ik.top_paper_title||'—').slice(0,72) + (ik.top_paper_title && ik.top_paper_title.length>72?'…':'');
+  const IK_CARD_S = (clr,hdr,val,sub) =>
+    `<div class="ik-card" style="flex:1;min-width:150px;border-radius:12px;overflow:hidden;`+
+    `box-shadow:0 4px 24px rgba(15,23,42,.09);border:1px solid #E8EDF2;">`+
+    `<div style="background:${clr};color:#fff;padding:10px 16px;font-size:9px;font-weight:700;`+
+    `text-transform:uppercase;letter-spacing:1.1px;">${hdr}</div>`+
+    `<div class="ik-body">`+
+    `<div class="ik-val">${val}</div>`+
+    `<div class="ik-sub">${sub}</div>`+
+    `</div></div>`;
+  const IK_CARD_L = (clr,hdr,val,sub) =>
+    `<div class="ik-card" style="flex:2;min-width:240px;border-radius:12px;overflow:hidden;`+
+    `box-shadow:0 4px 24px rgba(15,23,42,.09);border:1px solid #E8EDF2;">`+
+    `<div style="background:${clr};color:#fff;padding:10px 16px;font-size:9px;font-weight:700;`+
+    `text-transform:uppercase;letter-spacing:1.1px;">${hdr}</div>`+
+    `<div class="ik-body">`+
+    `<div class="ik-val" style="font-size:17px;margin-bottom:8px;">${val}</div>`+
+    `<div class="ik-cite" style="color:${clr};">${sub} citas</div>`+
+    `</div></div>`;
+  wrap.innerHTML =
+    IK_CARD_S('#2F4858','Total de citas recibidas',fmt(ik.total_citations||0),`${ik.n_papers||0} artículos · ${year}`) +
+    IK_CARD_S('#33658A','Promedio por artículo',ik.avg_citations||0,'citas por paper indexado') +
+    IK_CARD_L('#F26419','Artículo más citado',title,ik.top_paper_cited||0);
 }
 
 function drawTopPapers(){
