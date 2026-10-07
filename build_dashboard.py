@@ -740,6 +740,58 @@ payload["cs_papers_by_area"]   = papers_by_area_cs
 print(f"  CiteScore index: {len(papers_by_author_cs)} authors, {len(papers_by_area_cs)} areas")
 print("Data payload ready.")
 
+# ─── RAW PAPERS PAYLOAD FOR INDEX2 ───────────────────────────────────────────
+print("Building raw papers payload for index2...")
+_eid_schools = (author_papers.groupby("EID")["ESCUELA"]
+                .apply(lambda x: list(x.unique())).to_dict())
+_dedup_ap = author_papers.drop_duplicates("EID")
+papers_meta = {}
+for _, _r2 in _dedup_ap.iterrows():
+    _eid = _r2["EID"]
+    papers_meta[str(_eid)] = {
+        "year":    int(_r2["Year"]),
+        "type":    str(_r2["doc_type3"]),
+        "q":       str(_r2["quartile"]),
+        "qcs":     str(_r2["quartile_cs"]),
+        "cited":   int(eid_cited_by.get(_eid, 0)),
+        "title":   str(eid_title_full.get(_eid, ""))[:200],
+        "source":  str(eid_source_title.get(_eid, "")),
+        "authors": list(eid_utb_authors_impact.get(_eid, [])),
+        "schools": list(_eid_schools.get(_eid, [])),
+        "areas":   list(eid_to_areas.get(_eid, ["Sin clasificar"])),
+        "areas_cs":list(eid_to_areas_cs.get(_eid, ["Sin clasificar"])),
+    }
+
+# Professor list (only those with ≥1 paper in the period)
+_prof_paper_counts = (author_papers.drop_duplicates(["EID","author_id"])
+                      .groupby("author_id")["EID"].nunique().to_dict())
+prof_list2 = []
+for _, _frow in faculty_valid.iterrows():
+    _aid = _frow["author_id"]
+    _n   = int(_prof_paper_counts.get(_aid, 0))
+    if _n > 0:
+        prof_list2.append({"id": _aid, "name": _frow["DOCENTE"],
+                           "school": _frow["ESCUELA"], "n": _n})
+prof_list2.sort(key=lambda x: (-x["n"], x["name"]))
+
+# Professor → EID mapping
+_prof_eids = {}
+for _, _r3 in author_papers[["EID","author_id"]].drop_duplicates().iterrows():
+    _aid = _r3["author_id"]
+    if _aid not in _prof_eids: _prof_eids[_aid] = []
+    _prof_eids[_aid].append(str(_r3["EID"]))
+
+payload2 = {
+    "start_year": START_YEAR,
+    "actu":       str(actu),
+    "years":      [str(y) for y in years_list],
+    "professors": prof_list2,
+    "prof_papers": _prof_eids,
+    "papers":     papers_meta,
+}
+DATA_JSON2 = json.dumps(payload2, ensure_ascii=False, separators=(",",":"))
+print(f"  index2 payload: {len(papers_meta)} papers, {len(prof_list2)} professors")
+
 # ─── HTML TEMPLATE ────────────────────────────────────────────────────────────
 DATA_JSON = json.dumps(payload, ensure_ascii=False, separators=(",",":"))
 
@@ -2585,9 +2637,563 @@ document.addEventListener('DOMContentLoaded',()=>{
 <button class="back-top" id="backTop" title="Volver al inicio"
   onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8679;</button>
 
+<!-- Discreet link to filtered view -->
+<a href="index2.html" title="Vista filtrada por docente"
+   style="position:fixed;bottom:14px;left:18px;z-index:999;opacity:0.28;
+   display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;
+   color:#2F4858;text-decoration:none;transition:opacity .2s"
+   onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='.28'">
+  <svg width='13' height='13' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'>
+    <circle cx='8' cy='8' r='7' fill='none' stroke='currentColor' stroke-width='1.5'/>
+    <circle cx='5' cy='8' r='1.5'/><circle cx='11' cy='8' r='1.5'/><circle cx='8' cy='5' r='1.5'/>
+  </svg>
+  Vista filtrada
+</a>
+
 </body>
 </html>
 """
+
+# ─── HTML2 = index.html + professor filter injected ──────────────────────────
+# CSS injected before </style>
+PROF_FILTER_CSS = r"""
+/* ── PROFESSOR FILTER (index2 only) ────────────────────────────────────────── */
+.pf-bar{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 28px;background:#1C3448;
+  border-bottom:2px solid #F6AE2D;
+  position:sticky;top:0;z-index:200;flex-wrap:wrap}
+.pf-bar-title{font-size:12px;font-weight:700;color:#F6AE2D;
+  letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+.pf-toggle-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  background:#F6AE2D;color:#1A2A35;border:none;
+  border-radius:6px;padding:6px 14px;cursor:pointer;
+  font-size:12px;font-weight:700;letter-spacing:.3px;white-space:nowrap}
+.pf-toggle-btn:hover{background:#e8a020}
+.pf-chip-count{
+  display:inline-flex;align-items:center;
+  background:rgba(246,174,45,.18);color:#F6AE2D;
+  border:1px solid rgba(246,174,45,.4);
+  border-radius:12px;padding:3px 10px;
+  font-size:12px;font-weight:600;white-space:nowrap}
+#pfInfo{font-size:11.5px;color:#86BBD8;margin-left:auto}
+.pf-panel{
+  max-height:0;overflow:hidden;
+  transition:max-height .35s ease,padding .35s ease;
+  background:#16293A;border-bottom:2px solid #2F4858}
+.pf-panel.open{max-height:58vh;overflow-y:auto;padding:16px 28px 20px}
+.pf-panel-top{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:14px;flex-wrap:wrap}
+.pf-search{
+  flex:1;min-width:180px;max-width:300px;
+  padding:6px 12px;border-radius:6px;
+  border:1px solid #2F4858;background:#1C3448;
+  color:#fff;font-size:12px}
+.pf-search::placeholder{color:#5a7a8a}
+.pf-search:focus{outline:none;border-color:#F6AE2D}
+.pf-act-btn{
+  padding:5px 12px;border-radius:5px;cursor:pointer;
+  font-size:12px;font-weight:600;border:none}
+.pf-act-btn.sel-all{background:#2F4858;color:#86BBD8}
+.pf-act-btn.clr-all{background:#2F4858;color:#F26419}
+.pf-act-btn:hover{opacity:.85}
+.pf-grp{margin-bottom:12px}
+.pf-grp-lbl{
+  font-size:10.5px;font-weight:700;color:#86BBD8;
+  letter-spacing:.6px;text-transform:uppercase;
+  margin-bottom:6px;padding-left:2px}
+.pf-row{display:flex;flex-wrap:wrap;gap:5px}
+.pf-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:14px;cursor:pointer;
+  background:#1C3448;color:#9EB8CA;
+  border:1px solid #2F4858;font-size:11.5px;
+  user-select:none;transition:background .12s,border-color .12s}
+.pf-chip input{width:12px;height:12px;cursor:pointer;accent-color:#F6AE2D;pointer-events:none}
+.pf-chip .pf-n{color:#5a7a8a;font-size:10.5px;font-weight:600;margin-left:2px}
+.pf-chip.sel{background:#1F3D2A;color:#6ECFA0;border-color:#3A7A56}
+.pf-chip:hover{border-color:#F6AE2D;color:#fff}
+
+/* index2: hide school-related and collaboration elements */
+#sec-escuelas,
+#sec-colab,
+a[href="#sec-escuelas"],
+a[href="#sec-colab"],
+.kpi-card:has(#k-sch),
+.card:has(#c-area-heatmap),
+.card:has(#c-sch-q),
+.card:has(#c-pct-q1),
+label[for="pivotSchool"],
+#pivotSchool { display:none !important; }
+/* Fix kpi-strip negative margin (was designed to overlap hero directly) */
+.kpi-strip { margin-top:12px !important; }
+/* c-fix-2 (Escuela) is hidden so c-fix-3 (Scopus ID) slides to its position */
+.pivot-tbl .c-fix-3 { left:180px !important; }
+"""
+
+# HTML injected after </header>
+PROF_FILTER_HTML = """
+<div class="pf-bar" id="pfBar">
+  <span class="pf-bar-title">&#128300; Vista Filtrada</span>
+  <button class="pf-toggle-btn" onclick="pfTogglePanel()">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4h12v1.5L9 10v5l-2-1.5V10L2 5.5V4z"/></svg>
+    Filtrar docentes
+  </button>
+  <span class="pf-chip-count"><span id="pfChip">&#8230;</span></span>
+  <span id="pfInfo">Cargando&#8230;</span>
+</div>
+<div class="pf-panel" id="pfPanel">
+  <div class="pf-panel-top">
+    <input class="pf-search" type="text" placeholder="Buscar docente&#8230;"
+      oninput="pfFilterList(this.value)">
+    <button class="pf-act-btn sel-all" onclick="pfSelectAll()">Todos</button>
+    <button class="pf-act-btn clr-all" onclick="pfClearAll()">Ninguno</button>
+  </div>
+  <div id="pfListWrap"></div>
+</div>
+"""
+
+# JS injected before // ── INIT ──
+PROF_FILTER_JS = r"""
+// ── PROFESSOR FILTER (index2) ─────────────────────────────────────────────────
+const D2 = __DATA_JSON2__;
+
+// Preserve originals for "all selected" zero-cost restore
+const _origBY    = D.by_year;
+const _origCsBY  = D.cs_by_year;
+const _origTL    = D.timeline;
+const _origQT    = D.quartile_trend;
+const _origCsQT  = D.cs_q_trend;
+const _origPiv   = D.authors_pivot;
+const _origCsPiv = D.cs_authors_pivot;
+const _origPBA   = D.papers_by_area;
+const _origCsPBA = D.cs_papers_by_area;
+
+const PF_LS = 'utb_pf_v1';
+let pfSelected = new Set();
+let pfOpen = false;
+
+function pfLoad() {
+  try {
+    const s = localStorage.getItem(PF_LS);
+    if (s) {
+      const arr = JSON.parse(s);
+      pfSelected = new Set(arr.filter(id => D2.prof_papers[id] !== undefined));
+      return;
+    }
+  } catch(e) {}
+  pfSelected = new Set(D2.professors.map(p => p.id));
+}
+
+function pfSave() {
+  try { localStorage.setItem(PF_LS, JSON.stringify([...pfSelected])); } catch(e) {}
+}
+
+function pfTogglePanel() {
+  pfOpen = !pfOpen;
+  document.getElementById('pfPanel').classList.toggle('open', pfOpen);
+}
+
+function pfFilterList(q) {
+  const ql = q.toLowerCase().trim();
+  document.querySelectorAll('.pf-chip').forEach(c => {
+    c.style.display = (!ql || c.dataset.name.toLowerCase().includes(ql)) ? '' : 'none';
+  });
+}
+
+function pfSelectAll() {
+  pfSelected = new Set(D2.professors.map(p => p.id));
+  pfSave(); pfSyncUI(); pfApply();
+}
+
+function pfClearAll() {
+  pfSelected.clear();
+  pfSave(); pfSyncUI(); pfApply();
+}
+
+function pfToggleProf(id) {
+  pfSelected.has(id) ? pfSelected.delete(id) : pfSelected.add(id);
+  pfSave(); pfSyncUI(); pfApply();
+}
+
+function pfSyncUI() {
+  const n = pfSelected.size, tot = D2.professors.length;
+  const ch = document.getElementById('pfChip');
+  if (ch) ch.textContent = n + ' / ' + tot;
+  const nf = document.getElementById('pfInfo');
+  if (nf) nf.textContent = n === tot ? 'Todos los docentes'
+    : n === 0 ? 'Sin seleccion' : n + ' docentes seleccionados';
+  document.querySelectorAll('.pf-chip').forEach(c => {
+    const on = pfSelected.has(c.dataset.id);
+    c.classList.toggle('sel', on);
+    const cb = c.querySelector('input');
+    if (cb) cb.checked = on;
+  });
+}
+
+function pfBuildList() {
+  const wrap = document.getElementById('pfListWrap');
+  if (!wrap) return;
+  const bySchool = {};
+  D2.professors.forEach(p => {
+    if (!bySchool[p.school]) bySchool[p.school] = [];
+    bySchool[p.school].push(p);
+  });
+  let html = '';
+  Object.keys(bySchool).sort().forEach(sch => {
+    html += '<div class="pf-grp"><div class="pf-grp-lbl">' + sch + '</div><div class="pf-row">';
+    bySchool[sch].forEach(p => {
+      const sel = pfSelected.has(p.id) ? ' sel' : '';
+      const chk = pfSelected.has(p.id) ? ' checked' : '';
+      const safeName = p.name.replace(/"/g, '&quot;');
+      html += '<label class="pf-chip' + sel + '" data-id="' + p.id + '" data-name="' + safeName + '">'
+        + '<input type="checkbox" value="' + p.id + '"' + chk + ' onchange="pfToggleProf(\'' + p.id + '\')">'
+        + '<span>' + p.name + '</span>'
+        + '<span class="pf-n">' + p.n + '</span>'
+        + '</label>';
+    });
+    html += '</div></div>';
+  });
+  wrap.innerHTML = html;
+}
+
+function pfApply() {
+  if (pfSelected.size === D2.professors.length) {
+    D.by_year = _origBY;   D.cs_by_year = _origCsBY;
+    D.timeline = _origTL;  D.quartile_trend = _origQT;  D.cs_q_trend = _origCsQT;
+    D.authors_pivot = _origPiv;  D.cs_authors_pivot = _origCsPiv;
+    D.papers_by_area = _origPBA; D.cs_papers_by_area = _origCsPBA;
+  } else {
+    const r = pfRecompute(pfSelected);
+    D.by_year = r.by_year;   D.cs_by_year = r.cs_by_year;
+    D.timeline = r.timeline; D.quartile_trend = r.q_trend; D.cs_q_trend = r.cs_q_trend;
+    D.authors_pivot = r.pivot;  D.cs_authors_pivot = r.pivot_cs;
+    D.papers_by_area = r.pba;   D.cs_papers_by_area = r.pba_cs;
+  }
+  // P is a separate let binding pointing at D.authors_pivot — must re-sync after D update
+  P = (source === 'scimago') ? D.authors_pivot : D.cs_authors_pivot;
+  renderAll();
+  drawTimeline(); drawQTrend();
+  buildPivotHeader(); setupPivotFilter(); renderPivot();
+}
+
+function pfRecompute(selIds) {
+  // Map eid -> [selected author ids who authored it]
+  const eidAuthors = {};
+  selIds.forEach(id => {
+    (D2.prof_papers[id] || []).forEach(eid => {
+      if (!eidAuthors[eid]) eidAuthors[eid] = [];
+      eidAuthors[eid].push(id);
+    });
+  });
+  const allEids = Object.keys(eidAuthors);
+  const years = D2.years;
+
+  function buildSlice(eids, qf) {
+    const papers = eids.map(e => D2.papers[e]).filter(Boolean);
+    const n_docs = papers.length;
+    const withQ  = papers.filter(p => p[qf] !== 'No Q');
+    const q1     = withQ.filter(p => p[qf] === 'Q1').length;
+    const q1q2   = withQ.filter(p => p[qf] === 'Q1' || p[qf] === 'Q2').length;
+    const has_q  = withQ.length;
+
+    const doc_types = {Article:0, Conference:0, Review:0, Other:0};
+    papers.forEach(p => { doc_types[p.type] = (doc_types[p.type] || 0) + 1; });
+
+    const quartiles = {'Q1':0, 'Q2':0, 'Q3':0, 'Q4':0, 'No Q':0};
+    papers.forEach(p => { quartiles[p[qf]] = (quartiles[p[qf]] || 0) + 1; });
+
+    const authsHere = new Set();
+    eids.forEach(eid => { (eidAuthors[eid] || []).forEach(id => authsHere.add(id)); });
+
+    // Schools breakdown
+    const schMap = {};
+    papers.forEach(p => {
+      (p.schools || []).forEach(sch => {
+        if (!schMap[sch]) schMap[sch] = {name:sch,total:0,Article:0,Conference:0,Review:0,Other:0,'Q1':0,'Q2':0,'Q3':0,'Q4':0,'No Q':0};
+        schMap[sch].total++;  schMap[sch][p.type]++;  schMap[sch][p[qf]]++;
+      });
+    });
+    const schools = Object.values(schMap).sort((a,b)=>b.total-a.total).map(s=>{
+      const sq = s.Q1+s.Q2+s.Q3+s.Q4;
+      return {...s, pct_q1: sq>0 ? parseFloat((s.Q1/sq*100).toFixed(1)) : 0};
+    });
+
+    // Authors breakdown
+    const authRows = [];
+    selIds.forEach(id => {
+      const prof = D2.professors.find(p=>p.id===id);
+      if (!prof) return;
+      const ap = eids.filter(e=>(eidAuthors[e]||[]).includes(id)).map(e=>D2.papers[e]).filter(Boolean);
+      if (!ap.length) return;
+      const at={Article:0,Conference:0,Review:0,Other:0};
+      const aq={'Q1':0,'Q2':0,'Q3':0,'Q4':0,'No Q':0};
+      ap.forEach(p=>{at[p.type]++; aq[p[qf]]++;});
+      const asq=aq.Q1+aq.Q2+aq.Q3+aq.Q4;
+      authRows.push({name:prof.name,school:prof.school,scopus_id:id,total:ap.length,
+        ...at,...aq,pct_q1:asq>0?parseFloat((aq.Q1/asq*100).toFixed(1)):0});
+    });
+    authRows.sort((a,b)=>b.total-a.total);
+
+    // Collaboration pairs
+    const pairCounts = {};
+    eids.forEach(eid=>{
+      const au = eidAuthors[eid]||[];
+      for (let i=0;i<au.length;i++) for (let j=i+1;j<au.length;j++){
+        const key=[au[i],au[j]].sort().join('|');
+        if(!pairCounts[key]) pairCounts[key]={a:au[i],b:au[j],n:0};
+        pairCounts[key].n++;
+      }
+    });
+    const pairs = Object.values(pairCounts).sort((a,b)=>b.n-a.n).slice(0,25).map(p=>{
+      const pa=D2.professors.find(x=>x.id===p.a)||{name:p.a,school:''};
+      const pb=D2.professors.find(x=>x.id===p.b)||{name:p.b,school:''};
+      return {pair:pa.name+' — '+pb.name,
+              a:pa.name,school_a:pa.school,b:pb.name,school_b:pb.school,n:p.n};
+    });
+
+    // Subject areas — full Q breakdown matching original data structure
+    const af = qf==='q'?'areas':'areas_cs';
+    const areaCts = {};
+    papers.forEach(p=>{ (p[af]||[]).forEach(a=>{ areaCts[a]=(areaCts[a]||0)+1; }); });
+    const areas = Object.entries(areaCts).sort((a,b)=>b[1]-a[1]).slice(0,15).map(([name, total])=>{
+      const aPs = papers.filter(p=>(p[af]||[]).includes(name));
+      const q1=aPs.filter(p=>p[qf]==='Q1').length;
+      const q2=aPs.filter(p=>p[qf]==='Q2').length;
+      const q3=aPs.filter(p=>p[qf]==='Q3').length;
+      const q4=aPs.filter(p=>p[qf]==='Q4').length;
+      const noq=aPs.filter(p=>p[qf]==='No Q').length;
+      const withQ=q1+q2+q3+q4;
+      return {name, total, Q1:q1, Q2:q2, Q3:q3, Q4:q4, 'No Q':noq,
+              pct_q1: withQ>0?parseFloat((q1/withQ*100).toFixed(1)):0};
+    });
+
+    // areas_by_school — articles only (matches Python logic)
+    const artPapers = papers.filter(p=>p.type==='Article');
+    const topAreas10 = areas.slice(0,10).map(a=>a.area);
+    const absSchs = [...new Set(papers.flatMap(p=>p.schools||[]))].sort();
+    const absData = {};
+    absSchs.forEach(sch=>{
+      const sp = artPapers.filter(p=>(p.schools||[]).includes(sch));
+      const st = Math.max(sp.length,1);
+      absData[sch]={total:st,areas:{}};
+      topAreas10.forEach(a=>{
+        absData[sch].areas[a]=parseFloat((sp.filter(p=>(p[af]||[]).includes(a)).length/st*100).toFixed(1));
+      });
+    });
+
+    // Top papers by citations
+    const top_papers = [...papers].sort((a,b)=>(b.cited||0)-(a.cited||0)).slice(0,15).map(p=>({
+      title:(p.title||'').slice(0,140),source:p.source||'',year:p.year,
+      quartile:p[qf],sjr:0,cited_by:p.cited||0,
+      authors_utb:(p.authors||[]).join(', '),
+    }));
+
+    // Top journals
+    const jMap = {};
+    papers.forEach(p=>{
+      const s = p.source||'Sin fuente';
+      if(!jMap[s]) jMap[s]={name:s.slice(0,65),total:0,cited_by:0,'Q1':0,'Q2':0,'Q3':0,'Q4':0,'No Q':0};
+      jMap[s].total++;  jMap[s].cited_by+=(p.cited||0);  jMap[s][p[qf]]++;
+    });
+    const top_journals = Object.values(jMap).sort((a,b)=>b.total-a.total).slice(0,15);
+
+    // Citations by quartile
+    const citations_by_q = {'Q1':0,'Q2':0,'Q3':0,'Q4':0,'No Q':0,total:0};
+    papers.forEach(p=>{ citations_by_q[p[qf]]+=(p.cited||0);  citations_by_q.total+=(p.cited||0); });
+
+    // Impact KPIs
+    const topP = top_papers[0]||{};
+    const impact_kpis = {
+      total_citations:citations_by_q.total,
+      avg_citations:n_docs>0?parseFloat((citations_by_q.total/n_docs).toFixed(2)):0,
+      n_papers:n_docs,
+      top_paper_title:topP.title||'',
+      top_paper_cited:topP.cited_by||0,
+    };
+
+    return {
+      kpis:{n_docs,n_articles:doc_types.Article,n_authors:authsHere.size,
+            n_schools:schools.length,q1,q1q2,has_q,avg_sjr:0,
+            pct_q1:has_q>0?parseFloat((q1/has_q*100).toFixed(1)):0,
+            pct_q1q2:has_q>0?parseFloat((q1q2/has_q*100).toFixed(1)):0},
+      doc_types,quartiles,schools,authors:authRows,pairs,areas,
+      areas_by_school:{top_areas:topAreas10,schools:absSchs,data:absData},
+      top_papers,top_journals,citations_by_q,impact_kpis,
+    };
+  }
+
+  function fe(yr) {
+    return yr==='ALL' ? allEids
+      : allEids.filter(e=>D2.papers[e]&&D2.papers[e].year===parseInt(yr));
+  }
+
+  const by_year={}, cs_by_year={};
+  ['ALL',...years].forEach(yr=>{
+    by_year[yr]    = buildSlice(fe(yr),'q');
+    cs_by_year[yr] = buildSlice(fe(yr),'qcs');
+  });
+
+  const timeline = years.map(y=>{
+    const ps=fe(y).map(e=>D2.papers[e]).filter(Boolean);
+    const r={year:y,total:ps.length,Article:0,Conference:0,Review:0,Other:0};
+    ps.forEach(p=>r[p.type]++);  return r;
+  });
+
+  const q_trend = years.map(y=>{
+    const ps=fe(y).map(e=>D2.papers[e]).filter(Boolean);
+    const r={year:y,total:0,'Q1':0,'Q2':0,'Q3':0,'Q4':0,'No Q':0};
+    ps.forEach(p=>{ r[p.q]++;  if(p.q!=='No Q') r.total++; });  return r;
+  });
+
+  const cs_q_trend = years.map(y=>{
+    const ps=fe(y).map(e=>D2.papers[e]).filter(Boolean);
+    const r={year:y,total:0,'Q1':0,'Q2':0,'Q3':0,'Q4':0,'No Q':0};
+    ps.forEach(p=>{ r[p.qcs]++;  if(p.qcs!=='No Q') r.total++; });  return r;
+  });
+
+  function buildPiv(qf) {
+    const rows=[];
+    selIds.forEach(id=>{
+      const prof=D2.professors.find(p=>p.id===id);  if(!prof) return;
+      // Store year data as direct row[y] keys — matches original D.authors_pivot structure
+      const row={name:prof.name,school:prof.school,scopus_id:id,grand_arts:0};
+      let anyPaper=false;
+      years.forEach(y=>{
+        const eids=(D2.prof_papers[id]||[]).filter(e=>D2.papers[e]&&D2.papers[e].year===parseInt(y));
+        const qs={'Q1':0,'Q2':0,'Q3':0,'Q4':0,SC:0};
+        let arts=0;
+        eids.forEach(e=>{
+          const p=D2.papers[e];  if(!p) return;
+          if(p[qf]!=='No Q') qs[p[qf]]++;
+          else if(p.type==='Article') qs.SC++;
+          if(p.type==='Article') arts++;
+        });
+        row[y]={...qs,total_arts:arts,total_docs:eids.length};
+        row.grand_arts+=arts;
+        if(eids.length>0) anyPaper=true;
+      });
+      if(anyPaper) rows.push(row);
+    });
+    rows.sort((a,b)=>b.grand_arts-a.grand_arts);
+    return {years:years.map(String),rows};
+  }
+
+  // Build papers_by_area lookup (powers area chart tooltip via SPR())
+  function buildPBA(qf, af) {
+    const pba = {};
+    const Q_PRI = {Q1:0, Q2:1, Q3:2, Q4:3, 'No Q':4};
+    allEids.forEach(eid => {
+      const p = D2.papers[eid];
+      if (!p) return;
+      const pr = {t:(p.title||'').slice(0,120), j:p.source||'', y:p.year, q:p[qf]};
+      (p[af]||[]).forEach(area => {
+        if (!pba[area]) pba[area] = {ALL:[]};
+        pba[area].ALL.push(pr);
+        const yk = String(p.year);
+        if (!pba[area][yk]) pba[area][yk] = [];
+        pba[area][yk].push(pr);
+      });
+    });
+    const sortCap = arr => arr.sort((a,b)=>(Q_PRI[a.q]||4)-(Q_PRI[b.q]||4)).slice(0,20);
+    Object.values(pba).forEach(slot => {
+      Object.keys(slot).forEach(k => { slot[k] = sortCap(slot[k]); });
+    });
+    return pba;
+  }
+
+  return {by_year,cs_by_year,timeline,q_trend,cs_q_trend,
+          pivot:buildPiv('q'),pivot_cs:buildPiv('qcs'),
+          pba:buildPBA('q','areas'),pba_cs:buildPBA('qcs','areas_cs')};
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  pfLoad();
+  pfBuildList();
+  pfSyncUI();
+  if (pfSelected.size !== D2.professors.length) pfApply();
+});
+
+// ── index2: override pivot to flat list (no school grouping / column) ────────
+// Use var assignments so runtime execution overrides the hoisted originals below
+var buildPivotHeader = function(){
+  const head = document.getElementById('pivotHead');
+  if(!head) return;
+  let r1 = '<tr>';
+  r1 += '<th class="c-fix-1" rowspan="2">Docente</th>';
+  r1 += '<th class="c-fix-3" rowspan="2">Scopus ID</th>';
+  P.years.forEach((y,i)=>{
+    r1 += '<th colspan="7" style="text-align:center;background:#F0F4F9;'+(i>0?'border-left:2px solid #E2E8F0':'')+'">' + y + '</th>';
+  });
+  r1 += '<th colspan="2" style="background:#E8F3FA;border-left:2px solid #C7D2FE">Total</th></tr>';
+  let r2 = '<tr>';
+  P.years.forEach((y,i)=>{
+    const bl = i>0?'border-left:2px solid #E2E8F0':'';
+    Q_COLS.forEach((q,qi)=>{
+      const bl2 = (qi===0&&i>0)?'style="'+bl+'"':'';
+      r2 += '<th '+bl2+'>'+q+'</th>';
+    });
+    r2 += '<th>Arts</th><th>Docs</th>';
+  });
+  r2 += '<th style="background:#E8F3FA;border-left:2px solid #C7D2FE">Arts</th>';
+  r2 += '<th style="background:#E8F3FA">Docs</th></tr>';
+  head.innerHTML = r1 + r2;
+}
+
+var renderPivot = function(){
+  const body = document.getElementById('pivotBody');
+  if(!body) return;
+  let html = '', count = 0;
+  P.rows.forEach(r=>{
+    let gArts=0, gDocs=0, cells='';
+    P.years.forEach((y,yi)=>{
+      const yd=r[y]||{};
+      const bl=yi>0?'border-left:2px solid #E2E8F0':'';
+      Q_COLS.forEach((q,qi)=>{
+        const v=yd[q]||0;
+        const bl2=(qi===0&&yi>0)?'style="'+bl+'"':'';
+        cells+='<td class="'+(v===0?'zerv':Q_CSS[q])+'" '+bl2+'>'+(v===0?'&#8212;':v)+'</td>';
+      });
+      const arts=yd.total_arts||0, docs=yd.total_docs||0;
+      cells+='<td class="'+(arts===0?'zerv':'tot-art')+'">'+(arts===0?'&#8212;':arts)+'</td>';
+      cells+='<td class="'+(docs===0?'zerv':'tot-doc')+'">'+(docs===0?'&#8212;':docs)+'</td>';
+      gArts+=arts; gDocs+=docs;
+    });
+    html+='<tr>'
+      +'<td class="c-fix-1" title="'+r.name+'">'+r.name+'</td>'
+      +'<td class="c-fix-3" style="font-family:monospace;font-size:11px">'+r.scopus_id+'</td>'
+      +cells
+      +'<td class="'+(gArts===0?'zerv':'tot-art')+'" style="background:#F5F3FF;border-left:2px solid #C7D2FE;font-weight:700">'+(gArts===0?'&#8212;':gArts)+'</td>'
+      +'<td class="'+(gDocs===0?'zerv':'tot-doc')+'" style="background:#F5F3FF;font-weight:700">'+(gDocs===0?'&#8212;':gDocs)+'</td>'
+      +'</tr>';
+    count++;
+  });
+  body.innerHTML = html;
+  const stat=document.getElementById('pivot-stat');
+  if(stat) stat.textContent=count+' autores mostrados';
+}
+
+var setupPivotFilter = function(){ /* school filter hidden in index2 */ };
+
+// index2: disable area heatmap (school-based) — override with no-op
+var drawAreaHeatmap = function(){ /* areas-by-school heatmap hidden in index2 */ };
+var drawPctQ1     = function(){ /* school Q1% chart hidden in index2 */ };
+var drawSchoolQ   = function(){ /* school×quartile chart hidden in index2 */ };
+var drawSchoolType = function(){ /* school×type chart hidden in index2 */ };
+"""
+
+# ─── Construct HTML2 by injecting into the main HTML template ─────────────────
+HTML2 = (HTML
+    .replace('<title>UTB Scopus Dashboard</title>',
+             '<title>UTB · Vista Filtrada por Docente</title>', 1)
+    .replace('</style>', PROF_FILTER_CSS + '\n</style>', 1)
+    .replace('</header>\n\n<!-- KPI STRIP -->', PROF_FILTER_HTML + '\n<!-- KPI STRIP -->', 1)
+    .replace('const D = __DATA_JSON__;',
+             'const D = __DATA_JSON__;\n' + PROF_FILTER_JS, 1)
+)
+
 
 # ─── COMPUTE DYNAMIC HEIGHT HINTS ────────────────────────────────────────────
 n_schools = len(by_year["ALL"]["schools"])
@@ -2621,6 +3227,26 @@ print(f"\n✅  Dashboard written → {out_path}  ({size_kb} KB)")
 print(f"   Sections: Producción · Calidad(Scimago) · Escuelas · Autores · Colaboración · Áreas · Tabla · Metodología")
 print(f"   Charts: 13 gráficos Chart.js + tabla pivot interactiva")
 print(f"   Height controls: 10 bar charts con slider ⇕")
+
+# ─── INDEX2.HTML (VISTA FILTRADA) ────────────────────────────────────────────
+out2_html = (HTML2
+    .replace("__DATA_JSON__",   DATA_JSON)
+    .replace("__DATA_JSON2__",  DATA_JSON2)
+    .replace("__START_YEAR__",  str(START_YEAR))
+    .replace("__ACTU__",        str(actu))
+    .replace("__TOP_AUTHORS__", str(TOP_AUTHORS))
+    .replace("__TOP_PAIRS__",   str(TOP_PAIRS))
+    .replace("__TOP_AREAS__",   str(TOP_AREAS))
+    .replace("__SCH_H__",       str(sch_h))
+    .replace("__AUTH_H__",      str(auth_h))
+    .replace("__PAIRS_H__",     str(pairs_h))
+    .replace("__AREA_H__",      str(area_h))
+)
+out2_path = OUT_DIR / "index2.html"
+out2_path.write_text(out2_html, encoding="utf-8")
+size2_kb = out2_path.stat().st_size // 1024
+print(f"✅  Vista filtrada  → {out2_path}  ({size2_kb} KB)")
+print(f"   Profesores: {len(prof_list2)} · Papers: {len(papers_meta)}")
 
 # ─── EXCEL PIVOT ──────────────────────────────────────────────────────────────
 print("\nGenerating Excel pivot...")
