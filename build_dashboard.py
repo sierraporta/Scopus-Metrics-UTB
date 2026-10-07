@@ -2637,17 +2637,21 @@ document.addEventListener('DOMContentLoaded',()=>{
 <button class="back-top" id="backTop" title="Volver al inicio"
   onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8679;</button>
 
-<!-- Discreet link to filtered view -->
+<!-- Link to filtered view -->
 <a href="index2.html" title="Vista filtrada por docente"
-   style="position:fixed;bottom:14px;left:18px;z-index:999;opacity:0.28;
-   display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;
-   color:#2F4858;text-decoration:none;transition:opacity .2s"
-   onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='.28'">
-  <svg width='13' height='13' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'>
-    <circle cx='8' cy='8' r='7' fill='none' stroke='currentColor' stroke-width='1.5'/>
-    <circle cx='5' cy='8' r='1.5'/><circle cx='11' cy='8' r='1.5'/><circle cx='8' cy='5' r='1.5'/>
+   style="position:fixed;bottom:16px;left:16px;z-index:999;
+   display:inline-flex;align-items:center;gap:7px;
+   background:#F26419;color:#fff;
+   border-radius:8px;padding:8px 16px;text-decoration:none;
+   font-size:12px;font-weight:700;letter-spacing:.3px;
+   box-shadow:0 4px 18px rgba(242,100,25,.45);
+   transition:background .15s,box-shadow .15s"
+   onmouseover="this.style.background='#c84e0e';this.style.boxShadow='0 6px 22px rgba(242,100,25,.6)'"
+   onmouseout="this.style.background='#F26419';this.style.boxShadow='0 4px 18px rgba(242,100,25,.45)'">
+  <svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor' aria-hidden='true'>
+    <path d='M2 4h12v1.5L9 10v5l-2-1.5V10L2 5.5V4z'/>
   </svg>
-  Vista filtrada
+  Vista Filtrada
 </a>
 
 </body>
@@ -2716,6 +2720,36 @@ PROF_FILTER_CSS = r"""
 .pf-chip.sel{background:#1F3D2A;color:#6ECFA0;border-color:#3A7A56}
 .pf-chip:hover{border-color:#F6AE2D;color:#fff}
 
+/* Back button (index2 → index) */
+.pf-back-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#F26419;color:#fff;border-radius:6px;
+  padding:6px 13px;text-decoration:none;
+  font-size:11.5px;font-weight:700;letter-spacing:.3px;white-space:nowrap;
+  transition:background .15s}
+.pf-back-btn:hover{background:#c84e0e}
+
+/* Year chips strip */
+.yr-strip{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.yr-chip{
+  cursor:pointer;padding:3px 11px;border-radius:20px;
+  font-size:11px;font-weight:700;user-select:none;
+  border:1.5px solid #33658A;color:#86BBD8;background:transparent;
+  transition:background .12s,border-color .12s,color .12s;white-space:nowrap}
+.yr-chip.sel{background:#33658A;color:#fff;border-color:#33658A}
+.yr-chip.yr-all{border-color:#F6AE2D;color:#F6AE2D}
+.yr-chip.yr-all.sel{background:#F6AE2D;color:#1a2b38;border-color:#F6AE2D}
+.yr-chip:hover:not(.yr-all.sel):not(.sel){border-color:#F6AE2D;color:#F6AE2D}
+
+/* index2: strip decorative hero lines & circles */
+.hero-deco { display:none !important; }
+.hero::before { background-image:none !important; }
+.hero::after { background:none !important; }
+/* index2: hero background adapts to light mode */
+[data-theme="light"] .hero {
+  background:linear-gradient(140deg,#1C3448 0%,#2F4858 60%,#33658A 100%);
+}
+
 /* index2: hide school-related and collaboration elements */
 #sec-escuelas,
 #sec-colab,
@@ -2727,21 +2761,48 @@ a[href="#sec-colab"],
 .card:has(#c-pct-q1),
 label[for="pivotSchool"],
 #pivotSchool { display:none !important; }
+/* Hide the year dropdown — replaced by year chips */
+.year-filter-wrap:has(#yearFilter) { display:none !important; }
 /* Fix kpi-strip negative margin (was designed to overlap hero directly) */
 .kpi-strip { margin-top:12px !important; }
 /* c-fix-2 (Escuela) is hidden so c-fix-3 (Scopus ID) slides to its position */
 .pivot-tbl .c-fix-3 { left:180px !important; }
+
+/* ── Light mode overrides for pf elements ────────────────────────────────── */
+[data-theme="light"] .pf-bar{background:#F0F6FF;border-color:#F6AE2D}
+[data-theme="light"] .pf-bar-title{color:#c47a10}
+[data-theme="light"] .pf-chip-count{background:rgba(246,174,45,.15);color:#c47a10;border-color:rgba(246,174,45,.5)}
+[data-theme="light"] #pfInfo{color:#33658A}
+[data-theme="light"] .pf-panel{background:#F8FAFC;border-color:#CBD5E1}
+[data-theme="light"] .pf-grp-lbl{color:#33658A}
+[data-theme="light"] .pf-search{background:#fff;color:#1F2937;border-color:#CBD5E1}
+[data-theme="light"] .pf-search::placeholder{color:#94A3B8}
+[data-theme="light"] .pf-act-btn.sel-all{background:#E2EAF0;color:#33658A}
+[data-theme="light"] .pf-act-btn.clr-all{background:#FFE8DF;color:#F26419}
+[data-theme="light"] .pf-chip{background:#fff;color:#2F4858;border-color:#CBD5E1}
+[data-theme="light"] .pf-chip .pf-n{color:#64748B}
+[data-theme="light"] .pf-chip.sel{background:#DCFCE7;color:#16A34A;border-color:#86EFAC}
+[data-theme="light"] .pf-chip:hover{border-color:#F6AE2D;color:#92580a}
+[data-theme="light"] .yr-chip{border-color:#86BBD8;color:#33658A}
+[data-theme="light"] .yr-chip.sel{background:#33658A;color:#fff}
+[data-theme="light"] .yr-chip.yr-all{border-color:#F6AE2D;color:#c47a10}
+[data-theme="light"] .yr-chip.yr-all.sel{background:#F6AE2D;color:#1a2b38}
 """
 
 # HTML injected after </header>
 PROF_FILTER_HTML = """
 <div class="pf-bar" id="pfBar">
+  <a href="index.html" class="pf-back-btn" title="Volver a vista completa">
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M10 3L4 8l6 5V3z"/></svg>
+    Vista completa
+  </a>
   <span class="pf-bar-title">&#128300; Vista Filtrada</span>
   <button class="pf-toggle-btn" onclick="pfTogglePanel()">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4h12v1.5L9 10v5l-2-1.5V10L2 5.5V4z"/></svg>
     Filtrar docentes
   </button>
   <span class="pf-chip-count"><span id="pfChip">&#8230;</span></span>
+  <div class="yr-strip" id="yrStrip"></div>
   <span id="pfInfo">Cargando&#8230;</span>
 </div>
 <div class="pf-panel" id="pfPanel">
@@ -2771,9 +2832,11 @@ const _origCsPiv = D.cs_authors_pivot;
 const _origPBA   = D.papers_by_area;
 const _origCsPBA = D.cs_papers_by_area;
 
-const PF_LS = 'utb_pf_v1';
+const PF_LS    = 'utb_pf_v1';
+const PF_YR_LS = 'utb_yr_v1';
 let pfSelected = new Set();
-let pfOpen = false;
+let yearSel    = new Set();
+let pfOpen     = false;
 
 function pfLoad() {
   try {
@@ -2786,9 +2849,53 @@ function pfLoad() {
   } catch(e) {}
   pfSelected = new Set(D2.professors.map(p => p.id));
 }
-
 function pfSave() {
   try { localStorage.setItem(PF_LS, JSON.stringify([...pfSelected])); } catch(e) {}
+}
+
+function pfYearLoad() {
+  try {
+    const s = localStorage.getItem(PF_YR_LS);
+    if (s) {
+      const valid = JSON.parse(s).filter(y => D2.years.map(String).includes(y));
+      if (valid.length) { yearSel = new Set(valid); return; }
+    }
+  } catch(e) {}
+  yearSel = new Set(D2.years.map(String));
+}
+function pfYearSave() {
+  try { localStorage.setItem(PF_YR_LS, JSON.stringify([...yearSel])); } catch(e) {}
+}
+function pfYearToggle(yr) {
+  const allYrs = D2.years.map(String);
+  if (yr === 'ALL') {
+    yearSel = new Set(allYrs);
+  } else {
+    if (yearSel.has(yr)) {
+      if (yearSel.size > 1) yearSel.delete(yr);
+    } else {
+      yearSel.add(yr);
+    }
+  }
+  pfYearSave(); pfYearSyncUI(); pfApply();
+}
+function pfYearSyncUI() {
+  const allSel = yearSel.size >= D2.years.length;
+  document.querySelectorAll('.yr-chip').forEach(c => {
+    const yr = c.dataset.yr;
+    c.classList.toggle('sel', yr === 'ALL' ? allSel : yearSel.has(yr));
+  });
+}
+function pfYearBuildStrip() {
+  const strip = document.getElementById('yrStrip');
+  if (!strip) return;
+  const allYrs = D2.years.map(String);
+  const allSel = yearSel.size >= allYrs.length;
+  let html = '<span class="yr-chip yr-all' + (allSel ? ' sel' : '') + '" data-yr="ALL" onclick="pfYearToggle(\'ALL\')">TODOS</span>';
+  allYrs.forEach(yr => {
+    html += '<span class="yr-chip' + (yearSel.has(yr) ? ' sel' : '') + '" data-yr="' + yr + '" onclick="pfYearToggle(\'' + yr + '\')">' + yr + '</span>';
+  });
+  strip.innerHTML = html;
 }
 
 function pfTogglePanel() {
@@ -2860,7 +2967,9 @@ function pfBuildList() {
 }
 
 function pfApply() {
-  if (pfSelected.size === D2.professors.length) {
+  const allProfs = pfSelected.size === D2.professors.length;
+  const allYrs   = yearSel.size >= D2.years.length;
+  if (allProfs && allYrs) {
     D.by_year = _origBY;   D.cs_by_year = _origCsBY;
     D.timeline = _origTL;  D.quartile_trend = _origQT;  D.cs_q_trend = _origCsQT;
     D.authors_pivot = _origPiv;  D.cs_authors_pivot = _origCsPiv;
@@ -2874,6 +2983,13 @@ function pfApply() {
   }
   // P is a separate let binding pointing at D.authors_pivot — must re-sync after D update
   P = (source === 'scimago') ? D.authors_pivot : D.cs_authors_pivot;
+  // Update KPI sub-label to reflect year selection
+  const kDocsEl = document.getElementById('k-docs');
+  if (kDocsEl && kDocsEl.nextElementSibling) {
+    kDocsEl.nextElementSibling.textContent = allYrs
+      ? 'desde ' + D2.years[0]
+      : [...yearSel].sort().join(' · ');
+  }
   renderAll();
   drawTimeline(); drawQTrend();
   buildPivotHeader(); setupPivotFilter(); renderPivot();
@@ -2890,6 +3006,11 @@ function pfRecompute(selIds) {
   });
   const allEids = Object.keys(eidAuthors);
   const years = D2.years;
+
+  // Year-filter: ALL slice uses only selected years; individual year slices unaffected
+  const allYrsSel = yearSel.size >= years.length;
+  const allSliceEids = allYrsSel ? allEids
+    : allEids.filter(e => D2.papers[e] && yearSel.has(String(D2.papers[e].year)));
 
   function buildSlice(eids, qf) {
     const papers = eids.map(e => D2.papers[e]).filter(Boolean);
@@ -3026,7 +3147,7 @@ function pfRecompute(selIds) {
   }
 
   function fe(yr) {
-    return yr==='ALL' ? allEids
+    return yr==='ALL' ? allSliceEids
       : allEids.filter(e=>D2.papers[e]&&D2.papers[e].year===parseInt(yr));
   }
 
@@ -3085,7 +3206,7 @@ function pfRecompute(selIds) {
   function buildPBA(qf, af) {
     const pba = {};
     const Q_PRI = {Q1:0, Q2:1, Q3:2, Q4:3, 'No Q':4};
-    allEids.forEach(eid => {
+    allSliceEids.forEach(eid => {
       const p = D2.papers[eid];
       if (!p) return;
       const pr = {t:(p.title||'').slice(0,120), j:p.source||'', y:p.year, q:p[qf]};
@@ -3111,9 +3232,14 @@ function pfRecompute(selIds) {
 
 document.addEventListener('DOMContentLoaded', () => {
   pfLoad();
+  pfYearLoad();
   pfBuildList();
+  pfYearBuildStrip();
   pfSyncUI();
-  if (pfSelected.size !== D2.professors.length) pfApply();
+  pfYearSyncUI();
+  const allProfs = pfSelected.size === D2.professors.length;
+  const allYrs   = yearSel.size >= D2.years.length;
+  if (!allProfs || !allYrs) pfApply();
 });
 
 // ── index2: override pivot to flat list (no school grouping / column) ────────
@@ -3570,8 +3696,28 @@ _hdr(ws4, ["Docente","Escuela","Scopus ID","Total docs","Artículos","Q1","Q2","
 for ci, w in enumerate([36,30,16,10,10,8,8,8,8,8,8],1):
     ws4.column_dimensions[get_column_letter(ci)].width = w
 
-auth_all = by_year["ALL"]["authors"]
-for i, a in enumerate(auth_all):
+# Build full docentes list — all authors with ≥1 publication (no TOP_AUTHORS cap)
+_ap_all = filter_year(author_papers, "ALL")
+_tot_all = (_ap_all.drop_duplicates(["EID","author_id"])
+            .groupby(["author_id","DOCENTE","ESCUELA"])["EID"].nunique()
+            .reset_index(name="total")
+            .sort_values("total", ascending=False))
+auth_full = []
+for _, _r in _tot_all.iterrows():
+    _sub = _ap_all[_ap_all["author_id"]==_r["author_id"]].drop_duplicates("EID")
+    _idx = _sub[_sub["quartile"]!="No Q"]
+    _a = {"name":_r["DOCENTE"], "school":_r["ESCUELA"],
+          "scopus_id":_r["author_id"], "total":int(_r["total"])}
+    for _dt in DOC_TYPES:
+        _a[_dt] = int(_sub[_sub["doc_type3"]==_dt].shape[0])
+    for _q in ["Q1","Q2","Q3","Q4"]:
+        _a[_q] = int(_idx[_idx["quartile"]==_q].shape[0])
+    _a["No Q"] = int(_sub[_sub["quartile"]=="No Q"].shape[0])
+    _hq = sum(_a[_q] for _q in ["Q1","Q2","Q3","Q4"])
+    _a["pct_q1"] = round(_a["Q1"]/_hq*100,1) if _hq>0 else 0
+    auth_full.append(_a)
+
+for i, a in enumerate(auth_full):
     q1 = a.get("Q1",0); q2 = a.get("Q2",0); q3 = a.get("Q3",0); q4 = a.get("Q4",0)
     has = q1+q2+q3+q4
     _row(ws4, [
