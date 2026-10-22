@@ -395,6 +395,10 @@ def authors_data(base_ap):
         row["No Q"] = int(sub[sub["quartile"]=="No Q"].shape[0])
         has_q = sum(row[q] for q in ["Q1","Q2","Q3","Q4"])
         row["pct_q1"] = round(row["Q1"]/has_q*100,1) if has_q>0 else 0
+        # H-index: indexed papers sorted by citations desc
+        idx_eids = indexed["EID"].unique()
+        cites_s = sorted([int(eid_cited_by.get(e,0)) for e in idx_eids], reverse=True)
+        row["h_index"] = sum(1 for i,c in enumerate(cites_s,1) if c>=i)
         rows.append(row)
     return rows
 
@@ -574,6 +578,11 @@ def authors_pivot_data(q_col="quartile"):
             row[str(y)] = yd
             grand_arts  += yd["total_arts"]
         row["_grand_arts"] = grand_arts
+        # H-index: computed from classifier-indexed papers sorted by citations desc
+        idx_eids = a_idx["EID"].unique()
+        cites_sorted = sorted(
+            [int(eid_cited_by.get(eid, 0)) for eid in idx_eids], reverse=True)
+        row["h_index"] = sum(1 for i, c in enumerate(cites_sorted, 1) if c >= i)
         rows.append(row)
 
     rows.sort(key=lambda r: (r["school"], -r["_grand_arts"]))
@@ -834,7 +843,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
 /* Year / source filter in hero */
 .year-filter-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;padding-top:4px}
 .year-filter-label{font-size:11px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.8px;color:rgba(255,255,255,.6)}
+  letter-spacing:.8px;color:rgba(55,55,55,.6)}
 #yearFilter,#srcFilter{
   appearance:none;background:#2F4858 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386BBD8' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
   border:1.5px solid rgba(134,187,216,.4);border-radius:8px;
@@ -870,7 +879,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
   box-shadow:0 2px 12px rgba(15,23,42,.06)}
 .nav-inner{max-width:1180px;margin:0 auto;padding:0 60px;
   display:flex;gap:2px;overflow-x:auto;align-items:center;min-height:52px}
-.nav-link{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;font-size:12px;font-weight:600;
+.nav-link{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;font-size:10px;font-weight:600;
   color:#fff;text-decoration:none;white-space:nowrap;border-radius:20px;margin:0 2px;
   transition:opacity .15s,box-shadow .15s,transform .1s;letter-spacing:.1px;border:none;
   background:var(--nav-clr,#33658A);opacity:.68;}
@@ -960,13 +969,17 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   min-width:155px;max-width:155px;text-align:left!important;
   border-right:2px solid #E2E8F0!important}
 .c-fix-3{position:sticky!important;left:335px;z-index:4!important;
-  min-width:110px;max-width:110px;text-align:left!important;
+  min-width:120px;max-width:120px;text-align:left!important}
+.c-fix-4{position:sticky!important;left:455px;z-index:4!important;
+  min-width:60px;max-width:60px;text-align:center!important;
   border-right:2px solid #E2E8F0!important}
-.pivot-tbl thead .c-fix-1,.pivot-tbl thead .c-fix-2,.pivot-tbl thead .c-fix-3{z-index:6!important;background:#F8FAFC}
+.h-idx{color:#c47a10;font-weight:700}
+.pivot-tbl thead .c-fix-1,.pivot-tbl thead .c-fix-2,.pivot-tbl thead .c-fix-3,.pivot-tbl thead .c-fix-4{z-index:6!important;background:#F8FAFC}
 .pivot-tbl tbody tr:hover td{background:#F8FAFC}
 .pivot-tbl tbody td{color:#334155;text-align:center}
-.pivot-tbl tbody .c-fix-1,.pivot-tbl tbody .c-fix-2,.pivot-tbl tbody .c-fix-3{
-  background:#fff;text-align:left;color:#0F172A}
+.pivot-tbl tbody .c-fix-1,.pivot-tbl tbody .c-fix-2,.pivot-tbl tbody .c-fix-3,.pivot-tbl tbody .c-fix-4{
+  background:#fff;color:#0F172A}
+.pivot-tbl tbody .c-fix-1,.pivot-tbl tbody .c-fix-2{text-align:left}
 /* School group header */
 .school-hdr td{background:#E8F3FA!important;color:#2F4858;font-weight:700;
   font-size:12px;letter-spacing:.3px;border-top:2px solid #BFDBFE!important}
@@ -1011,8 +1024,8 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
 [data-theme="dark"] .pivot-wrap{border-color:rgba(255,255,255,.08)}
 [data-theme="dark"] .pivot-tbl th{background:#1E293B;color:#94A3B8}
 [data-theme="dark"] .pivot-tbl th,[data-theme="dark"] .pivot-tbl td{border-color:rgba(255,255,255,.06)}
-[data-theme="dark"] .pivot-tbl thead .c-fix-1,[data-theme="dark"] .pivot-tbl thead .c-fix-2,[data-theme="dark"] .pivot-tbl thead .c-fix-3{background:#1E293B}
-[data-theme="dark"] .pivot-tbl tbody .c-fix-1,[data-theme="dark"] .pivot-tbl tbody .c-fix-2,[data-theme="dark"] .pivot-tbl tbody .c-fix-3{background:#0F172A}
+[data-theme="dark"] .pivot-tbl thead .c-fix-1,[data-theme="dark"] .pivot-tbl thead .c-fix-2,[data-theme="dark"] .pivot-tbl thead .c-fix-3,[data-theme="dark"] .pivot-tbl thead .c-fix-4{background:#1E293B}
+[data-theme="dark"] .pivot-tbl tbody .c-fix-1,[data-theme="dark"] .pivot-tbl tbody .c-fix-2,[data-theme="dark"] .pivot-tbl tbody .c-fix-3,[data-theme="dark"] .pivot-tbl tbody .c-fix-4{background:#0F172A}
 [data-theme="dark"] .pivot-tbl tbody td{color:#94A3B8}
 [data-theme="dark"] .pivot-tbl tbody tr:hover td{background:#1E293B}
 [data-theme="dark"] .school-hdr td{background:#0D1E2C!important;color:#93C5FD;border-color:#2F4858!important}
@@ -1451,6 +1464,17 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
       </span>
     </div>
     <div class="chart-wrap" style="height:400px"><canvas id="c-auth-q1"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">
+      <span><span class="card-dot" style="background:#c47a10"></span>
+        <span class="card-title">Top __TOP_AUTHORS__ autores — H-index</span></span>
+      <span class="card-hd-right">
+        <span class="card-note" id="lbl-auth-h">ALL</span>
+      </span>
+    </div>
+    <div class="chart-wrap" style="height:__AUTH_H__px"><canvas id="c-auth-h"></canvas></div>
   </div>
 </section>
 
@@ -2138,6 +2162,50 @@ function drawAuthQ1(){
   });
 }
 
+// ── CHART 10b: AUTHORS × H-INDEX ────────────────────────────────
+function drawHIndex(){
+  const allAuthors = SBY()[year].authors;
+  const authors = [...allAuthors]
+    .filter(a=>(a.h_index||0)>0)
+    .sort((a,b)=>(b.h_index||0)-(a.h_index||0))
+    .slice(0,__TOP_AUTHORS__);
+  if(!authors.length){ label('lbl-auth-h', year+' (sin datos)'); return; }
+  const labels = authors.map(a=>a.name).reverse();
+  const vals   = authors.map(a=>a.h_index||0).reverse();
+  label('lbl-auth-h', year);
+  const maxH = Math.max(...vals, 1);
+  const colors = vals.map(v=>{
+    const t = v/maxH;
+    return `rgba(${Math.round(246-t*80)},${Math.round(174-t*80)},${Math.round(45+t*10)},${0.55+t*0.45})`;
+  });
+  mkChart('c-auth-h',{type:'bar',
+    data:{labels, datasets:[{
+      label:'H-index', data:vals,
+      backgroundColor:colors, borderRadius:4, borderSkipped:false,
+    }]},
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      animation:{duration:420},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label:ctx=>{
+            const a = authors.find(x=>x.name===ctx.label);
+            const tot = a ? a.total : '';
+            return [` H-index: ${ctx.parsed.x}`, tot ? ` Documentos indexados: ${(a.Q1||0)+(a.Q2||0)+(a.Q3||0)+(a.Q4||0)}` : ''];
+          }
+        }}
+      },
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,0.05)'},
+           ticks:{font:{size:11}, stepSize:1},
+           title:{display:true, text:'H-index', font:{size:11}}},
+        y:{grid:{display:false}, ticks:{font:{size:11}}}
+      }
+    }
+  });
+}
+
 // ── CHART 11: PAIRS ─────────────────────────────────────────────
 function drawPairs(){
   const pairs = SBY()[year].pairs;
@@ -2479,6 +2547,7 @@ function buildPivotHeader(){
   r1 += `<th class="c-fix-1" rowspan="2">Docente</th>`;
   r1 += `<th class="c-fix-2" rowspan="2">Escuela</th>`;
   r1 += `<th class="c-fix-3" rowspan="2">Scopus ID</th>`;
+  r1 += `<th class="c-fix-4 h-idx" rowspan="2" title="h-index calculado sobre artículos clasificados">H</th>`;
   P.years.forEach((y,i)=>{
     const cls = i===0?'yr-sep':'';
     r1 += `<th colspan="7" style="text-align:center;background:#F0F4F9;${i>0?'border-left:2px solid #E2E8F0':''}">${y}</th>`;
@@ -2515,8 +2584,8 @@ function renderPivot(){
     // School group header
     if(r.school !== lastSchool){
       lastSchool = r.school;
-      const totalCols = P.years.length * 7 + 2;
-      html += `<tr class="school-hdr"><td class="c-fix-1" colspan="3" style="left:0;position:sticky;z-index:4">${r.school}</td>`;
+      const totalCols = P.years.length * 7 + 3; // +3: H col + 2 grand-total cols
+      html += `<tr class="school-hdr"><td class="c-fix-1" colspan="4" style="left:0;position:sticky;z-index:4">${r.school}</td>`;
       for(let i=0; i<totalCols; i++) html += '<td></td>';
       html += '</tr>';
     }
@@ -2540,10 +2609,12 @@ function renderPivot(){
       grandDocs += docs;
     });
 
+    const h = r.h_index ?? '—';
     html += `<tr>
       <td class="c-fix-1" title="${r.name}">${r.name}</td>
       <td class="c-fix-2">${r.school}</td>
       <td class="c-fix-3" style="font-family:monospace;font-size:11px">${r.scopus_id}</td>
+      <td class="c-fix-4 h-idx">${h}</td>
       ${cells}
       <td class="${grandArts===0?'zerv':'tot-art'}" style="background:#F5F3FF;border-left:2px solid #C7D2FE;font-weight:700">${grandArts===0?'—':grandArts}</td>
       <td class="${grandDocs===0?'zerv':'tot-doc'}" style="background:#F5F3FF;font-weight:700">${grandDocs===0?'—':grandDocs}</td>
@@ -2578,6 +2649,7 @@ function renderAll(){
   drawSchoolType();
   drawAuthType();
   drawAuthQ1();
+  drawHIndex();
   drawPairs();
   drawAreaQ();
   drawAreaPct();
@@ -2661,6 +2733,31 @@ document.addEventListener('DOMContentLoaded',()=>{
 # ─── HTML2 = index.html + professor filter injected ──────────────────────────
 # CSS injected before </style>
 PROF_FILTER_CSS = r"""
+/* ── index2: everything always light ───────────────────────────────────────── */
+body { background: #E9ECF2 !important; color: #1E293B !important; }
+
+/* Hero light override */
+.hero {
+  background: linear-gradient(135deg, #E4EAF2 0%, #EDF2F7 100%) !important;
+  padding-bottom: 52px !important;
+}
+.hero-badge  { background: rgba(242,100,25,.12) !important; color: #c44d10 !important;
+               border: 1px solid rgba(242,100,25,.25) !important; }
+.hero-badge svg { color: #F26419 !important; }
+.hero-title  { color: #1C3448 !important; }
+.hero-title span { color: #F26419 !important; }
+.hero-desc   { color: rgba(44,66,86,.85) !important; }
+.hero-desc strong { color: #1C3448 !important; }
+/* Classifier selector in light hero */
+.hero .clas-wrap label { color: #64748B !important; }
+.hero select, .hero .src-sel {
+  background: #fff !important; color: #1C3448 !important;
+  border-color: #CBD5E1 !important; }
+/* Footer also light */
+footer { background: #D6DCE8 !important; color: #475569 !important; }
+.credits { background: #D6DCE8 !important; color: #475569 !important; }
+.credits * { color: #475569 !important; }
+
 /* ── PROFESSOR FILTER (index2 only) ────────────────────────────────────────── */
 .pf-bar{
   display:flex;align-items:center;gap:12px;
@@ -2765,8 +2862,9 @@ label[for="pivotSchool"],
 .year-filter-wrap:has(#yearFilter) { display:none !important; }
 /* Fix kpi-strip negative margin (was designed to overlap hero directly) */
 .kpi-strip { margin-top:12px !important; }
-/* c-fix-2 (Escuela) is hidden so c-fix-3 (Scopus ID) slides to its position */
+/* c-fix-2 (Escuela) is hidden so c-fix-3/4 slide left */
 .pivot-tbl .c-fix-3 { left:180px !important; }
+.pivot-tbl .c-fix-4 { left:300px !important; }
 
 /* ── Light mode overrides for pf elements ────────────────────────────────── */
 [data-theme="light"] .pf-bar{background:#F0F6FF;border-color:#F6AE2D}
@@ -2787,6 +2885,8 @@ label[for="pivotSchool"],
 [data-theme="light"] .yr-chip.sel{background:#33658A;color:#fff}
 [data-theme="light"] .yr-chip.yr-all{border-color:#F6AE2D;color:#c47a10}
 [data-theme="light"] .yr-chip.yr-all.sel{background:#F6AE2D;color:#1a2b38}
+/* index2: always light — hide the dark/light toggle */
+.theme-btn{display:none!important}
 """
 
 # HTML injected after </header>
@@ -2820,6 +2920,10 @@ PROF_FILTER_HTML = """
 PROF_FILTER_JS = r"""
 // ── PROFESSOR FILTER (index2) ─────────────────────────────────────────────────
 const D2 = __DATA_JSON2__;
+
+// index2 is always light mode: force localStorage before darkMode is read below
+localStorage.setItem('utb-theme', 'light');
+document.documentElement.setAttribute('data-theme', 'light');
 
 // Preserve originals for "all selected" zero-cost restore
 const _origBY    = D.by_year;
@@ -3053,8 +3157,10 @@ function pfRecompute(selIds) {
       const aq={'Q1':0,'Q2':0,'Q3':0,'Q4':0,'No Q':0};
       ap.forEach(p=>{at[p.type]++; aq[p[qf]]++;});
       const asq=aq.Q1+aq.Q2+aq.Q3+aq.Q4;
+      const idxCites = ap.filter(p=>p[qf]!=='No Q').map(p=>p.cited||0).sort((a,b)=>b-a);
+      const h_idx = idxCites.filter((c,i)=>c>=i+1).length;
       authRows.push({name:prof.name,school:prof.school,scopus_id:id,total:ap.length,
-        ...at,...aq,pct_q1:asq>0?parseFloat((aq.Q1/asq*100).toFixed(1)):0});
+        ...at,...aq,pct_q1:asq>0?parseFloat((aq.Q1/asq*100).toFixed(1)):0,h_index:h_idx});
     });
     authRows.sort((a,b)=>b.total-a.total);
 
@@ -3196,6 +3302,10 @@ function pfRecompute(selIds) {
         row.grand_arts+=arts;
         if(eids.length>0) anyPaper=true;
       });
+      // H-index: indexed (non-"No Q") papers sorted by citations desc
+      const idxEids = (D2.prof_papers[id]||[]).filter(e=>D2.papers[e]&&D2.papers[e][qf]!=='No Q');
+      const cites = idxEids.map(e=>D2.papers[e].cited||0).sort((a,b)=>b-a);
+      row.h_index = cites.filter((c,i)=>c>=i+1).length;
       if(anyPaper) rows.push(row);
     });
     rows.sort((a,b)=>b.grand_arts-a.grand_arts);
@@ -3240,6 +3350,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const allProfs = pfSelected.size === D2.professors.length;
   const allYrs   = yearSel.size >= D2.years.length;
   if (!allProfs || !allYrs) pfApply();
+  // Ensure light mode stays set regardless of applyTheme(darkMode) call
+  document.documentElement.setAttribute('data-theme', 'light');
+  localStorage.setItem('utb-theme', 'light');
 });
 
 // ── index2: override pivot to flat list (no school grouping / column) ────────
@@ -3250,6 +3363,7 @@ var buildPivotHeader = function(){
   let r1 = '<tr>';
   r1 += '<th class="c-fix-1" rowspan="2">Docente</th>';
   r1 += '<th class="c-fix-3" rowspan="2">Scopus ID</th>';
+  r1 += '<th class="c-fix-4 h-idx" rowspan="2" title="h-index calculado sobre artículos clasificados">H</th>';
   P.years.forEach((y,i)=>{
     r1 += '<th colspan="7" style="text-align:center;background:#F0F4F9;'+(i>0?'border-left:2px solid #E2E8F0':'')+'">' + y + '</th>';
   });
@@ -3287,9 +3401,11 @@ var renderPivot = function(){
       cells+='<td class="'+(docs===0?'zerv':'tot-doc')+'">'+(docs===0?'&#8212;':docs)+'</td>';
       gArts+=arts; gDocs+=docs;
     });
+    const h = (r.h_index != null) ? r.h_index : '&#8212;';
     html+='<tr>'
       +'<td class="c-fix-1" title="'+r.name+'">'+r.name+'</td>'
       +'<td class="c-fix-3" style="font-family:monospace;font-size:11px">'+r.scopus_id+'</td>'
+      +'<td class="c-fix-4 h-idx">'+h+'</td>'
       +cells
       +'<td class="'+(gArts===0?'zerv':'tot-art')+'" style="background:#F5F3FF;border-left:2px solid #C7D2FE;font-weight:700">'+(gArts===0?'&#8212;':gArts)+'</td>'
       +'<td class="'+(gDocs===0?'zerv':'tot-doc')+'" style="background:#F5F3FF;font-weight:700">'+(gDocs===0?'&#8212;':gDocs)+'</td>'
@@ -3312,6 +3428,8 @@ var drawSchoolType = function(){ /* school×type chart hidden in index2 */ };
 
 # ─── Construct HTML2 by injecting into the main HTML template ─────────────────
 HTML2 = (HTML
+    .replace('<html lang="es">',
+             '<html lang="es" data-theme="light">', 1)
     .replace('<title>UTB Scopus Dashboard</title>',
              '<title>UTB · Vista Filtrada por Docente</title>', 1)
     .replace('</style>', PROF_FILTER_CSS + '\n</style>', 1)
