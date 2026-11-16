@@ -1992,7 +1992,7 @@ function drawTimeline(){
   const labels   = tl.map(r=>r.year);
   const datasets = TYPE_LABELS.map(t=>({
     label:t, data:tl.map(r=>r[t]||0),
-    backgroundColor:C[t], borderRadius:4, borderSkipped:false,
+    backgroundColor:C[t], borderRadius:0, borderSkipped:false,
   }));
   mkChart('c-timeline', hBar(labels, datasets, {stacked:true}));
 }
@@ -2027,7 +2027,7 @@ function drawQTrend(){
   const labels   = qt.map(r=>r.year);
   const datasets = Q_LABELS.map(q=>({
     label:q, data:qt.map(r=>r[q]||0),
-    backgroundColor:C[q], borderRadius:3, borderSkipped:false,
+    backgroundColor:C[q], borderRadius:0, borderSkipped:false,
   }));
   mkChart('c-q-trend', hBar(labels, datasets, {stacked:true}));
 }
@@ -2074,7 +2074,7 @@ function drawSchoolQ(){
   label('lbl-sch-q', year);
   const datasets = Q_LABELS.map(q=>({
     label:q, data:schools.map(s=>s[q]||0).reverse(),
-    backgroundColor:C[q], borderRadius:3, borderSkipped:false,
+    backgroundColor:C[q], borderRadius:0, borderSkipped:false,
   }));
   mkChart('c-sch-q', hBar(labels, datasets, {stacked:true}));
 }
@@ -2086,7 +2086,7 @@ function drawSchoolType(){
   label('lbl-sch-type', year);
   const datasets = TYPE_LABELS.map(t=>({
     label:t, data:schools.map(s=>s[t]||0).reverse(),
-    backgroundColor:C[t], borderRadius:3, borderSkipped:false,
+    backgroundColor:C[t], borderRadius:0, borderSkipped:false,
   }));
   mkChart('c-sch-type', hBar(labels, datasets, {stacked:true}));
 }
@@ -2098,7 +2098,7 @@ function drawAuthType(){
   label('lbl-auth-type', year);
   const datasets = TYPE_LABELS.map(t=>({
     label:t, data:authors.map(a=>a[t]||0).reverse(),
-    backgroundColor:C[t], borderRadius:3, borderSkipped:false,
+    backgroundColor:C[t], borderRadius:0, borderSkipped:false,
   }));
   const cfg = hBar(labels, datasets, {stacked:true});
   cfg.options.plugins.tooltip = {
@@ -2134,7 +2134,7 @@ function drawAuthQ1(){
       {label:'Q4', data:authors.map(a=>a.Q4||0).reverse(),
        backgroundColor:'#F26419', borderRadius:0, borderSkipped:false},
       {label:'SC',  data:authors.map(a=>a['No Q']||0).reverse(),
-       backgroundColor:'#86BBD8', borderRadius:4, borderSkipped:false},
+       backgroundColor:'#86BBD8', borderRadius:0, borderSkipped:false},
     ]},
     options:{
       indexAxis:'y', responsive:true, maintainAspectRatio:false,
@@ -2244,7 +2244,7 @@ function drawAreaQ(){
   label('lbl-area-q', year);
   const datasets = Q_LABELS.map(q=>({
     label:q, data:areas.map(a=>a[q]||0).reverse(),
-    backgroundColor:C[q], borderRadius:3, borderSkipped:false,
+    backgroundColor:C[q], borderRadius:0, borderSkipped:false,
   }));
   const cfg = hBar(labels, datasets, {stacked:true});
   cfg.options.plugins.tooltip = {
@@ -2483,7 +2483,7 @@ function drawTopJournals(){
     ['Q1','Q2','Q3','Q4','No Q'].map(q=>({
       label:q,
       data: shown.map(j=>j[q]||0).reverse(),
-      backgroundColor: C[q], borderRadius:2, borderSkipped:false,
+      backgroundColor: C[q], borderRadius:0, borderSkipped:false,
     })),
     {stacked:true, legend:true}
   );
