@@ -1202,7 +1202,8 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
         prestigio ponderado por citas) y <strong>CiteScore 2025</strong> (índice Scopus
         basado en citas sobre un período de cuatro años). Ambos asignan cuartiles Q1–Q4
         y pueden alternarse desde el selector <em>Clasificador</em> del panel superior.
-        Actualizado: <strong>__ACTU__</strong>.
+        <strong>Datos actualizados al __ACTU__</strong> (fecha del export Scopus).
+        Solo se incluyen publicaciones donde al menos un autor tenía afiliación UTB en Scopus al momento de la publicación.
       </p>
     </div>
     <div class="year-filter-wrap">
@@ -1471,6 +1472,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
       <span><span class="card-dot" style="background:#c47a10"></span>
         <span class="card-title">Top __TOP_AUTHORS__ autores — H-index</span></span>
       <span class="card-hd-right">
+        <span class="card-note" style="margin-right:6px;color:#94A3B8;font-size:11px" title="El H-index se calcula únicamente con publicaciones indexadas (Q1–Q4) desde __START_YEAR__, según el clasificador activo">⚠ desde __START_YEAR__</span>
         <span class="card-note" id="lbl-auth-h">ALL</span>
       </span>
     </div>
@@ -1678,7 +1680,7 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   <div class="note note-b">
     <strong>Fuentes de datos:</strong>
     <ul>
-      <li>Export CSV de Scopus (EID, año, tipo, autores, ISSN) filtrado desde __START_YEAR__.</li>
+      <li>Export CSV de Scopus (EID, año, tipo, autores, ISSN) filtrado desde __START_YEAR__. <strong>Datos actualizados al __ACTU__</strong>: las cifras corresponden exclusivamente a las publicaciones presentes en el archivo de export descargado en esa fecha — no se actualizan en tiempo real.</li>
       <li>Base maestra de docentes de planta UTB con <em>Scopus Author ID</em>.</li>
       <li><strong>Scimago JR 2025</strong> — <em>Scimago Journal Rank</em>: cruce por ISSN
           normalizado que asigna cuartil SJR (Q1–Q4) y área temática (27 grandes áreas) a cada
@@ -1697,6 +1699,8 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
     <strong>Notas metodológicas:</strong>
     <ul>
       <li><strong>Unidad de conteo:</strong> documentos únicos por <code>EID</code>, no apariciones de autor.</li>
+      <li><strong>Alcance del export Scopus:</strong> el CSV fue exportado aplicando filtro de afiliación UTB. Por tanto, solo se incluyen publicaciones en las que <em>al menos uno de los autores tenía afiliación con la UTB registrada en Scopus</em> al momento de la publicación. Publicaciones realizadas por docentes UTB bajo otra afiliación institucional (p.ej. durante estancias o vinculación anterior a otra universidad) pueden <strong>no estar incluidas</strong>, lo que puede generar diferencias respecto al perfil individual de autor en Scopus.</li>
+      <li><strong>H-index (índice h):</strong> se calcula exclusivamente con las publicaciones indexadas (Q1–Q4, según el clasificador activo) disponibles en el export, es decir, <strong>desde __START_YEAR__ hasta la fecha del export (__ACTU__)</strong>. No representa el H-index acumulado histórico del autor en Scopus, que abarca toda su trayectoria.</li>
       <li><strong>Crédito por Escuela:</strong> una Escuela recibe crédito si al menos un docente de esa Escuela es autor (un documento puede contar en varias Escuelas).</li>
       <li><strong>Cuartiles:</strong> aplican a cualquier tipo de documento cuyo ISSN figure
           en el clasificador activo (artículos, conferencias en series indexadas, etc.).
