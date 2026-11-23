@@ -595,7 +595,7 @@ def build_papers_index(q_col="quartile", ap_src=None, area_pap_src=None):
     Structure: {id: {"ALL": [...], "2022": [...], "2023": [...], ...}}
     q_col selects which quartile column to use for sorting/labelling.
     """
-    eid_info = (df[["EID","Title","Source title"]]
+    eid_info = (df[["EID","Title","Source title","DOI"]]
                 .drop_duplicates("EID")
                 .set_index("EID"))
     Q_PRIO = {"Q1":0,"Q2":1,"Q3":2,"Q4":3,"No Q":4}
@@ -608,10 +608,13 @@ def build_papers_index(q_col="quartile", ap_src=None, area_pap_src=None):
         for _, r in grp.head(cap).iterrows():
             t = str(r.get("Title","") or "").strip()
             if len(t) > 120: t = t[:117] + "…"
+            doi_raw = str(r.get("DOI","") or "").strip()
+            doi = doi_raw if doi_raw not in ("nan","") else ""
             out.append({"t":t,
                         "j":str(r.get("Source title","") or "").strip(),
                         "y":int(r["Year"]),
-                        "q":str(r["quartile"])})
+                        "q":str(r["quartile"]),
+                        "d":doi})
         return out
 
     # ── papers_by_author ─────────────────────────────────────────
@@ -1080,10 +1083,10 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
   position:fixed;z-index:9999;pointer-events:none;
   background:#fff;border:1px solid #E2E8F0;border-radius:10px;
   box-shadow:0 8px 28px rgba(0,0,0,.14);padding:10px 13px;
-  width:680px;max-height:420px;overflow-y:hidden;
-  font-size:10px;color:#334155;opacity:0;transition:opacity .15s;
+  width:680px;max-height:420px;overflow-y:auto;
+  font-size:10px;color:#334155;opacity:0;transition:opacity .18s;
 }
-.ch-tt.tt-vis{opacity:1}
+.ch-tt.tt-vis{opacity:1;pointer-events:auto}
 .ch-tt .tt-hdr{
   font-weight:700;font-size:11px;color:#1e293b;
   border-bottom:1px solid #E2E8F0;padding-bottom:5px;margin-bottom:7px;
@@ -1839,17 +1842,36 @@ const _QB = {
 function qBadge(q){ return _QB[q]||'<span class="tt-q NoQ">SC</span>'; }
 
 function _buildTtHTML(header, papers){
-  const shown = papers.slice(0,10);
-  const extra = papers.length>10
-    ? `<div class="tt-more">+${papers.length-10} documentos más</div>` : '';
-  const rows = shown.map(p=>`
+  // Sort by year descending (most recent first), then slice to 10
+  const sorted = [...papers].sort((a,b)=>(b.y||0)-(a.y||0));
+  const shown  = sorted.slice(0,10);
+  const total  = papers.length;
+  const extra  = total>10
+    ? `<div class="tt-more">Mostrando 10 más recientes de ${total} documentos</div>` : '';
+  const rows = shown.map(p=>{
+    const title = p.t||'(sin título)';
+    const titleHtml = p.d
+      ? `<a href="https://doi.org/${p.d}" target="_blank" rel="noopener"
+            style="color:inherit;text-decoration:underline;text-decoration-color:rgba(0,0,0,.25);text-underline-offset:2px"
+            onclick="event.stopPropagation()">${title}</a>`
+      : title;
+    const doiHtml = p.d
+      ? `<span style="font-size:9px;color:#94A3B8;margin-left:4px">
+           <a href="https://doi.org/${p.d}" target="_blank" rel="noopener"
+              style="color:#64748B;text-decoration:none" onclick="event.stopPropagation()">
+             doi:${p.d}
+           </a>
+         </span>`
+      : '';
+    return `
     <div class="tt-row">
       ${qBadge(p.q)}
-      <div>
-        <div class="tt-title">${p.t||'(sin título)'}</div>
-        <div class="tt-jrnl">${p.j||''} · ${p.y}</div>
+      <div style="min-width:0">
+        <div class="tt-title">${titleHtml}</div>
+        <div class="tt-jrnl">${p.j||''} · ${p.y}${doiHtml}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   return `<div class="tt-hdr">${header}</div>${rows}${extra}`;
 }
 
@@ -1857,21 +1879,42 @@ function _buildTtHTML(header, papers){
  * makeExternalTooltip(getPapers)
  * getPapers(dp, chart) → {label, papers, total}
  *   label  : string shown in header
- *   papers : array of {t,j,y,q}
+ *   papers : array of {t,j,y,q,d}
  *   total  : overall count for the subject
+ *
+ * The tooltip stays visible when the cursor moves into it (clickable links).
+ * A hide-delay of 220 ms lets the cursor travel from the bar to the tooltip
+ * without the tooltip disappearing mid-way.
  */
+const _ttHideTimers = {};
 function makeExternalTooltip(getPapers){
   return function(context){
     const {chart, tooltip} = context;
     const el = _getTtEl(chart.canvas.id);
-    if(tooltip.opacity===0){ el.classList.remove('tt-vis'); return; }
+    const cid = chart.canvas.id;
+
+    if(tooltip.opacity===0){
+      // Delay hiding so the cursor can reach the tooltip
+      if(!_ttHideTimers[cid]){
+        _ttHideTimers[cid] = setTimeout(()=>{
+          if(!el.matches(':hover')) el.classList.remove('tt-vis');
+          _ttHideTimers[cid] = null;
+        }, 220);
+      }
+      return;
+    }
+    // Cancel any pending hide
+    if(_ttHideTimers[cid]){ clearTimeout(_ttHideTimers[cid]); _ttHideTimers[cid]=null; }
+
     const dp = tooltip.dataPoints && tooltip.dataPoints[0];
     if(!dp){ el.classList.remove('tt-vis'); return; }
     const {label, papers, total} = getPapers(dp, chart);
     if(!papers || !papers.length){ el.classList.remove('tt-vis'); return; }
     const shown = Math.min(10, papers.length);
-    const hdr = `Top ${shown} de ${total} doc${total!==1?'s':''} · <em>${label}</em>`;
+    const hdr = `Últimos ${shown} de ${total} doc${total!==1?'s':''} · <em>${label}</em>`;
     el.innerHTML = _buildTtHTML(hdr, papers);
+    // Hide when cursor leaves the tooltip itself
+    el.onmouseleave = ()=>{ el.classList.remove('tt-vis'); };
     el.classList.add('tt-vis');
     // Position: fixed coords relative to viewport
     const rect = chart.canvas.getBoundingClientRect();
