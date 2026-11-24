@@ -270,6 +270,8 @@ eid_cited_by     = _df_dedup.set_index("EID")["Cited by"].apply(
     lambda x: int(pd.to_numeric(x, errors="coerce") or 0)).to_dict()
 eid_source_title = _df_dedup.set_index("EID")["Source title"].fillna("").to_dict()
 eid_title_full   = _df_dedup.set_index("EID")["Title"].fillna("").to_dict()
+eid_doi          = _df_dedup.set_index("EID")["DOI"].fillna("").astype(str).apply(
+    lambda x: x.strip() if x.strip() not in ("nan","") else "").to_dict()
 
 # Author name list per EID (UTB authors only)
 _auth_tmp = {}
@@ -377,6 +379,12 @@ def schools_data(base_ap, base_sp):
     return rows
 
 def authors_data(base_ap):
+    CURR_YEAR = pd.Timestamp.now().year
+    # Pre-compute IRC median cites per (year, doc_type3) across the corpus
+    _sp_uniq = base_ap.drop_duplicates("EID")[["EID","Year","doc_type3"]].copy()
+    _sp_uniq["cites"] = _sp_uniq["EID"].map(lambda e: int(eid_cited_by.get(e, 0)))
+    _irc_med = (_sp_uniq.groupby(["Year","doc_type3"])["cites"]
+                .median().to_dict())   # (year, doc_type3) → float
     tot = (base_ap.drop_duplicates(["EID","author_id"])
            .groupby(["author_id","DOCENTE","ESCUELA"])["EID"].nunique()
            .reset_index(name="total")
@@ -399,6 +407,20 @@ def authors_data(base_ap):
         idx_eids = indexed["EID"].unique()
         cites_s = sorted([int(eid_cited_by.get(e,0)) for e in idx_eids], reverse=True)
         row["h_index"] = sum(1 for i,c in enumerate(cites_s,1) if c>=i)
+        # CNA: promedio de citas / (año_actual - año_pub + 1)
+        # IRC: promedio de citas / mediana(citas mismo año+tipo en el corpus)
+        cna_vals, irc_vals = [], []
+        for _, pr in sub.iterrows():
+            eid   = pr["EID"]
+            yr    = int(pr["Year"]) if pd.notna(pr.get("Year")) else CURR_YEAR
+            dt3   = pr.get("doc_type3", "")
+            cites = int(eid_cited_by.get(eid, 0))
+            age   = max(1, CURR_YEAR - yr + 1)
+            cna_vals.append(cites / age)
+            med = _irc_med.get((yr, dt3), 1.0)
+            irc_vals.append(cites / max(1.0, float(med)))
+        row["cna"] = round(float(np.mean(cna_vals)), 3) if cna_vals else 0.0
+        row["irc"] = round(float(np.mean(irc_vals)), 3) if irc_vals else 0.0
         rows.append(row)
     return rows
 
@@ -481,6 +503,7 @@ def top_papers_data(sp_sub, n=15):
             "sjr":         float(r.get("sjr") or 0),
             "cited_by":    int(eid_cited_by.get(eid,0)),
             "authors_utb": "; ".join(eid_utb_authors_impact.get(eid,[]))[:120],
+            "doi":         eid_doi.get(eid,""),
         })
     rows.sort(key=lambda x: x["cited_by"], reverse=True)
     return [r for r in rows[:n] if r["cited_by"] > 0] or rows[:n]
@@ -814,6 +837,7 @@ HTML = r"""<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>UTB Scopus Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 /* ── RESET & BASE ─────────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -1629,6 +1653,65 @@ hr.div{border:none;border-top:1px solid #E2E8F0;margin:8px 0 28px}
       <div class="chart-wrap" style="height:380px"><canvas id="c-cits-q"></canvas></div>
     </div>
   </div>
+
+  <!-- Métricas de impacto relativo: CNA e IRC -->
+  <div class="card" style="margin-top:16px;background:linear-gradient(135deg,#f8fafc 0%,#eef2ff 100%);border:1px solid #c7d2fe;">
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:4px 0 8px;">
+      <span style="font-size:22px;line-height:1">📐</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#3730a3;margin-bottom:8px">Métricas de impacto relativo — ¿Cómo se calculan?</div>
+        <p style="font-size:12px;color:#4b5563;margin:0 0 8px;line-height:1.6;">
+          <strong>CNA — Citas Normalizadas por Antigüedad</strong><br>
+          Mide el impacto promedio por unidad de tiempo. Para cada artículo del autor se calcula
+          <em>citas&nbsp;÷&nbsp;(año_actual&nbsp;−&nbsp;año_publicación&nbsp;+&nbsp;1)</em>
+          y se promedia sobre todos sus trabajos. El "+1" asegura que artículos del año en curso tengan
+          denominador&nbsp;≥&nbsp;1. Esta métrica corrige el sesgo temporal que beneficia a publicaciones antiguas
+          en rankings de citas brutas: un artículo de 2024 con 10 citas tiene CNA&nbsp;3.33, mientras que
+          uno de 2020 con las mismas 10 citas tiene CNA&nbsp;1.43. Un CNA alto indica que el autor genera
+          impacto rápidamente en relación a la antigüedad de sus publicaciones.
+        </p>
+        <p style="font-size:12px;color:#4b5563;margin:0 0 8px;line-height:1.6;">
+          <strong>IRC — Impacto Relativo al Corpus</strong><br>
+          Mide el impacto de cada autor en relación al comportamiento típico de publicaciones similares
+          dentro del mismo corpus UTB. Para cada artículo se calcula
+          <em>citas&nbsp;÷&nbsp;mediana(citas de todos los artículos del mismo año y mismo tipo documental
+          presentes en el corpus)</em> y se promedia. La mediana se usa (en lugar de la media) por ser
+          más robusta ante artículos con citas extremas. Interpretación:
+          <strong>IRC &lt; 1</strong> → por debajo de la mediana de publicaciones comparables;
+          <strong>IRC = 1</strong> → exactamente en la mediana;
+          <strong>IRC &gt; 1</strong> → supera la mediana del corpus;
+          <strong>IRC &gt; 2</strong> → duplica o más el impacto mediano de artículos similares.
+          Al normalizar por año y tipo, hace comparables autores con distintas trayectorias temporales
+          y perfiles de publicación.
+        </p>
+        <p style="font-size:11px;color:#6b7280;margin:0;border-top:1px solid #e0e7ff;padding-top:6px;">
+          ⚠ Ambas métricas se calculan exclusivamente sobre el corpus UTB visible en este dashboard
+          (artículos con afiliación UTB registrados en Scopus desde __START_YEAR__).
+          No son equivalentes al FWCI de Scopus, que usa una base de referencia global.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CNA e IRC: gráficas lado a lado -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+    <div class="card" style="margin-top:0">
+      <div class="card-hd">
+        <span><span class="card-dot" style="background:#6366f1"></span>
+          <span class="card-title">Ranking por CNA — Citas Normalizadas por Antigüedad</span></span>
+        <span class="card-hd-right"><span class="card-note" id="lbl-cna">ALL</span></span>
+      </div>
+      <div class="chart-wrap" style="height:420px"><canvas id="c-auth-cna"></canvas></div>
+    </div>
+    <div class="card" style="margin-top:0">
+      <div class="card-hd">
+        <span><span class="card-dot" style="background:#0891b2"></span>
+          <span class="card-title">Ranking por IRC — Impacto Relativo al Corpus</span></span>
+        <span class="card-hd-right"><span class="card-note" id="lbl-irc">ALL</span></span>
+      </div>
+      <div class="chart-wrap" style="height:420px"><canvas id="c-auth-irc"></canvas></div>
+    </div>
+  </div>
 </section>
 
 <!-- ══════════════════════════════════════════════════════════════ -->
@@ -1776,6 +1859,12 @@ const Q_LABELS    = ['Q1','Q2','Q3','Q4','No Q'];
 const FONT = "'Segoe UI','Inter',Arial,sans-serif";
 
 // Chart.js defaults
+// Register datalabels plugin globally but keep it off by default
+// (enabled explicitly only in CNA / IRC charts)
+if(typeof ChartDataLabels !== 'undefined'){
+  Chart.register(ChartDataLabels);
+  Chart.defaults.set('plugins.datalabels', { display: false });
+}
 Chart.defaults.font.family = FONT;
 Chart.defaults.color = '#64748B';
 Chart.defaults.plugins.legend.labels.boxWidth = 11;
@@ -2483,22 +2572,45 @@ function drawTopPapers(){
           external: function(context){
             const {chart, tooltip} = context;
             const el = _getTtEl(chart.canvas.id);
-            if(tooltip.opacity===0){ el.classList.remove('tt-vis'); return; }
+            const cid = chart.canvas.id;
+            if(tooltip.opacity===0){
+              if(!_ttHideTimers[cid]){
+                _ttHideTimers[cid] = setTimeout(()=>{
+                  if(!el.matches(':hover')) el.classList.remove('tt-vis');
+                  _ttHideTimers[cid] = null;
+                }, 220);
+              }
+              return;
+            }
+            if(_ttHideTimers[cid]){ clearTimeout(_ttHideTimers[cid]); _ttHideTimers[cid]=null; }
             const dp = tooltip.dataPoints && tooltip.dataPoints[0];
             if(!dp){ el.classList.remove('tt-vis'); return; }
             const idx = shown.length - 1 - dp.dataIndex;
             const p = shown[idx];
             if(!p){ el.classList.remove('tt-vis'); return; }
+            const titleHtml = p.doi
+              ? `<a href="https://doi.org/${p.doi}" target="_blank" rel="noopener"
+                    style="color:inherit;text-decoration:underline;cursor:pointer"
+                    onclick="event.stopPropagation()">${p.title}</a>`
+              : p.title;
+            const doiHtml = p.doi
+              ? `<div class="tt-jrnl" style="margin-top:2px">
+                   <a href="https://doi.org/${p.doi}" target="_blank" rel="noopener"
+                      style="color:#64748B;text-decoration:none;font-size:10px"
+                      onclick="event.stopPropagation()">doi:${p.doi}</a>
+                 </div>` : '';
             el.innerHTML = `
               <div class="tt-hdr" style="display:flex;align-items:center;gap:8px;">
                 ${qBadge(p.quartile)}
                 <span>${p.cited_by} cita${p.cited_by!==1?'s':''} recibidas</span>
               </div>
               <div class="tt-row" style="display:flex;flex-direction:column;gap:4px;padding-top:4px;">
-                <div class="tt-title" style="font-size:13px;line-height:1.4;white-space:normal;max-width:500px;">${p.title}</div>
+                <div class="tt-title" style="font-size:13px;line-height:1.4;white-space:normal;max-width:500px;">${titleHtml}</div>
                 <div class="tt-jrnl"><em>${p.source}</em> &nbsp;·&nbsp; ${p.year}</div>
+                ${doiHtml}
                 ${p.authors_utb ? `<div class="tt-jrnl">Autores UTB: ${p.authors_utb}</div>` : ''}
               </div>`;
+            el.onmouseleave = ()=>{ el.classList.remove('tt-vis'); };
             el.classList.add('tt-vis');
             const rect = chart.canvas.getBoundingClientRect();
             const cx = rect.left + tooltip.caretX + 16;
@@ -2576,6 +2688,114 @@ function drawCitsByQ(){
             return ` ${ctx.label}: ${v} citas (${pct}%)`;
           }
         }}
+      }
+    }
+  });
+}
+
+function drawCNA(){
+  const authors = SBY()[year].authors || [];
+  label('lbl-cna', year);
+  if(!authors.length) return;
+  const sorted = [...authors].filter(a=>a.cna>0).sort((a,b)=>b.cna-a.cna).slice(0,20);
+  if(!sorted.length) return;
+  const labels = sorted.map(a=>a.name.length>30?a.name.slice(0,28)+'…':a.name).reverse();
+  const vals   = sorted.map(a=>a.cna).reverse();
+  mkChart('c-auth-cna',{
+    type:'bar',
+    data:{labels, datasets:[{
+      label:'CNA', data:vals,
+      backgroundColor:'rgba(99,102,241,0.75)',
+      borderColor:'rgba(99,102,241,1)',
+      borderWidth:1, borderRadius:4, borderSkipped:false,
+    }]},
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      animation:{duration:420},
+      plugins:{
+        legend:{display:false},
+        datalabels:{
+          display: true,
+          anchor:'end', align:'end',
+          formatter: v => v.toFixed(2),
+          font:{size:10, weight:'600'},
+          color:'rgba(99,102,241,0.9)',
+          clip: false,
+        },
+        tooltip:{callbacks:{
+          title: ctx => sorted[sorted.length-1-ctx[0].dataIndex]?.name || '',
+          label: ctx => {
+            const a = sorted[sorted.length-1-ctx[0].dataIndex];
+            if(!a) return '';
+            return [` CNA: ${a.cna.toFixed(3)}`,` Artículos: ${a.total} · H-index: ${a.h_index}`];
+          }
+        }}
+      },
+      layout:{ padding:{ right: 44 } },
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,0.05)'}, ticks:{font:{size:11}},
+           title:{display:true,text:'CNA (citas / antigüedad, promediado)',font:{size:11}}},
+        y:{grid:{display:false}, ticks:{font:{size:10}}}
+      }
+    }
+  });
+}
+
+function drawIRC(){
+  const authors = SBY()[year].authors || [];
+  label('lbl-irc', year);
+  if(!authors.length) return;
+  const sorted = [...authors].filter(a=>a.irc>0).sort((a,b)=>b.irc-a.irc).slice(0,20);
+  if(!sorted.length) return;
+  const labels = sorted.map(a=>a.name.length>30?a.name.slice(0,28)+'…':a.name).reverse();
+  const vals   = sorted.map(a=>a.irc).reverse();
+  // Color scale: >2 indigo, >1 teal, ≤1 slate
+  const bgs = sorted.map(a=>
+    a.irc>2  ? 'rgba(8,145,178,0.85)' :
+    a.irc>1  ? 'rgba(6,182,212,0.70)' :
+               'rgba(100,116,139,0.55)'
+  ).reverse();
+  mkChart('c-auth-irc',{
+    type:'bar',
+    data:{labels, datasets:[{
+      label:'IRC', data:vals,
+      backgroundColor: bgs,
+      borderRadius:4, borderSkipped:false,
+    }]},
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      animation:{duration:420},
+      plugins:{
+        legend:{display:false},
+        datalabels:{
+          display: true,
+          anchor:'end', align:'end',
+          formatter: v => v.toFixed(2),
+          font:{size:10, weight:'600'},
+          color: ctx => {
+            const v = ctx.dataset.data[ctx.dataIndex];
+            return v>2 ? 'rgba(8,145,178,1)' : v>1 ? 'rgba(6,182,212,1)' : 'rgba(100,116,139,0.85)';
+          },
+          clip: false,
+        },
+        tooltip:{callbacks:{
+          title: ctx => sorted[sorted.length-1-ctx[0].dataIndex]?.name || '',
+          label: ctx => {
+            const a = sorted[sorted.length-1-ctx[0].dataIndex];
+            if(!a) return '';
+            const interp = a.irc>2 ? 'doble+ del impacto mediano' :
+                           a.irc>1 ? 'sobre la mediana del corpus' :
+                                     'bajo la mediana del corpus';
+            return [` IRC: ${a.irc.toFixed(3)} (${interp})`,
+                    ` Artículos: ${a.total} · H-index: ${a.h_index}`];
+          }
+        }}
+      },
+      layout:{ padding:{ right: 44 } },
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,0.05)'}, ticks:{font:{size:11}},
+           title:{display:true,text:'IRC (relativo a la mediana del corpus)',font:{size:11}}},
+        y:{grid:{display:false}, ticks:{font:{size:10}}}
       }
     }
   });
@@ -2705,6 +2925,8 @@ function renderAll(){
   drawTopPapers();
   drawTopJournals();
   drawCitsByQ();
+  drawCNA();
+  drawIRC();
 }
 
 // ── YEAR FILTER SETUP ────────────────────────────────────────────
